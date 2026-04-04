@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopping Cart — Hero Watches</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cart_one.css') }}">
+  
+</head>
+<body>
+
+{% include 'layouts/header.htm' %}
+
+<div class="cart-page">
+  <h1>Shopping Cart</h1>
+
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Total</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="cart-body">
+    </tbody>
+  </table>
+
+  <div class="cart-summary">
+    <h3>Order Summary</h3>
+    <p class="grand-total">Grand Total: <strong id="grand-total">PKR 0</strong></p>
+    <form id="checkout-form" method="POST" action="/orders/checkout">
+    <input type="hidden" name="cart_data" id="cart-data-input"/>
+    <button type="submit" class="btn" onclick="submitCheckout(event)">
+      Proceed to Checkout
+    </button>
+</form>
+  </div>
+</div>
+
+{% include 'layouts/footer.htm' %}
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>

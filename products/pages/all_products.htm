@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hero Watches — Luxury Timepieces</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+</head>
+<body>
+
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#8a8a8a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" placeholder="Search watches..." autofocus id="searchInput"/>
+    <button class="search-close" onclick="closeSearch()">✕</button>
+  </div>
+</div>
+
+
+
+{% include 'layouts/header.htm' %}
+
+
+<section class="hero">
+  <div class="hero-inner">
+      <div class="hero-content">
+        <p class="hero-eyebrow">New Collection 2026</p>
+        <h1 class="hero-title">Time is your most<br><em>precious luxury</em></h1>
+        <p class="hero-subtitle">Discover our curated collection of premium timepieces — where cutting-edge technology meets timeless elegance.</p>
+        <a href="/products/all_products" class="hero-cta">
+          Explore Collection
+         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+    
+
+    <div class="watch-showcase">
+      <div class="watch-glow"></div>
+      <div class="orbit-ring"><div class="orbit-dot"></div></div>
+
+      <div class="watch-body">
+        <div class="watch-crown"></div>
+        <div class="strap-top"><div class="strap-line"></div></div>
+        <div class="strap-bottom"><div class="strap-line"></div></div>
+        <div class="watch-case">
+          <div class="watch-face">
+            <div class="ticks" id="ticks"></div>
+            <div class="hour-markers" id="hours"></div>
+            <div class="dial-brand">Hero Watches</div>
+            <div class="hand hand-hour"></div>
+            <div class="hand hand-minute"></div>
+            <div class="hand hand-second"></div>
+            <div class="center-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="watch-labels">
+        <div class="watch-label l1">Always On Display</div>
+        <div class="watch-label l2">Heart Rate Monitor</div>
+        <div class="watch-label l3">100+ Sport Modes</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<section class="products-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Handpicked For You</p>
+    <h2 class="section-title">Featured Timepieces</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="products-grid">
+
+    {% for product in products %}
+    
+    <div class="product-card" onclick="window.location='/products/{{ product.product_id }}'">
+
+    
+      <div class="card-image-wrap">
+        {% if product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.alt_text or product.title }}"/>
+        {% else %}
+
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
+            <svg viewBox="0 0 80 80" style="width:60px;height:60px;opacity:0.2">
+              <circle cx="40" cy="40" r="32" stroke="#0d1b2a" stroke-width="2" fill="none"/>
+              <circle cx="40" cy="40" r="4" fill="#0d1b2a"/>
+              <line x1="40" y1="15" x2="40" y2="40" stroke="#0d1b2a" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="40" x2="55" y2="48" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        {% endif %}
+
+        
+        {% if   product.sale_price < product.base_price %}
+          <span class="card-badge badge-sale">Sale</span>
+        {% else %}
+          <span class="card-badge badge-new">New</span>
+        {% endif %}
+
+        <button class="card-wishlist" title="Add to Wishlist" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </button>
+
+      
+       <button class="card-quick-add" onclick="addToCart(this)"
+            data-id="{{ product.product_id }}"
+            data-title="{{ product.title }}"
+            data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
+            data-price="{{ product.sale_price if product.sale_price else product.base_price }}">
+                 + Add to Cart
+      </button>
+      </div>
+
+      <div class="card-body">
+        <p class="card-category">{{ product.category_name or 'Watch' }}</p>
+        <h3 class="card-title">{{ product.title }}</h3>
+        <p class="card-subtitle">{{ product.short_description or 'Premium timepiece' }}</p>
+        <div class="card-pricing">
+          <span class="price-current">
+            PKR {{ "{:,.0f}".format(product.sale_price if product.sale_price else product.base_price) }}
+          </span>
+          {% if product.sale_price and product.sale_price < product.base_price %}
+            <span class="price-original">PKR {{ "{:,.0f}".format(product.base_price) }}</span>
+            {% set discount = ((product.base_price - product.sale_price) / product.base_price * 100)|int %}
+            <span class="price-discount">{{ discount }}% off</span>
+          {% endif %} 
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+
+
+  </div>
+
+
+</section>
+
+
+{% include 'layouts/footer.htm' %}
+
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
+<script>
+  function openSearch() {
+    document.getElementById('searchOverlay').classList.add('active');
+    setTimeout(() => document.getElementById('searchInput').focus(), 100);
+  }
+  function closeSearch() {
+    document.getElementById('searchOverlay').classList.remove('active');
+  }
+  document.getElementById('searchOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSearch();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSearch();
+  });
+</script>
+
+
+<script>
+
+  const ticksEl = document.getElementById('ticks');
+  if (ticksEl) {
+    for (let i = 0; i < 60; i++) {
+      const t = document.createElement('div');
+      t.className = 'tick' + (i % 5 === 0 ? ' major' : '');
+      t.style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
+      ticksEl.appendChild(t);
+    }
+  }
+
+ 
+  const hoursEl = document.getElementById('hours');
+  if (hoursEl) {
+    const nums = [12,1,2,3,4,5,6,7,8,9,10,11];
+    const r = 42;
+    nums.forEach((n, i) => {
+      const angle = (i * 30 - 90) * Math.PI / 180;
+      const x = 50 + r * Math.cos(angle);
+      const y = 50 + r * Math.sin(angle);
+      const el = document.createElement('div');
+      el.className = 'hour-num';
+      el.style.left = x + '%';
+      el.style.top  = y + '%';
+      el.textContent = n;
+      hoursEl.appendChild(el);
+    });
+  }
+
+  
+  function syncHands() {
+    const now = new Date();
+    const s = now.getSeconds();
+    const m = now.getMinutes() + s / 60;
+    const h = (now.getHours() % 12) + m / 60;
+    const sec = document.querySelector('.hand-second');
+    const min = document.querySelector('.hand-minute');
+    const hr  = document.querySelector('.hand-hour');
+    if (sec) sec.style.transform = `rotate(${s * 6}deg)`;
+    if (min) min.style.transform = `rotate(${m * 6}deg)`;
+    if (hr)  hr.style.transform  = `rotate(${h * 30}deg)`;
+  }
+  syncHands();
+  setInterval(syncHands, 1000);
+</script>
+
+</body>
+</html>

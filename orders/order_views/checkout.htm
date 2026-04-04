@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Hero Watches</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+</head>
+<body>
+
+{% include 'layouts/header.htm' %}
+
+<div class="checkout-page">
+  <h1>Checkout</h1>
+
+  <form method="POST" action="{{ url_for('orders.place_order') }}" id="checkout-form">
+    <div class="checkout-grid">
+      <div class="checkout-left">
+        <div class="checkout-panel">
+          <div class="panel-header">
+            <div class="panel-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <h2>Shipping Information</h2>
+          </div>
+          <div class="panel-body">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first_name">First Name</label>
+                <input type="text" id="first_name" name="first_name" placeholder="Ahmad" required/>
+              </div>
+              <div class="form-group">
+                <label for="last_name">Last Name</label>
+                <input type="text" id="last_name" name="last_name" placeholder="Khan" required/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="03XX-XXXXXXX" required/>
+              </div>
+              <div class="form-group">
+                <label for="email">Email (optional)</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com"/>
+              </div>
+            </div>
+
+            <div class="form-row full">
+              <div class="form-group">
+                <label for="shipping_address">Street Address</label>
+                <input type="text" id="shipping_address" name="shipping_address"
+                       placeholder="House no., Street, Area" required/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">City</label>
+                <div class="select-wrap">
+                  <select id="city" name="city" required>
+                    <option value="" disabled selected>Select city</option>
+                    <option>Karachi</option>
+                    <option>Lahore</option>
+                    <option>Islamabad</option>
+                    <option>Rawalpindi</option>
+                    <option>Faisalabad</option>
+                    <option>Multan</option>
+                    <option>Peshawar</option>
+                    <option>Quetta</option>
+                    <option>Hyderabad</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="postal_code">Postal Code</label>
+                <input type="text" id="postal_code" name="postal_code" placeholder="75500"/>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="checkout-panel">
+          <div class="panel-header">
+            <div class="panel-icon"><i class="fas fa-credit-card"></i></div>
+            <h2>Payment Method</h2>
+          </div>
+          <div class="panel-body">
+            <div class="payment-options">
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="COD" checked/>
+                <span class="payment-label">
+                  <i class="fas fa-money-bill-wave"></i>
+                  Cash on Delivery
+                </span>
+                <span class="payment-badge">Popular</span>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="JazzCash"/>
+                <span class="payment-label">
+                  <i class="fas fa-mobile-alt"></i>
+                  JazzCash
+                </span>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="EasyPaisa"/>
+                <span class="payment-label">
+                  <i class="fas fa-wallet"></i>
+                  EasyPaisa
+                </span>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="bank_transfer"/>
+                <span class="payment-label">
+                  <i class="fas fa-university"></i>
+                  Bank Transfer
+                </span>
+              </label>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div class="order-summary-panel">
+        <div class="checkout-panel">
+          <div class="panel-header">
+            <div class="panel-icon"><i class="fas fa-shopping-bag"></i></div>
+            <h2>Order Summary</h2>
+          </div>
+          <div class="panel-body">
+
+            <div class="summary-items" id="summary-items"></div>
+
+            <div class="promo-row">
+              <input type="text" name="promo_code" id="promo-input" placeholder="Promo code"/>
+              <button type="button" onclick="applyPromo()">Apply</button>
+            </div>
+
+            <div class="price-breakdown">
+              <div class="price-row">
+                <span>Subtotal</span>
+                <span id="summary-subtotal">PKR 0</span>
+              </div>
+              <div class="price-row">
+                <span>Shipping</span>
+                <span id="summary-shipping" class="free-tag">Free</span>
+              </div>
+              <div class="price-row" id="discount-row" style="display:none;">
+                <span>Discount</span>
+                <span id="summary-discount" style="color:#2d8a4e;">— PKR 0</span>
+              </div>
+              <div class="price-row total">
+                <span>Total</span>
+                <span id="summary-total">PKR 0</span>
+              </div>
+            </div>
+
+            <input type="hidden" name="cart_data" id="cart-data-input"/>
+            <input type="hidden" name="subtotal"   id="input-subtotal"/>
+            <input type="hidden" name="total_amount"  id="input-total"/>
+            <input type="hidden" name="shipping_charges" id="input-shipping" value="0"/>
+            <input type="hidden" name="discount_amount"  id="input-discount"  value="0"/>
+
+            <button type="submit" class="place-order-btn" onclick="prepareSubmit(event)">
+              <i class="fas fa-lock"></i>
+              Place Order
+            </button>
+
+            <div class="checkout-trust">
+              <span><i class="fas fa-shield-alt"></i> Secure</span>
+              <span><i class="fas fa-truck"></i> Free Delivery</span>
+              <span><i class="fas fa-undo"></i> 7-Day Return</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+{% include 'layouts/footer.htm' %}
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  const SHIPPING_THRESHOLD=10000;
+  const SHIPPING_COST=250;
+  let discountAmount=0;
+
+  
+
+  function buildSummary(){
+    const cart=JSON.parse(localStorage.getItem('cart')) || [];
+    const container=document.getElementById('summary-items');
+
+    if(cart.length===0){
+      container.innerHTML='<p style="color:var(--text-light);font-size:14px;padding:12px 0;">Your cart is empty. <a href="/" style="color:var(--gold)">Go back</a></p>';
+      return;
+    }
+
+    let subtotal=0;
+    container.innerHTML='';
+
+    cart.forEach(item =>{
+      const itemTotal=item.price * item.quantity;
+      subtotal += itemTotal;
+      container.innerHTML += `
+        <div class="summary-item">
+          <img src="${item.image}" alt="${item.title}" class="summary-item-img"
+               onerror="this.src='/static/uploads/default.jpg'"/>
+          <div class="summary-item-info">
+            <div class="summary-item-title">${item.title}</div>
+            <div class="summary-item-qty">Qty: ${item.quantity}</div>
+          </div>
+          <div class="summary-item-price">PKR ${itemTotal.toLocaleString()}</div>
+        </div>`;
+    });
+
+    updateTotals(subtotal);
+  }
+
+  function updateTotals(subtotal){
+    const shipping=subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    const total=subtotal + shipping - discountAmount;
+
+    document.getElementById('summary-subtotal').textContent='PKR ' + subtotal.toLocaleString();
+
+    const shippingEl=document.getElementById('summary-shipping');
+    if(shipping===0){
+      shippingEl.textContent='Free';
+      shippingEl.className='free-tag';
+    } else {
+      shippingEl.textContent='PKR ' + shipping.toLocaleString();
+      shippingEl.className='';
+    }
+
+    document.getElementById('summary-total').textContent='PKR ' + total.toLocaleString();
+    document.getElementById('input-subtotal').value=subtotal;
+    document.getElementById('input-total').value=total;
+    document.getElementById('input-shipping').value=shipping;
+  }
+
+  function applyPromo(){
+    const code=document.getElementById('promo-input').value.trim().toUpperCase();
+    const cart=JSON.parse(localStorage.getItem('cart')) || [];
+    const subtotal=cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+    if(code==='HERO10'){
+      discountAmount=Math.round(subtotal * 0.10);
+      document.getElementById('discount-row').style.display='flex';
+      document.getElementById('summary-discount').textContent='— PKR ' + discountAmount.toLocaleString();
+      document.getElementById('input-discount').value=discountAmount;
+      updateTotals(subtotal);
+      alert('Promo applied! 10% off.');
+    } else if(code){
+      alert('Invalid promo code.');
+    }
+  }
+
+  function prepareSubmit(e){
+    const cart=JSON.parse(localStorage.getItem('cart')) || [];
+    if(cart.length===0){
+      e.preventDefault();
+      alert('Your cart is empty.');
+      return;
+    }
+    document.getElementById('cart-data-input').value=JSON.stringify(cart);
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const flaskCart=window.FLASK_CART;
+    if(flaskCart && flaskCart.length > 0){
+      const normalized=flaskCart.map(item =>({
+        id:item.id,
+        title:item.title,
+        price:item.price,
+        quantity:item.quantity,
+        image:item.image_url || item.image || ''
+      }));
+      localStorage.setItem('cart', JSON.stringify(normalized));
+    }
+    updateCartCount();
+    buildSummary();
+  });
+</script>
+
+</body>
+</html>

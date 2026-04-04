@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — Hero Watches</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
+</head>
+<body>
+
+{% include 'layouts/header.htm' %}
+
+
+<section class="support-hero">
+  <div class="support-hero-inner">
+    <p class="support-eyebrow">Hero Watches · Customer Care</p>
+    <h1 class="support-title">How Can We <em>Help You?</em></h1>
+    <p class="support-subtitle">Our team is dedicated to making every experience with Hero Watches exceptional — from purchase to every tick thereafter.</p>
+  </div>
+</section>
+
+
+<section class="faq-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Quick Answers</p>
+    <h2 class="section-title">Frequently Asked</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="faq-grid">
+
+    <div class="faq-card">
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <p class="faq-q">Where is my order?</p>
+      <p class="faq-a">Once shipped, you'll receive a tracking email within 24 hours. Orders typically arrive in 3–7 business days within Pakistan.</p>
+    </div>
+
+    <div class="faq-card">
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <p class="faq-q">What is your return policy?</p>
+      <p class="faq-a">We offer a 14-day hassle-free return window. Items must be unworn and in original packaging with all tags attached.</p>
+    </div>
+
+    <div class="faq-card">
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <p class="faq-q">Is my watch covered under warranty?</p>
+      <p class="faq-a">Every Hero Watch comes with a 2-year international warranty covering manufacturing defects. Accidental damage is not included.</p>
+    </div>
+
+    <div class="faq-card">
+      <div class="faq-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <p class="faq-q">How do I change the watch strap?</p>
+      <p class="faq-a">All Hero straps use a quick-release spring bar system. A guide video is included with your order, or visit our YouTube channel.</p>
+    </div>
+
+  </div>
+</section>
+
+<section class="support-form-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Get In Touch</p>
+    <h2 class="section-title">Send Us a Message</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="support-form-wrap">
+
+    <div class="success-state" id="successState">
+      <div class="success-check">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <p class="success-title">Message Received</p>
+      <p class="success-msg">Thank you for reaching out. Our support team will respond to your inquiry within 24–48 business hours.</p>
+      <div class="success-ticket">Ticket ID: <strong id="ticketId">#HW-00000</strong></div>
+      <button class="success-back" onclick="resetForm()">
+        ← Submit Another Request
+      </button>
+    </div>
+
+    <form id="supportForm" method="POST" action="{{ url_for('support') }}" enctype="multipart/form-data">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="fullName">Full Name <span class="req">*</span></label>
+          <input class="form-input" type="text" id="fullName" name="fullName" placeholder="e.g. Ahmed Hassan" autocomplete="name" />
+          <span class="form-error-msg" id="err-fullName">Please enter your full name.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address <span class="req">*</span></label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" />
+          <span class="form-error-msg" id="err-email">Please enter a valid email address.</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number</label>
+          <input class="form-input" type="tel" id="phone" name="phone" placeholder="+92 300 0000000" autocomplete="tel" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="orderId">Order ID</label>
+          <div class="input-with-icon">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M4 6h16v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
+            </span>
+            <input class="form-input" type="text" id="orderId" name="orderId" placeholder="HW-12345" />
+          </div>
+          <span class="form-hint">Leave blank if not order-related.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="category">Issue Category <span class="req">*</span></label>
+        <select class="form-select" id="category" name="category">
+          <option value="" disabled selected>Select a topic…</option>
+          <option value="order">Order Status & Tracking</option>
+          <option value="return">Returns & Exchanges</option>
+          <option value="warranty">Warranty & Repairs</option>
+          <option value="product">Product Questions</option>
+          <option value="payment">Payments & Billing</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="form-error-msg" id="err-category">Please select a category.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="subject">Subject <span class="req">*</span></label>
+        <input class="form-input" type="text" id="subject" name="subject" placeholder="Brief description of your issue" />
+        <span class="form-error-msg" id="err-subject">Please enter a subject.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="message">Message <span class="req">*</span></label>
+        <textarea class="form-textarea" id="message" name="message" placeholder="Describe your issue in detail so we can assist you as quickly as possible…"></textarea>
+        <span class="form-error-msg" id="err-message">Please enter a message (at least 20 characters).</span>
+      </div>
+
+      <hr class="form-divider" />
+      <div class="form-group">
+          <label class="form-label">Attachment 
+            <span style="color:var(--text-light);font-size:10px;letter-spacing:0;">(optional)</span>
+          </label>
+          <input class="form-input" type="file" name="attachment" 
+                accept="image/*,.pdf" 
+                style="padding: 10px 16px; cursor:pointer;">
+          <span class="form-hint">PNG, JPG, PDF up to 5MB.</span>
+        </div>
+
+      <hr class="form-divider" />
+
+        <div class="form-group">
+          <label class="form-label">Overall Experience 
+            <span style="color:var(--text-light);font-size:10px;letter-spacing:0;">(optional)</span>
+          </label>
+          <select class="form-select" name="rating">
+            <option value="" selected>Select rating…</option>
+            <option value="1">⭐ 1 — Poor</option>
+            <option value="2">⭐⭐ 2 — Fair</option>
+            <option value="3">⭐⭐⭐ 3 — Good</option>
+            <option value="4">⭐⭐⭐⭐ 4 — Very Good</option>
+            <option value="5">⭐⭐⭐⭐⭐ 5 — Excellent</option>
+          </select>
+        </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <span class="btn-label">Send Message</span>
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <span class="spinner"></span>
+      </button>
+
+    </form>
+  </div>
+</section>
+
+<section class="channels-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Other Ways</p>
+    <h2 class="section-title">Reach Our Team</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="channels-grid">
+
+    <div class="channel-card">
+      <div class="channel-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .82h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      </div>
+      <p class="channel-name">Phone</p>
+      <p class="channel-detail">+92 3150484043<br>Mon–Sat · 10am – 7pm</p>
+      <a href="tel:+923150484043" class="channel-link">Call Now →</a>
+    </div>
+
+    <div class="channel-card">
+      <div class="channel-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <p class="channel-name">Email</p>
+      <p class="channel-detail">saleemkhurram420@gmail.com<br>Reply within 24–48 hrs</p>
+      <a href="mailto:saleemkhurram420@gmail.com" class="channel-link">Email Us →</a>
+    </div>
+
+    <div class="channel-card">
+      <div class="channel-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <p class="channel-name">Live Chat</p>
+      <p class="channel-detail">Instant chat support<br>Mon–Fri · 9am – 9pm</p>
+      <a href="#" class="channel-link" onclick="alert('Live chat coming soon!')">Start Chat →</a>
+    </div>
+
+  </div>
+</section>
+
+
+{% include 'layouts/footer.htm' %}
+
+
+
+
+</body>
+</html>

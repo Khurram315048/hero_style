@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ product.title if product else 'Product Not Found' }} - Hero Watches</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
+  
+</head>
+<body>
+
+  {% include 'layouts/header.htm' %}
+
+  {% if product %}
+    <main class="product-page">
+      <section class="product-top">
+        <div class="product-left">
+          <img src="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
+               alt="{{ product.alt_text or product.title }}" class="main-product-image" />
+        </div>
+
+        <div class="product-right">
+          <p class="product-category">{{ product.category_name or 'Watch' }}</p>
+          <h1 class="product-title">{{ product.title }}</h1>
+
+          <div class="product-price">
+            <span class="current-price">
+              PKR {{ "{:,.0f}".format(product.sale_price if product.sale_price else product.base_price) }}
+            </span>
+            {% if product.sale_price and product.sale_price < product.base_price %}
+              <span class="original-price">
+                PKR {{ "{:,.0f}".format(product.base_price) }}
+              </span>
+              <span class="product-savings">
+                {{ ((product.base_price - product.sale_price) / product.base_price * 100)|int }}% off
+              </span>
+            {% endif %}
+          </div>
+
+          <p class="product-description">{{ product.short_description or 'No description available.' }}</p>
+
+          <div class="stock-status">
+            {% if product.stock_quantity >0  %}
+              <span class="in-stock"><i class="fas fa-check-circle"></i> In Stock — Ready to Ship</span>
+            {% else %}
+              <span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
+            {% endif %}
+          </div>
+
+          <div class="purchase-section">
+             <div class="quantity-control">
+              <label for="quantity">Quantity</label>
+              <div class="quantity-buttons">
+                <button type="button" onclick="updateQuantity(-1)">−</button>
+                <input id="quantity" type="number" min="1" max="10" value="1" readonly name="quantity"/>
+                <button type="button" onclick="updateQuantity(1)">+</button>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-add-cart"  onclick="addToCart(this)"
+                  data-id="{{ product.product_id }}"
+                  data-title="{{ product.title }}"
+                  data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
+                  data-price="{{ product.sale_price if product.sale_price else product.base_price }}">
+            +Add to Cart
+          </button>
+              <button  type="button" class="btn btn-buy-now" onclick="buyNow()">
+                <i class="fas fa-bolt"></i> Buy Now
+              </button>
+            </div>
+          </div>
+
+          <div class="trust-features">
+            <span><i class="fas fa-truck"></i> Free Delivery</span>
+            <span><i class="fas fa-shield-alt"></i> Warranty</span>
+            <span><i class="fas fa-lock"></i> Secure Payment</span>
+            <span><i class="fas fa-undo"></i> Easy Return</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="product-tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="showTab('description')">Description</button>
+          <button class="tab-btn" onclick="showTab('specifications')">Specifications</button>
+          <button class="tab-btn" onclick="showTab('shipping')">Shipping</button>
+        </div>
+
+        <div class="tab-content">
+          <div id="description" class="tab-pane active">
+            <h3>About This Watch</h3>
+            <p>{{ product.short_description or 'No extra details at this time.' }}</p>
+          </div>
+
+          <div id="specifications" class="tab-pane">
+            <h3>Specifications</h3>
+            <table class="spec-table">
+              <tr><th>Product No</th><td>{{ product.product_no }}</td></tr>
+              <tr><th>Category</th><td>{{ product.category_name or 'Watch' }}</td></tr>
+              <tr><th>Base Price</th><td>PKR {{ "{:,.0f}".format(product.base_price) }}</td></tr>
+              <tr><th>Sale Price</th><td>PKR {{ "{:,.0f}".format(product.sale_price or product.base_price) }}</td></tr>
+              <tr><th>Battery Life</th><td>{{ product.battery_life }}</td></tr>
+              <tr><th>Display Type</th><td>{{ product.display_type }}</td></tr>
+              <tr><th>Display Size</th><td>{{ product.display_size }}</td></tr>
+              <tr><th>Connectivity</th><td>{{ product.connectivity }}</td></tr>
+              <tr><th>Brightness</th><td>{{ product.brightness_nits }}</td></tr>
+              <tr><th>Strap Material</th><td>{{ product.case_material}}-{{ product.strap_material }}</td></tr>
+              <tr><th>Water Resistance</th><td>{{ product.water_resistance }}</td></tr>
+              <tr><th>Warranty Months</th><td>{{ product.warranty_months }}</td></tr>
+              <tr><th>Weight</th><td>{{ product.weight }}</td></tr>
+            </table>
+          </div>
+
+          <div id="shipping" class="tab-pane">
+            <h3>Shipping & Returns</h3>
+            <ul>
+              <li>Free standard shipping on orders above PKR 10,000</li>
+              <li>Cash on Delivery available across Pakistan</li>
+              <li>Delivery in 3–5 business days</li>
+              <li>7-day return policy on unworn products</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+        <div class="products-grid">
+        {% for related in relateds %}
+          <div class="product-card" onclick="window.location='/products/{{ related.product_id }}'">
+            <div class="card-image-wrap">
+              {% if related.image_url %}
+                <img src="{{ related.image_url }}" alt="{{ related.alt_text or related.title }}"/>
+              {% else %}
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
+                  ...svg placeholder...
+                </div>
+              {% endif %}
+
+              {% if related.sale_price and related.sale_price < related.base_price %}
+                <span class="card-badge badge-sale">Sale</span>
+              {% else %}
+                <span class="card-badge badge-new">New</span>
+              {% endif %}
+
+              <button class="card-wishlist" title="Add to Wishlist" onclick="event.stopPropagation()">...</button>
+              <button class="card-quick-add" onclick="event.stopPropagation()">+ Add to Cart</button>
+            </div>
+
+            <div class="card-body">
+              <p class="card-category">{{ related.category_name or 'Watch' }}</p>
+              <h3 class="card-title">{{ related.title }}</h3>
+              <p class="card-subtitle">{{ related.short_description or 'Premium timepiece' }}</p>
+              <div class="card-pricing">
+                <span class="price-current">PKR {{ "{:,.0f}".format(related.sale_price if related.sale_price else related.base_price) }}</span>
+                {% if related.sale_price and related.sale_price < related.base_price %}
+                  <span class="price-original">PKR {{ "{:,.0f}".format(related.base_price) }}</span>
+                  {% set discount = ((related.base_price - related.sale_price) / related.base_price * 100)|int %}
+                  <span class="price-discount">{{ discount }}% off</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </main>
+  {% else %}
+    <main class="product-page">
+      <h1>Product not found</h1>
+      <p>The product you requested is unavailable, please go back to <a href="/">home</a>.</p>
+    </main>
+  {% endif %}
+
+{% include 'layouts/footer.htm' %}
+
+  <script>
+    function updateQuantity(delta) {
+      const qtyInput = document.getElementById('quantity');
+      const v = parseInt(qtyInput.value, 10);
+      const next = Math.max(1, Math.min(10, v + delta));
+      qtyInput.value = next;
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+  <script>
+    function updateQuantity(delta) {
+      const qtyInput = document.getElementById('quantity');
+      const v = parseInt(qtyInput.value, 10);
+      const next = Math.max(1, Math.min(10, v + delta));
+      qtyInput.value = next;
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // ADD THIS NEW FUNCTION
+    function buyNow() {
+      // Get the product ID from the "Add to Cart" button's data attribute
+      const productId = document.querySelector('.btn-add-cart').dataset.id;
+      
+      // Get the selected quantity from the input field
+      const quantity = document.getElementById('quantity').value;
+
+      // Create a hidden form and submit it via POST.
+      // This is a simple way to send data and cause a page redirect.
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/orders/buy_now/${productId}`;
+
+      const quantityInput = document.createElement('input');
+      quantityInput.type = 'hidden';
+      quantityInput.name = 'quantity';
+      quantityInput.value = quantity;
+      form.appendChild(quantityInput);
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,309 @@
+/* ─── Cart Page CSS ──────────────────────────────────────────
+   Inherits all variables from homepage.css:
+   --navy, --gold, --white, --off-white, --border, etc.
+   Link AFTER homepage.css in your <head>.
+──────────────────────────────────────────────────────────── */
+
+/* ─── Page Wrapper ───────────────────────────────────────── */
+.cart-page {
+  max-width: 1100px;
+  margin: 60px auto;
+  padding: 0 5%;
+}
+
+.cart-page h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.cart-page h1::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: var(--gold);
+  margin-top: 12px;
+  margin-bottom: 36px;
+}
+
+/* ─── Cart Table ─────────────────────────────────────────── */
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 36px;
+}
+
+.cart-table thead {
+  background: var(--navy);
+}
+
+.cart-table thead th {
+  padding: 16px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: left;
+}
+
+.cart-table thead th:first-child {
+  color: var(--gold);
+}
+
+.cart-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.cart-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.cart-table tbody tr:hover {
+  background: var(--off-white);
+}
+
+.cart-table tbody td {
+  padding: 18px 20px;
+  font-size: 14px;
+  color: var(--text-mid);
+  vertical-align: middle;
+}
+
+/* ─── Product Cell ───────────────────────────────────────── */
+.cart-product {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cart-img {
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--off-white);
+  /* Fix: ensure image actually renders */
+  display: block;
+}
+
+.cart-product span {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.3;
+}
+
+/* ─── Price / Total ──────────────────────────────────────── */
+.cart-table td:nth-child(2) {
+  font-weight: 400;
+  color: var(--text-mid);
+  white-space: nowrap;
+}
+
+.cart-table td:nth-child(4) strong {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--navy);
+}
+
+/* ─── Quantity Box ───────────────────────────────────────── */
+.qty-box {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.qty-box button {
+  width: 32px;
+  height: 32px;
+  background: var(--off-white);
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-dark);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.qty-box button:hover {
+  background: var(--navy);
+  color: var(--gold);
+}
+
+.qty-box span {
+  width: 40px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  line-height: 32px;
+}
+
+/* ─── Remove Button ──────────────────────────────────────── */
+.remove-btn {
+  background: none;
+  border: 1.5px solid #e0d0d0;
+  color: #a05050;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.remove-btn:hover {
+  background: #a05050;
+  color: var(--white);
+  border-color: #a05050;
+}
+
+/* ─── Empty Cart State ───────────────────────────────────── */
+.cart-table tbody tr td[colspan] {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-light);
+  font-size: 15px;
+  font-style: italic;
+}
+
+/* ─── Order Summary Panel ────────────────────────────────── */
+.cart-summary {
+  background: var(--navy);
+  border-radius: var(--radius-md);
+  padding: 32px 36px;
+  max-width: 380px;
+  margin-left: auto;
+  box-shadow: var(--shadow-md);
+}
+
+.cart-summary h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  letter-spacing: 0.5px;
+}
+
+.grand-total {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.grand-total strong {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+/* ─── Checkout Button ────────────────────────────────────── */
+.cart-summary .btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--gold);
+  color: var(--navy);
+  padding: 14px 28px;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+
+.cart-summary .btn:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 168, 76, 0.3);
+}
+
+/* ─── Continue Shopping Link ─────────────────────────────── */
+.continue-shopping {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.continue-shopping:hover {
+  color: var(--gold);
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cart-table thead th:nth-child(2),
+  .cart-table tbody td:nth-child(2) {
+    display: none; /* hide unit price on mobile, keep total */
+  }
+
+  .cart-product {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .cart-summary {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .cart-table tbody td {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-table thead th:nth-child(3),
+  .cart-table tbody td:nth-child(3) {
+    /* Quantity label */
+    font-size: 12px;
+  }
+
+  .cart-img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+}

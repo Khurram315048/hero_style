@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Confirmed — Hero Watches</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+</head>
+<body>
+
+{% include 'layouts/header.htm' %}
+
+<div class="confirmed-page">
+
+  <div class="confirmed-icon">
+    <i class="fas fa-check"></i>
+  </div>
+
+  <h1>Order Placed!</h1>
+  <p>Thank you, <strong>{{ customer_name }}</strong>. Your order has been received.</p>
+
+  <div class="order-ref">
+    Order # <span>{{ order_number }}</span>
+  </div>
+
+  <p>
+    <strong>Payment:</strong> {{ payment_method }}
+    &nbsp;·&nbsp;
+    <strong>Total:</strong> PKR {{ "{:,.0f}".format(total_amount) }}
+  </p>
+  <p style="color:var(--text-light);font-size:13px;margin-top:8px;">
+    You will receive a confirmation call within 24 hours.
+  </p>
+
+  <div class="confirmed-actions">
+    <a href="/" class="btn-outline">
+      Continue Shopping
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </a>
+  </div>
+
+</div>
+
+{% include 'layouts/footer.htm' %}
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  localStorage.removeItem('cart');
+  updateCartCount();
+</script>
+
+</body>
+</html>
