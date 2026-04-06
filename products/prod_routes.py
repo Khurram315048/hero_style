@@ -157,7 +157,7 @@ def all_earbuds():
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
         LEFT JOIN product_images pi ON p.product_id=pi.product_id
         AND pi.is_active=1
-        WHERE p.status='active' AND c.category_id=4
+        WHERE p.status='active' AND p.category_id=4
         ORDER BY RAND()
     """)
     products=cursor.fetchall()

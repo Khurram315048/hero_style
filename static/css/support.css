@@ -117,7 +117,7 @@ ul { list-style: none; }
 .cart-count {
   position: absolute; top: 2px; right: 2px;
   width: 16px; height: 16px;
-  background: var(--white); 
+  background: var(--gold); 
   color: var(--navy);
   border-radius: 50%;
   font-size: 9px; font-weight: 700;

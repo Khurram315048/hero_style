@@ -99,7 +99,7 @@
         </button>
 
       
-       <button class="card-quick-add" onclick="addToCart(this)"
+       <button class="card-quick-add" onclick="event.stopPropagation(); addToCart(this)"
             data-id="{{ product.product_id }}"
             data-title="{{ product.title }}"
             data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
