@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hero Watches — Luxury Timepieces</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
-</head>
-<body>
+
+{% include 'layouts/header.htm '%}
 
 <div class="search-overlay" id="searchOverlay">
   <div class="search-box">
@@ -19,9 +11,6 @@
   </div>
 </div>
 
-
-
-{% include 'layouts/header.htm' %}
 
 
 <section class="hero">
@@ -144,9 +133,6 @@
 
 </section>
 
-
-{% include 'layouts/footer.htm' %}
-
 <script src="{{ url_for('static',filename='js/script.js') }}"></script>
 <script>
   function openSearch() {
@@ -162,10 +148,6 @@
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeSearch();
   });
-</script>
-
-
-<script>
 
   const ticksEl = document.getElementById('ticks');
   if (ticksEl) {
@@ -212,5 +194,4 @@
   setInterval(syncHands, 1000);
 </script>
 
-</body>
-</html>
+{% include 'layouts/footer.htm' %}

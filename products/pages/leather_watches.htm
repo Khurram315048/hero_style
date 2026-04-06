@@ -172,7 +172,7 @@
 
 </section>
 
-
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
   function openSearch() {
     document.getElementById('searchOverlay').classList.add('active');
@@ -187,10 +187,6 @@
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeSearch();
   });
-</script>
-
-
-<script>
 
   const ticksEl = document.getElementById('ticks');
   if (ticksEl) {

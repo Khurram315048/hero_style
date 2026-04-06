@@ -134,12 +134,6 @@ def place_order():
 
 
 
-
-
-
-
-
-
 @order_bp.route('/buy_now/<int:product_id>', methods=['POST'])
 def buy_now(product_id):
     cursor=mysql.connection.cursor(DictCursor)
