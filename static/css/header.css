@@ -1,0 +1,84 @@
+/* ─── Dropdown Nav ───────────────────────────────────────── */
+
+/* Make parent li position relative so submenu anchors to it */
+.nav-links li {
+  position: relative;
+}
+
+/* Submenu base — hidden by default */
+.sub--menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-md);
+  padding: 8px 0;
+  min-width: 180px;
+  list-style: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: var(--transition);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+/* Small arrow tip pointing up */
+.sub--menu::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--navy);
+  border-left: 1px solid rgba(201,168,76,0.2);
+  border-top: 1px solid rgba(201,168,76,0.2);
+  rotate: 45deg;
+}
+
+/* Show on hover */
+.nav-links li:hover > .sub--menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+/* Submenu items */
+.sub--menu li {
+  width: 100%;
+}
+
+.sub--menu a {
+  display: block;
+  padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+/* Override the ::after underline on submenu links */
+.sub--menu a::after {
+  display: none;
+}
+
+.sub--menu a:hover {
+  color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  padding-left: 26px;
+}
+
+/* ─── Mobile: hide submenus on small screens ─────────────── */
+@media (max-width: 900px) {
+  .sub--menu {
+    display: none;
+  }
+}
