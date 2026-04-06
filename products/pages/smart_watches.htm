@@ -1,26 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hero Watches — Luxury Timepieces</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
-</head>
-<body>
-
-<div class="search-overlay" id="searchOverlay">
-  <div class="search-box">
-    <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#8a8a8a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="text" placeholder="Search watches..." autofocus id="searchInput"/>
-    <button class="search-close" onclick="closeSearch()">✕</button>
-  </div>
-</div>
-
-
 
 {% include 'layouts/header.htm' %}
 
@@ -183,7 +160,7 @@
 
 
 {% include 'layouts/footer.htm' %}
- <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+ 
 
 <script>
   function openSearch() {
@@ -199,10 +176,7 @@
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeSearch();
   });
-</script>
 
-
-<script>
 
   const ticksEl = document.getElementById('ticks');
   if (ticksEl) {
@@ -249,5 +223,4 @@
   setInterval(syncHands, 1000);
 </script>
 
-</body>
-</html>
+{% include 'layouts/footer.htm' %}

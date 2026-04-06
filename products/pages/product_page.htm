@@ -1,18 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ product.title if product else 'Product Not Found' }} - Hero Watches</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
-  
-</head>
-<body>
 
-  {% include 'layouts/header.htm' %}
+
+{% include 'layouts/header.htm' %}
 
   {% if product %}
     <main class="product-page">
@@ -173,7 +161,7 @@
     </main>
   {% endif %}
 
-{% include 'layouts/footer.htm' %}
+
 
   <script>
     function updateQuantity(delta) {
@@ -189,10 +177,7 @@
       document.getElementById(tab).classList.add('active');
       event.target.classList.add('active');
     }
-  </script>
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-  <script>
+ 
     function updateQuantity(delta) {
       const qtyInput = document.getElementById('quantity');
       const v = parseInt(qtyInput.value, 10);
@@ -232,5 +217,4 @@
     }
   </script>
   
-</body>
-</html>
+{% include 'layouts/footer.htm' %}

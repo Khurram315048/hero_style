@@ -1,14 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Hero Style — Luxury Timepieces</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
-</head>
-<body>
+
  
+{% include 'layouts/header.htm' %}
+
 <div class="search-overlay" id="searchOverlay">
   <div class="search-box">
     <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#8a8a8a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0">
@@ -19,9 +12,6 @@
   </div>
 </div>
 
-
-
-{% include 'layouts/header.htm' %}
 
 
 <section class="hero">
@@ -177,9 +167,9 @@
 </section>
 
 
-{% include 'layouts/footer.htm' %}
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+
 <script>
   function openSearch() {
     document.getElementById('searchOverlay').classList.add('active');
@@ -243,6 +233,4 @@
   syncHands();
   setInterval(syncHands, 1000);
 </script>
-
-</body>
-</html>
+{% include 'layouts/footer.htm' %}
