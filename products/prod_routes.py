@@ -140,6 +140,30 @@ def all_products():
     if not products:
         return render_template('404.htm'), 404
     
-    
-    
     return render_template('all_products.htm',products=products)
+
+
+@prod_bp.route('/all_earbuds',methods=['GET'])
+def all_earbuds():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""
+        SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
+            p.base_price,p.sale_price,p.status,c.name AS category_name,
+            pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
+            pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
+            pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
+        FROM products p
+        LEFT JOIN categories c ON p.category_id=c.category_id
+        LEFT JOIN product_details pd ON p.product_id=pd.product_id
+        LEFT JOIN product_images pi ON p.product_id=pi.product_id
+        AND pi.is_active=1
+        WHERE p.status='active' AND c.category_id=4
+        ORDER BY RAND()
+    """)
+    products=cursor.fetchall()
+    cursor.close()
+    
+    if not products:
+        return render_template('404.htm'), 404
+    
+    return render_template('all_earbuds.htm',products=products)

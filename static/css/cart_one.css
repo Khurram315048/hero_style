@@ -166,8 +166,8 @@
 /* ─── Remove Button ──────────────────────────────────────── */
 .remove-btn {
   background: none;
-  border: 1.5px solid #e0d0d0;
-  color: #a05050;
+  border: 1.5px solid var(--border); 
+  color: var(--text-mid);
   padding: 7px 14px;
   border-radius: var(--radius);
   font-family: 'DM Sans', sans-serif;
@@ -179,9 +179,9 @@
 }
 
 .remove-btn:hover {
-  background: #a05050;
-  color: var(--white);
-  border-color: #a05050;
+   background: var(--navy);               
+   color: var(--white);                  
+   border-color: var(--navy);
 }
 
 /* ─── Empty Cart State ───────────────────────────────────── */
