@@ -53,7 +53,8 @@
                   data-id="{{ product.product_id }}"
                   data-title="{{ product.title }}"
                   data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
-                  data-price="{{ product.sale_price if product.sale_price else product.base_price }}">
+                  data-price="{{ product.sale_price if product.sale_price else product.base_price }}"
+                  style="display: block;">
             +Add to Cart
           </button>
               <button  type="button" class="btn btn-buy-now" onclick="buyNow()">

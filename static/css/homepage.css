@@ -684,7 +684,10 @@ ul { list-style: none; }
   transform: translateY(100%);
   transition: var(--transition);
 }
-.product-card:hover .card-quick-add { transform: translateY(0); }
+.product-card:hover 
+.card-quick-add {
+  transform: translateY(0);
+   }
 .card-quick-add:hover { background: var(--gold); color: var(--navy); }
 product-card:hover .card-quick-add { 
   transform: translateY(0);           /* slides up on hover */
