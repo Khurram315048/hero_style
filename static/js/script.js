@@ -1,26 +1,30 @@
 
-  function addToCart(btn){
-    let id=btn.dataset.id;
-    let title=btn.dataset.title;
-    let price=parseInt(btn.dataset.price);
-    let image=btn.dataset.img;
-    if (image && !image.startsWith('/') && !image.startsWith('http')){
-            image = '/static/' + image;
-            }
-
-    let cart=JSON.parse(localStorage.getItem("cart")) || [];
-    let existing=cart.find(item => item.id == id);
-
-    if(existing){
-      existing.quantity += 1;
-    } 
-    else{
-      cart.push({id,title,price,image,quantity: 1});
-    }
-
-    localStorage.setItem("cart",JSON.stringify(cart));
-    updateCartCount();
+function addToCartWithQuantity(btn){
+  let id=btn.dataset.id;
+  let title=btn.dataset.title;
+  let basePrice=parseInt(btn.dataset.price);
+  let quantity=parseInt(document.getElementById('quantity').value) || 1;  
+  let price=basePrice;  
+  let image=btn.dataset.img;
+  
+  if(image && !image.startsWith('/') && !image.startsWith('http')){
+    image='/static/' + image;
   }
+
+  let cart=JSON.parse(localStorage.getItem("cart")) || [];
+  let existing=cart.find(item => item.id == id);
+
+  if(existing){
+    existing.quantity += quantity;  
+  } 
+  else{
+    cart.push({id,title,price,image,quantity});  
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartCount();
+  alert('Added to cart!');  
+}
 
   function updateCartCount(){
     let cart=JSON.parse(localStorage.getItem("cart")) || [];

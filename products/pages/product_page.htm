@@ -49,7 +49,7 @@
             </div>
 
             <div class="actions">
-              <button class="btn btn-add-cart"  onclick="event.stopPropagation(); addToCart(this)"
+              <button class="btn btn-add-cart"  onclick="event.stopPropagation(); addToCartWithQuantity(this)"
                   data-id="{{ product.product_id }}"
                   data-title="{{ product.title }}"
                   data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
@@ -161,55 +161,49 @@
     </main>
   {% endif %}
 
-
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
   <script>
-    function updateQuantity(delta) {
-      const qtyInput = document.getElementById('quantity');
-      const v = parseInt(qtyInput.value, 10);
-      const next = Math.max(1, Math.min(10, v + delta));
-      qtyInput.value = next;
+    function updateQuantity(delta){
+      const qtyInput=document.getElementById('quantity');
+      const v=parseInt(qtyInput.value, 10);
+      const next=Math.max(1, Math.min(10, v + delta));
+      qtyInput.value=next;
     }
 
-    function showTab(tab) {
+    function showTab(tab){
       document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
       document.getElementById(tab).classList.add('active');
       event.target.classList.add('active');
     }
  
-    function updateQuantity(delta) {
-      const qtyInput = document.getElementById('quantity');
-      const v = parseInt(qtyInput.value, 10);
-      const next = Math.max(1, Math.min(10, v + delta));
-      qtyInput.value = next;
+    function updateQuantity(delta){
+      const qtyInput=document.getElementById('quantity');
+      const v=parseInt(qtyInput.value, 10);
+      const next=Math.max(1, Math.min(10, v + delta));
+      qtyInput.value=next;
     }
 
-    function showTab(tab) {
+    function showTab(tab){
       document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
       document.getElementById(tab).classList.add('active');
       event.target.classList.add('active');
     }
 
-    // ADD THIS NEW FUNCTION
-    function buyNow() {
-      // Get the product ID from the "Add to Cart" button's data attribute
-      const productId = document.querySelector('.btn-add-cart').dataset.id;
-      
-      // Get the selected quantity from the input field
-      const quantity = document.getElementById('quantity').value;
+    function buyNow(){
+      const productId=document.querySelector('.btn-add-cart').dataset.id;
+      const quantity=document.getElementById('quantity').value;
 
-      // Create a hidden form and submit it via POST.
-      // This is a simple way to send data and cause a page redirect.
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = `/orders/buy_now/${productId}`;
+      const form=document.createElement('form');
+      form.method='POST';
+      form.action=`/orders/buy_now/${productId}`;
 
-      const quantityInput = document.createElement('input');
-      quantityInput.type = 'hidden';
-      quantityInput.name = 'quantity';
-      quantityInput.value = quantity;
+      const quantityInput=document.createElement('input');
+      quantityInput.type='hidden';
+      quantityInput.name='quantity';
+      quantityInput.value=quantity;
       form.appendChild(quantityInput);
 
       document.body.appendChild(form);

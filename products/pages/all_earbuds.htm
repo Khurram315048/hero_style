@@ -104,7 +104,7 @@
         </button>
 
       
-        <button class="btn btn-add-cart"  onclick="event.stopPropagation(); addToCart(this)"
+        <button class="btn btn-add-cart"  onclick="event.stopPropagation(); addToCartWithQuantity(this)"
                   data-id="{{ product.product_id }}"
                   data-title="{{ product.title }}"
                   data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
