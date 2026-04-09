@@ -1,5 +1,8 @@
 /* ─── Dropdown Nav ───────────────────────────────────────── */
-
+.navbar {
+  position: relative;  /* ADD this — needed so overlay positions inside navbar */
+  overflow: visible;   /* ADD this — so dropdown menus aren't clipped */
+}
 /* Make parent li position relative so submenu anchors to it */
 .nav-links li {
   position: relative;

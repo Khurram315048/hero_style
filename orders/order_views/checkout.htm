@@ -266,17 +266,12 @@
     document.getElementById('cart-data-input').value=JSON.stringify(cart);
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    const flaskCart=window.FLASK_CART;
-    if(flaskCart && flaskCart.length > 0){
-      const normalized=flaskCart.map(item =>({
-        id:item.id,
-        title:item.title,
-        price:item.price,
-        quantity:item.quantity,
-        image:item.image_url || item.image || ''
-      }));
-      localStorage.setItem('cart', JSON.stringify(normalized));
+
+   document.addEventListener('DOMContentLoaded', () => {
+    
+    const flaskCart={{ flask_cart_json | safe }};
+    if(flaskCart&& flaskCart.length > 0){
+      localStorage.setItem('cart', JSON.stringify(flaskCart));
     }
     updateCartCount();
     buildSummary();

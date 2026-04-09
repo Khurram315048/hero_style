@@ -1,17 +1,6 @@
 
 {% include 'layouts/header.htm '%}
 
-<div class="search-overlay" id="searchOverlay">
-  <div class="search-box">
-    <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#8a8a8a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="text" placeholder="Search watches..." autofocus id="searchInput"/>
-    <button class="search-close" onclick="closeSearch()">✕</button>
-  </div>
-</div>
-
-
 
 <section class="hero">
   <div class="hero-inner">
@@ -99,13 +88,12 @@
         </button>
 
       
-       <button class="card-quick-add" onclick="event.stopPropagation(); addToCartWithQuantity(this)"
-            data-id="{{ product.product_id }}"
-            data-title="{{ product.title }}"
-            data-img="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
-            data-price="{{ product.sale_price if product.sale_price else product.base_price }}">
-            + Add to Cart
-      </button>
+       <form method="POST" action="/orders/cart/add" style="display:inline;">
+        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="redirect_to" value="{{ request.path }}">
+        <button type="submit" class="card-quick-add">+ Add to Cart</button>
+      </form>
       </div>
 
       <div class="card-body">
@@ -133,65 +121,7 @@
 
 </section>
 
-<script src="{{ url_for('static',filename='js/script.js') }}"></script>
-<script>
-  function openSearch() {
-    document.getElementById('searchOverlay').classList.add('active');
-    setTimeout(() => document.getElementById('searchInput').focus(), 100);
-  }
-  function closeSearch() {
-    document.getElementById('searchOverlay').classList.remove('active');
-  }
-  document.getElementById('searchOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeSearch();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeSearch();
-  });
 
-  const ticksEl = document.getElementById('ticks');
-  if (ticksEl) {
-    for (let i = 0; i < 60; i++) {
-      const t = document.createElement('div');
-      t.className = 'tick' + (i % 5 === 0 ? ' major' : '');
-      t.style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
-      ticksEl.appendChild(t);
-    }
-  }
 
- 
-  const hoursEl = document.getElementById('hours');
-  if (hoursEl) {
-    const nums = [12,1,2,3,4,5,6,7,8,9,10,11];
-    const r = 42;
-    nums.forEach((n, i) => {
-      const angle = (i * 30 - 90) * Math.PI / 180;
-      const x = 50 + r * Math.cos(angle);
-      const y = 50 + r * Math.sin(angle);
-      const el = document.createElement('div');
-      el.className = 'hour-num';
-      el.style.left = x + '%';
-      el.style.top  = y + '%';
-      el.textContent = n;
-      hoursEl.appendChild(el);
-    });
-  }
-
-  
-  function syncHands() {
-    const now = new Date();
-    const s = now.getSeconds();
-    const m = now.getMinutes() + s / 60;
-    const h = (now.getHours() % 12) + m / 60;
-    const sec = document.querySelector('.hand-second');
-    const min = document.querySelector('.hand-minute');
-    const hr  = document.querySelector('.hand-hour');
-    if (sec) sec.style.transform = `rotate(${s * 6}deg)`;
-    if (min) min.style.transform = `rotate(${m * 6}deg)`;
-    if (hr)  hr.style.transform  = `rotate(${h * 30}deg)`;
-  }
-  syncHands();
-  setInterval(syncHands, 1000);
-</script>
 
 {% include 'layouts/footer.htm' %}

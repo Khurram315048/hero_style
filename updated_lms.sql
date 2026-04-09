@@ -34,7 +34,7 @@ CREATE TABLE `cart_items` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,7 @@ CREATE TABLE `cart_items` (
 
 LOCK TABLES `cart_items` WRITE;
 /*!40000 ALTER TABLE `cart_items` DISABLE KEYS */;
-INSERT INTO `cart_items` VALUES (1,1,12,1,1699.00,'2026-03-30 10:12:09'),(2,2,13,1,11999.00,'2026-03-30 10:12:17'),(3,3,3,1,1299.00,'2026-03-30 11:08:27'),(4,4,1,1,11999.00,'2026-03-30 11:14:26');
+INSERT INTO `cart_items` VALUES (1,1,12,1,1699.00,'2026-03-30 10:12:09'),(2,2,13,1,11999.00,'2026-03-30 10:12:17'),(3,3,3,1,1299.00,'2026-03-30 11:08:27'),(4,4,1,1,11999.00,'2026-03-30 11:14:26'),(5,5,5,1,1099.00,'2026-04-09 13:13:03'),(6,5,9,1,22999.00,'2026-04-09 13:13:09'),(7,5,18,1,3999.00,'2026-04-09 13:13:16'),(8,6,8,1,33999.00,'2026-04-09 13:15:48'),(9,7,13,1,11999.00,'2026-04-09 13:17:42'),(12,9,17,1,5999.00,'2026-04-09 13:44:27');
 /*!40000 ALTER TABLE `cart_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -63,7 +63,7 @@ CREATE TABLE `carts` (
   PRIMARY KEY (`cart_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES (1,NULL,'8d36d5f6-6c65-4306-aee6-5a99f7293817','2026-03-30 10:12:09','2026-03-30 10:12:09'),(2,NULL,'641d2a65-5929-4df4-b7b0-0025c70244cd','2026-03-30 10:12:17','2026-03-30 10:12:17'),(3,NULL,NULL,'2026-03-30 11:08:27','2026-03-30 11:08:27'),(4,NULL,NULL,'2026-03-30 11:14:26','2026-03-30 11:14:26');
+INSERT INTO `carts` VALUES (1,NULL,'8d36d5f6-6c65-4306-aee6-5a99f7293817','2026-03-30 10:12:09','2026-03-30 10:12:09'),(2,NULL,'641d2a65-5929-4df4-b7b0-0025c70244cd','2026-03-30 10:12:17','2026-03-30 10:12:17'),(3,NULL,NULL,'2026-03-30 11:08:27','2026-03-30 11:08:27'),(4,NULL,NULL,'2026-03-30 11:14:26','2026-03-30 11:14:26'),(5,NULL,'4f47e5cc-7bee-4af1-b4ca-9c6f266b46c7','2026-04-09 13:13:03','2026-04-09 13:13:03'),(6,NULL,'f3985dfc-a9b7-40cd-a98a-cc0d721913c3','2026-04-09 13:15:48','2026-04-09 13:15:48'),(7,NULL,'52545bd2-0194-455e-8206-a792f5d79307','2026-04-09 13:17:42','2026-04-09 13:17:42'),(9,NULL,'1e1bb28b-ad21-4e02-8d70-b26b323023f1','2026-04-09 13:44:26','2026-04-09 13:44:26');
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -159,7 +159,7 @@ CREATE TABLE `order_details` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -168,7 +168,7 @@ CREATE TABLE `order_details` (
 
 LOCK TABLES `order_details` WRITE;
 /*!40000 ALTER TABLE `order_details` DISABLE KEYS */;
-INSERT INTO `order_details` VALUES (1,1,4,1149.00,1,0.00,1149.00,'2026-03-31 06:38:36'),(2,2,4,1149.00,1,0.00,1149.00,'2026-03-31 06:53:16'),(3,3,14,1099.00,1,0.00,1099.00,'2026-03-31 06:54:35'),(4,3,11,2599.00,1,0.00,2599.00,'2026-03-31 06:54:35'),(5,4,11,2599.00,2,0.00,5198.00,'2026-03-31 12:01:26'),(6,4,7,31999.00,1,0.00,31999.00,'2026-03-31 12:01:26'),(7,5,2,1199.00,1,0.00,1199.00,'2026-04-02 13:01:25'),(8,6,10,33999.00,1,0.00,33999.00,'2026-04-02 14:08:12');
+INSERT INTO `order_details` VALUES (1,1,4,1149.00,1,0.00,1149.00,'2026-03-31 06:38:36'),(2,2,4,1149.00,1,0.00,1149.00,'2026-03-31 06:53:16'),(3,3,14,1099.00,1,0.00,1099.00,'2026-03-31 06:54:35'),(4,3,11,2599.00,1,0.00,2599.00,'2026-03-31 06:54:35'),(5,4,11,2599.00,2,0.00,5198.00,'2026-03-31 12:01:26'),(6,4,7,31999.00,1,0.00,31999.00,'2026-03-31 12:01:26'),(7,5,2,1199.00,1,0.00,1199.00,'2026-04-02 13:01:25'),(8,6,10,33999.00,1,0.00,33999.00,'2026-04-02 14:08:12'),(9,7,1,11999.00,2,0.00,23998.00,'2026-04-09 13:24:06'),(10,7,7,31999.00,1,0.00,31999.00,'2026-04-09 13:24:06');
 /*!40000 ALTER TABLE `order_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -191,7 +191,7 @@ CREATE TABLE `order_payments` (
   PRIMARY KEY (`payment_id`),
   KEY `order_id` (`order_id`),
   CONSTRAINT `order_payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -200,7 +200,7 @@ CREATE TABLE `order_payments` (
 
 LOCK TABLES `order_payments` WRITE;
 /*!40000 ALTER TABLE `order_payments` DISABLE KEYS */;
-INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1399.00,'pending',NULL,'2026-03-31 06:38:36'),(2,2,'JazzCash',NULL,1399.00,'pending',NULL,'2026-03-31 06:53:16'),(3,3,'EasyPaisa',NULL,3948.00,'pending',NULL,'2026-03-31 06:54:35'),(4,4,'COD',NULL,37197.00,'pending',NULL,'2026-03-31 12:01:26'),(5,5,'bank_transfer',NULL,1449.00,'pending',NULL,'2026-04-02 13:01:26'),(6,6,'JazzCash',NULL,33999.00,'pending',NULL,'2026-04-02 14:08:12');
+INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1399.00,'pending',NULL,'2026-03-31 06:38:36'),(2,2,'JazzCash',NULL,1399.00,'pending',NULL,'2026-03-31 06:53:16'),(3,3,'EasyPaisa',NULL,3948.00,'pending',NULL,'2026-03-31 06:54:35'),(4,4,'COD',NULL,37197.00,'pending',NULL,'2026-03-31 12:01:26'),(5,5,'bank_transfer',NULL,1449.00,'pending',NULL,'2026-04-02 13:01:26'),(6,6,'JazzCash',NULL,33999.00,'pending',NULL,'2026-04-02 14:08:12'),(7,7,'EasyPaisa',NULL,55997.00,'pending',NULL,'2026-04-09 13:24:06');
 /*!40000 ALTER TABLE `order_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +230,7 @@ CREATE TABLE `orders` (
   UNIQUE KEY `order_number` (`order_number`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +239,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,NULL,'HW-A3B93B94','pending',1149.00,0.00,NULL,250.00,1399.00,'Muhammad Khurram, 03150484043, Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500',NULL,'2026-03-31 06:38:36','2026-03-31 06:38:36',0),(2,1,'HW-A07AC338','pending',1149.00,0.00,NULL,250.00,1399.00,'Muhammad Khurram, 03150484043, Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500',NULL,'2026-03-31 06:53:16','2026-03-31 06:53:16',0),(3,3,'HW-09026DC9','pending',3698.00,0.00,NULL,250.00,3948.00,'khurram saleem, 03150484041, Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt, Multan 6500',NULL,'2026-03-31 06:54:35','2026-03-31 06:54:35',0),(4,4,'HW-86FB80AB','pending',37197.00,0.00,NULL,0.00,37197.00,'Umair Khurram,03150494042,Fiasal Park Multan,Multan 6500',NULL,'2026-03-31 12:01:26','2026-03-31 12:01:26',0),(5,5,'HW-BADAFC21','pending',1199.00,0.00,NULL,250.00,0.00,'1449','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-02 13:01:25','2026-04-02 13:01:25',0),(6,6,'HW-5084486C','pending',33999.00,0.00,NULL,0.00,33999.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-02 14:08:12','2026-04-02 14:08:12',0);
+INSERT INTO `orders` VALUES (1,NULL,'HW-A3B93B94','pending',1149.00,0.00,NULL,250.00,1399.00,'Muhammad Khurram, 03150484043, Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500',NULL,'2026-03-31 06:38:36','2026-03-31 06:38:36',0),(2,1,'HW-A07AC338','pending',1149.00,0.00,NULL,250.00,1399.00,'Muhammad Khurram, 03150484043, Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500',NULL,'2026-03-31 06:53:16','2026-03-31 06:53:16',0),(3,3,'HW-09026DC9','pending',3698.00,0.00,NULL,250.00,3948.00,'khurram saleem, 03150484041, Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt, Multan 6500',NULL,'2026-03-31 06:54:35','2026-03-31 06:54:35',0),(4,4,'HW-86FB80AB','pending',37197.00,0.00,NULL,0.00,37197.00,'Umair Khurram,03150494042,Fiasal Park Multan,Multan 6500',NULL,'2026-03-31 12:01:26','2026-03-31 12:01:26',0),(5,5,'HW-BADAFC21','pending',1199.00,0.00,NULL,250.00,0.00,'1449','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-02 13:01:25','2026-04-02 13:01:25',0),(6,6,'HW-5084486C','pending',33999.00,0.00,NULL,0.00,33999.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-02 14:08:12','2026-04-02 14:08:12',0),(7,7,'HW-F5C3CA74','pending',55997.00,0.00,NULL,0.00,55997.00,'Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan, Multan 6500','2026-04-09 13:24:06','2026-04-09 13:24:06',0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -404,7 +404,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   KEY `role_id` (`role_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -413,7 +413,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,2,'Muhammad','Khurram','saleemkhurram420@gmail.com','03150484043','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-03-31 06:53:16','2026-03-31 06:53:16'),(3,2,'khurram','saleem','cashcentral123@gmail.com','03150484041','guest','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt','Multan','Pakistan',1,NULL,'2026-03-31 06:54:35','2026-03-31 06:54:35'),(4,2,'Umair','Khurram','central123@gmail.com','03150494042','guest','Fiasal Park Multan','Multan','Pakistan',1,NULL,'2026-03-31 12:01:26','2026-03-31 12:01:26'),(5,2,'testing','buy now','testing123@gmail.com','03150484022','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-04-02 13:01:25','2026-04-02 13:01:25'),(6,2,'testing','check','testcentral@gmail.com','03150484012','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-04-02 14:08:11','2026-04-02 14:08:11');
+INSERT INTO `users` VALUES (1,2,'Muhammad','Khurram','saleemkhurram420@gmail.com','03150484043','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-03-31 06:53:16','2026-03-31 06:53:16'),(3,2,'khurram','saleem','cashcentral123@gmail.com','03150484041','guest','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt','Multan','Pakistan',1,NULL,'2026-03-31 06:54:35','2026-03-31 06:54:35'),(4,2,'Umair','Khurram','central123@gmail.com','03150494042','guest','Fiasal Park Multan','Multan','Pakistan',1,NULL,'2026-03-31 12:01:26','2026-03-31 12:01:26'),(5,2,'testing','buy now','testing123@gmail.com','03150484022','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-04-02 13:01:25','2026-04-02 13:01:25'),(6,2,'testing','check','testcentral@gmail.com','03150484012','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-04-02 14:08:11','2026-04-02 14:08:11'),(7,2,'testing','back cart','central@gmail.com','03150424041','guest','Gulshan Iqbal Colony Qasim Bela Multan','Multan','Pakistan',1,NULL,'2026-04-09 13:24:05','2026-04-09 13:24:05');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -462,4 +462,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-06 21:38:22
+-- Dump completed on 2026-04-09 18:45:04

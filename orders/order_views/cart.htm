@@ -1,10 +1,9 @@
-
-
 {% include 'layouts/header.htm' %}
 
 <div class="cart-page">
   <h1>Shopping Cart</h1>
 
+  {% if cart_items %}
   <table class="cart-table">
     <thead>
       <tr>
@@ -15,21 +14,55 @@
         <th>Action</th>
       </tr>
     </thead>
-    <tbody id="cart-body">
+    <tbody>
+      {% for item in cart_items %}
+      <tr>
+        <td class="cart-product">
+          <img src="{{ item.image_url }}" class="cart-img" width="80" height="80"
+               onerror="this.src='/static/uploads/default.jpg'">
+          <span>{{ item.title }}</span>
+        </td>
+        <td>PKR {{ "{:,.0f}".format(item.price) }}</td>
+        <td>
+          <div class="qty-box">
+            <form method="POST" action="/orders/cart/update" style="display:inline;">
+              <input type="hidden" name="product_id" value="{{ item.product_id }}">
+              <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+              <button type="submit">-</button>
+            </form>
+            <span>{{ item.quantity }}</span>
+            <form method="POST" action="/orders/cart/update" style="display:inline;">
+              <input type="hidden" name="product_id" value="{{ item.product_id }}">
+              <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+              <button type="submit">+</button>
+            </form>
+          </div>
+        </td>
+        <td><strong>PKR {{ "{:,.0f}".format(item.price * item.quantity) }}</strong></td>
+        <td>
+          <form method="POST" action="/orders/cart/remove">
+            <input type="hidden" name="product_id" value="{{ item.product_id }}">
+            <button type="submit" class="remove-btn">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 
   <div class="cart-summary">
     <h3>Order Summary</h3>
-    <p class="grand-total">Grand Total: <strong id="grand-total">PKR 0</strong></p>
-    <form id="checkout-form" method="POST" action="/orders/checkout">
-    <input type="hidden" name="cart_data" id="cart-data-input"/>
-    <button type="submit" class="btn" onclick="submitCheckout(event)">
-      Proceed to Checkout
-    </button>
-</form>
+    <p class="grand-total">Grand Total: <strong>PKR {{ "{:,.0f}".format(grand_total) }}</strong></p>
+    <a href="/orders/checkout" class="btn">Proceed to Checkout</a>
   </div>
-</div>
-<script src="{{ url_for('static',filename='js/script.js') }}"></script>
-{% include 'layouts/footer.htm' %}
 
+  {% else %}
+  <div style="text-align:center; padding:80px 20px; color:#8a8a8a;">
+    <p style="font-size:18px; margin-bottom:20px;">Your cart is empty.</p>
+    <a href="/" class="btn-outline">Continue Shopping →</a>
+  </div>
+  {% endif %}
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% include 'layouts/footer.htm' %}
