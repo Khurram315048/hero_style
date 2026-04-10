@@ -55,9 +55,10 @@
               <input type="hidden" name="quantity" id="qty-hidden" value="1">
               <button type="submit" class="btn btn-add-cart">+ Add to Cart</button>
             </form>
-              <button  type="button" class="btn btn-buy-now" onclick="buyNow()">
-                <i class="fas fa-bolt"></i> Buy Now
-              </button>
+             <form method="POST" action="{{ url_for('orders.buy_now', product_id=product.product_id) }}" style="display:inline;">
+              <input type="hidden" name="quantity" id="qty-hidden-buy" value="1">
+              <button type="submit" class="btn btn-buy-now">Buy Now</button>
+            </form>
             </div>
           </div>
 
@@ -161,14 +162,16 @@
   {% endif %}
 
 <script>
-  function updateQuantity(delta) {
-  const qtyInput = document.getElementById('quantity');
-  const qtyHidden = document.getElementById('qty-hidden');
-  if (!qtyInput) return;
-  const next = Math.max(1, Math.min(10, parseInt(qtyInput.value) + delta));
-  qtyInput.value = next;
-  if (qtyHidden) qtyHidden.value = next;
-}
+  function updateQuantity(delta){
+    const qtyInput=document.getElementById('quantity');
+    const qtyHidden=document.getElementById('qty-hidden');
+    const qtyHiddenB=document.getElementById('qty-hidden-buy');
+    if(!qtyInput) return;
+    const next=Math.max(1,Math.min(10,parseInt(qtyInput.value) + delta));
+    qtyInput.value=next;
+    if(qtyHidden)  qtyHidden.value=next;
+    if(qtyHiddenB) qtyHiddenB.value=next;
+  }
 </script>
 
 

@@ -89,6 +89,12 @@ def support():
     return render_template('support.htm')
 
 
+@app.context_processor
+def inject_cart_count():
+    from orders.order_routes import get_cart_count
+    return dict(cart_count=get_cart_count())
+
+
 
 if __name__ == '__main__':
     app.run(port=50001, debug=True)

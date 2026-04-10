@@ -15,7 +15,7 @@
 <body>
 <nav class="navbar">
 
-  <input type="hidden" id="server-cart-count" value="{{ session.get('cart', {})|length }}">
+  <input type="hidden" id="server-cart-count" value="{{ cart_count | default(0) }}">
   <a href="/" class="navbar-brand">
     <div class="brand-logo">HW</div>
     <span class="brand-name">Hero <span>Style</span></span>
@@ -44,7 +44,13 @@
   
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
  
-
+{% if session.get('toast') %}
+<script>
+  document.addEventListener('DOMContentLoaded',function(){
+    showCartToast("{{ session.pop('toast') }}");
+  });
+</script>
+{% endif %}
 </nav>
 </body>
 </html>

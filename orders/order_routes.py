@@ -36,7 +36,7 @@ def get_cart_items():
     
     cursor.execute("""
         SELECT ci.product_id,ci.quantity,ci.price_at_add  AS price,
-            p.title,,pi.image_url,pd.short_description
+            p.title,pi.image_url,pd.short_description
         FROM cart_items ci
         JOIN products p  ON p.product_id=ci.product_id
         JOIN product_images pi ON pi.product_id=ci.product_id
@@ -66,6 +66,19 @@ def get_cart_items():
     return items,grand_total
 
 
+def get_cart_count():
+    cursor=mysql.connection.cursor(DictCursor)
+    cart_id=session.get('cart_id')
+    if not cart_id:
+        return 0
+   
+    cursor.execute(
+        "SELECT COALESCE(SUM(quantity),0) AS total FROM cart_items WHERE cart_id=%s",
+        (cart_id,))
+    row=cursor.fetchone()
+    cursor.close()
+    return int(row['total']) if row else 0
+
 
 @order_bp.route('/cart/add',methods=['POST'])
 def add_to_cart():
@@ -81,7 +94,7 @@ def add_to_cart():
     cart_id=get_or_create_cart_id()
 
     
-    cursor.execute("SELECT sale_price,base_price FROM products WHERE product_id=%s",(product_id,))
+    cursor.execute("SELECT title,sale_price,base_price FROM products WHERE product_id=%s",(product_id,))
     product=cursor.fetchone()
     if not product:
         cursor.close()
@@ -96,6 +109,8 @@ def add_to_cart():
     """,(cart_id,product_id,quantity,price))
     mysql.connection.commit()
     cursor.close()
+    session['toast']=f"Added to cart: {product['title']}"
+    session.modified=True
 
     return redirect(redirect_to)
 
@@ -283,7 +298,15 @@ def buy_now(product_id):
                   else product['base_price'])
 
     
-    session.pop('cart_id', None)   
+    old_cart_id=session.pop('cart_id', None)   
+    if old_cart_id:
+        c=mysql.connection.cursor(DictCursor)
+        c.execute("DELETE FROM cart_items WHERE cart_id=%s",(old_cart_id,))
+        c.execute("DELETE FROM carts WHERE cart_id=%s",(old_cart_id,))
+        mysql.connection.commit()
+        c.close()
+
+    session.modified=True
     cart_id=get_or_create_cart_id()
 
     cursor=mysql.connection.cursor(DictCursor)
@@ -291,7 +314,7 @@ def buy_now(product_id):
         INSERT INTO cart_items(cart_id,product_id,quantity,price_at_add)
         VALUES (%s,%s,%s,%s)
         ON DUPLICATE KEY UPDATE quantity=VALUES(quantity)
-    """, (cart_id,product_id,quantity,price))
+    """,(cart_id,product_id,quantity,price))
     mysql.connection.commit()
     cursor.close()
 
