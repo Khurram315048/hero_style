@@ -319,3 +319,27 @@ def buy_now(product_id):
     cursor.close()
 
     return redirect(url_for('orders.checkout'))
+
+
+@order_bp.route('/wishlist/add',methods=['POST'])
+def add_to_list():
+    cursor=mysql.connection.cursor(DictCursor)
+    product_id=request.form.get('product_id', '')
+    redirect_to=request.form.get('redirect_to', '/')
+
+    if not product_id:
+        return redirect(redirect_to)
+
+    if 'session_id' not in session:
+        session['session_id']=str(uuid.uuid4())
+        session.modified=True
+
+    session_id=session['session_id']
+    cursor.execute("""
+        INSERT IGNORE INTO wishlist(session_id,product_id)VALUES(%s,%s)""",(session_id,int(product_id)))
+    mysql.connection.commit()
+    cursor.close()
+
+    session['toast']='Added to wishlist!'
+    session.modified=True
+    return redirect(redirect_to)  

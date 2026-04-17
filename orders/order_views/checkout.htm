@@ -189,25 +189,25 @@
 </script>
 
 <script>
-  const SHIPPING_THRESHOLD = 10000;
-  const SHIPPING_COST = 250;
-  let discountAmount = 0;
+  const SHIPPING_THRESHOLD=10000;
+  const SHIPPING_COST=250;
+  let discountAmount=0;
 
-  const SERVER_CART     = window.__SERVER_DATA__.cart;
-  const SERVER_SUBTOTAL = window.__SERVER_DATA__.subtotal;
-  const SERVER_SHIPPING = window.__SERVER_DATA__.shipping;
-  const SERVER_TOTAL    = window.__SERVER_DATA__.total;
+  const SERVER_CART=window.__SERVER_DATA__.cart;
+  const SERVER_SUBTOTAL=window.__SERVER_DATA__.subtotal;
+  const SERVER_SHIPPING=window.__SERVER_DATA__.shipping;
+  const SERVER_TOTAL=window.__SERVER_DATA__.total;
 
-  function buildSummary() {
-    const container = document.getElementById('summary-items');
-    if (!SERVER_CART || SERVER_CART.length === 0) {
-      container.innerHTML = '<p style="color:var(--text-light)">Cart is empty. <a href="/" style="color:var(--gold)">Go back</a></p>';
+  function buildSummary(){
+    const container=document.getElementById('summary-items');
+    if(!SERVER_CART || SERVER_CART.length===0){
+      container.innerHTML='<p style="color:var(--text-light)">Cart is empty. <a href="/" style="color:var(--gold)">Go back</a></p>';
       return;
     }
 
-    container.innerHTML = '';
-    SERVER_CART.forEach(item => {
-      const itemTotal = item.price * item.quantity;
+    container.innerHTML='';
+    SERVER_CART.forEach(item =>{
+      const itemTotal=item.price * item.quantity;
       container.innerHTML += `
         <div class="summary-item">
           <img src="${item.image_url}" alt="${item.title}" class="summary-item-img"
@@ -223,37 +223,38 @@
     updateTotals(SERVER_SUBTOTAL);
   }
 
-  function updateTotals(subtotal) {
-    const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-    const total    = subtotal + shipping - discountAmount;
+  function updateTotals(subtotal){
+    const shipping=subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    const total=subtotal + shipping - discountAmount;
 
-    document.getElementById('summary-subtotal').textContent = 'PKR ' + subtotal.toLocaleString();
-    const shippingEl = document.getElementById('summary-shipping');
-    shippingEl.textContent = shipping === 0 ? 'Free' : 'PKR ' + shipping.toLocaleString();
-    shippingEl.className   = shipping === 0 ? 'free-tag' : '';
-    document.getElementById('summary-total').textContent = 'PKR ' + total.toLocaleString();
+    document.getElementById('summary-subtotal').textContent='PKR ' + subtotal.toLocaleString();
+    const shippingEl=document.getElementById('summary-shipping');
+    shippingEl.textContent=shipping === 0 ? 'Free' : 'PKR ' + shipping.toLocaleString();
+    shippingEl.className=shipping === 0 ? 'free-tag' : '';
+    document.getElementById('summary-total').textContent='PKR ' + total.toLocaleString();
 
-    document.getElementById('input-subtotal').value = subtotal;
-    document.getElementById('input-total').value    = total;
-    document.getElementById('input-shipping').value = shipping;
-    document.getElementById('input-discount').value = discountAmount;
+    document.getElementById('input-subtotal').value=subtotal;
+    document.getElementById('input-total').value=total;
+    document.getElementById('input-shipping').value=shipping;
+    document.getElementById('input-discount').value=discountAmount;
   }
 
-  function applyPromo() {
-    const code = document.getElementById('promo-input').value.trim().toUpperCase();
-    if (code === 'HERO10') {
-      discountAmount = Math.round(SERVER_SUBTOTAL * 0.10);
-      document.getElementById('discount-row').style.display = 'flex';
-      document.getElementById('summary-discount').textContent = '— PKR ' + discountAmount.toLocaleString();
+  function applyPromo(){
+    const code=document.getElementById('promo-input').value.trim().toUpperCase();
+    if(code=== 'HERO10'){
+      discountAmount=Math.round(SERVER_SUBTOTAL * 0.10);
+      document.getElementById('discount-row').style.display='flex';
+      document.getElementById('summary-discount').textContent='— PKR ' + discountAmount.toLocaleString();
       updateTotals(SERVER_SUBTOTAL);
       alert('Promo applied! 10% off.');
-    } else if (code) {
+    } 
+    else if(code){
       alert('Invalid promo code.');
     }
   }
 
-  function prepareSubmit(e) {
-    if (!SERVER_CART || SERVER_CART.length === 0) {
+  function prepareSubmit(e){
+    if(!SERVER_CART || SERVER_CART.length === 0){
       e.preventDefault();
       alert('Your cart is empty.');
     }
