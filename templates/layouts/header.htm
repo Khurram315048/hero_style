@@ -11,13 +11,17 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/product_page.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/hero_section.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_options.css') }}">
 </head>
 <body>
 <nav class="navbar">
 
   <input type="hidden" id="server-cart-count" value="{{ cart_count | default(0) }}">
   <a href="/" class="navbar-brand">
-    <div class="brand-logo">HW</div>
+    <div class="brand-logo">HS</div>
     <span class="brand-name">Hero <span>Style</span></span>
   </a>
 
@@ -35,6 +39,13 @@
   </ul>
 
   <div class="nav-icons">
+          
+      <a href="/users/user_profile" class="nav-icon-btn" title="User Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </a>
     
     <a href="/orders/cart" class="nav-icon-btn" title="Cart">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>

@@ -1,0 +1,49 @@
+{% include 'layouts/header.htm' %}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        {% include 'layouts/user_options.htm' %}
+
+        <main class="profile-content">
+            {% if user_exist %}
+            <div class="profile-header">
+                <h1 class="section-title">Welcome, {{user_exist.first_name}} {{user_exist.last_name}} </h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Orders</span>
+                        <span class="stat-value">{{user_exist.total_orders}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="recent-order-box">
+                <h2 class="section-subtitle">Latest Order: HW-123</h2>
+                
+                <div class="order-stepper dashboard-stepper">
+                    <div class="step completed">
+                        <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <span>Placed</span>
+                    </div>
+                    <div class="step active">
+                        <div class="step-circle"></div>
+                        <span>Processing</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle"></div>
+                        <span>Shipped</span>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle"></div>
+                        <span>Delivered</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('users.user_orders') }}" class="auth-link">View Details →</a>
+            </section>
+            {% else %}
+                <p>No recent orders found.</p>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+{% include 'layouts/footer.htm' %}

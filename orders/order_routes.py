@@ -14,7 +14,6 @@ def get_or_create_cart_id():
         return cart_id
 
     session_id=str(uuid.uuid4())
-    
     cursor.execute(
         "INSERT INTO carts(session_id) VALUES(%s)",(session_id,)
     )
@@ -330,16 +329,24 @@ def add_to_list():
     if not product_id:
         return redirect(redirect_to)
 
-    if 'session_id' not in session:
-        session['session_id']=str(uuid.uuid4())
+    if 'user_id' not in session:
+        session['toast']='Please Login to add in the wishlist!'
+        return redirect(url_for('users.user_login'))
+
+
+    user_id=session['user_id']
+    cursor.execute("SELECT * FROM wishlist WHERE user_id=%s AND product_id=%s",(user_id,product_id))
+    already_exists=cursor.fetchone()
+    if not already_exists:
+        cursor.execute("""
+            INSERT IGNORE INTO wishlist(user_id,product_id)VALUES(%s,%s)""",(user_id,int(product_id)))
+        mysql.connection.commit()
+        cursor.close()
+
+        session['toast']='Added to wishlist!'
         session.modified=True
-
-    session_id=session['session_id']
-    cursor.execute("""
-        INSERT IGNORE INTO wishlist(session_id,product_id)VALUES(%s,%s)""",(session_id,int(product_id)))
-    mysql.connection.commit()
-    cursor.close()
-
-    session['toast']='Added to wishlist!'
-    session.modified=True
-    return redirect(redirect_to)  
+        return redirect(redirect_to)  
+    else:
+        session['toast']='Item Already in the wishlist!'
+        cursor.close()
+        return redirect(redirect_to)

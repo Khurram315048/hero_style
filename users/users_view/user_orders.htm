@@ -1,0 +1,38 @@
+{% include 'layouts/header.htm' %}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        {% include 'layouts/user_options.htm' %}
+
+        <main class="profile-content">
+            <h2 class="section-subtitle">Order History</h2>
+            
+            <div class="order-table-wrap">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Total Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.ordered_at.strftime('%d %b, %Y') }}</td>
+                            <td><span class="status-pill status-shipped">{{ order.status }}</span></td>
+                            <td>PKR{{order.total_amount }}</td>
+                            <td><a href="#" class="btn-table">View Details</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+{% include 'layouts/footer.htm' %}

@@ -8,7 +8,7 @@ function updateCartCount() {
   }
 }
 
-// ─── Toast notification ───────────────────────────────────
+
 function showCartToast(title) {
   let existing = document.getElementById('cart-toast');
   if (existing) existing.remove();
@@ -26,7 +26,7 @@ function showCartToast(title) {
     transition: opacity 0.3s ease;
     max-width: 280px;
   `;
-  toast.textContent = '✓  Added to cart: ' + title;
+  toast.textContent=title;
   document.body.appendChild(toast);
   setTimeout(() => toast.style.opacity = '1', 10);
   setTimeout(() => {
@@ -35,7 +35,7 @@ function showCartToast(title) {
   }, 2500);
 }
 
-// ─── Search: Open / Close ─────────────────────────────────
+
 function openSearch() {
   const overlay = document.getElementById('searchOverlay');
   if (overlay) {

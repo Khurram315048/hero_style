@@ -1,0 +1,80 @@
+{% include 'layouts/header.htm' %}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        
+        {% include 'layouts/user_options.htm' %}
+
+        <main class="profile-content">
+            <div class="profile-header-flex">
+                <h2 class="section-subtitle">My Wishlist</h2>
+                <span class="item-count">{{ products|length }} Items Saved</span>
+            </div>
+
+             <div class="products-grid">
+
+    {% for product in products %}
+    <div class="product-card" onclick="window.location='/products/{{ product.product_id }}'">
+
+    
+      <div class="card-image-wrap">
+          <img src="{{ product.image_url }}" alt="{{ product.alt_text or product.title }}">
+
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
+            <svg viewBox="0 0 80 80" style="width:60px;height:60px;opacity:0.2">
+              <circle cx="40" cy="40" r="32" stroke="#0d1b2a" stroke-width="2" fill="none"/>
+              <circle cx="40" cy="40" r="4" fill="#0d1b2a"/>
+              <line x1="40" y1="15" x2="40" y2="40" stroke="#0d1b2a" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="40" x2="55" y2="48" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+    
+        {% if product.sale_price and product.sale_price < product.base_price %}
+          <span class="card-badge badge-sale">Sale</span>
+        {% else %}
+          <span class="card-badge badge-new">New</span>
+        {% endif %}
+
+       <form method="POST" action="{{url_for('users.remove_from_the_list')}}">
+        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        <input type="hidden" name="redirect_to" value="{{ request.path }}">
+        <button class="card-wishlist active" title="Remove from Wishlist" onclick="event.stopPropagation()">
+         <svg viewBox="0 0 24 24" fill="var(--gold)" stroke="var(--gold)">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+        </button>
+      </form>
+
+      
+       <form method="POST" action="/orders/cart/add" style="display:inline;">
+          <input type="hidden" name="product_id" value="{{ product.product_id }}">
+          <input type="hidden" name="quantity" value="1">
+          <input type="hidden" name="redirect_to" value="{{ request.path }}">
+          <button type="submit" class="card-quick-add">+ Add to Cart</button>
+        </form>
+      </div>
+
+      <div class="card-body">
+        <p class="card-category">{{ product.category_name or 'Watch' }}</p>
+        <h3 class="card-title">{{ product.title }}</h3>
+        <p class="card-subtitle">{{ product.short_description or 'Premium timepiece' }}</p>
+        <div class="card-pricing">
+          <span class="price-current">
+            PKR {{ "{:,.0f}".format(product.sale_price if product.sale_price else product.base_price) }}
+          </span>
+          {% if product.sale_price and product.sale_price < product.base_price %}
+            <span class="price-original">PKR {{ "{:,.0f}".format(product.base_price) }}</span>
+            {% set discount = ((product.base_price - product.sale_price) / product.base_price * 100)|int %}
+            <span class="price-discount">{{ discount }}% off</span>
+          {% endif %}
+        </div>
+      </div>
+
+        </div>
+        {% endfor %}
+    </div>
+        </main>
+    </div>
+</div>
+
+{% include 'layouts/footer.htm' %}

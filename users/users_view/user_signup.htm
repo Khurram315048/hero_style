@@ -1,0 +1,47 @@
+{% include 'layouts/header.htm' %}
+
+
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-visual">
+            <div class="brand-logo">HS</div>
+            <h2>Join the Legacy</h2>
+            <p>Create an account to track your orders and enjoy premium services.</p>
+        </div>
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h1>Register</h1>
+                <p>Start your luxury journey today.</p>
+            </div>
+            <form method="POST" action="{{url_for('users.user_signup')}}">
+                <div class="auth-group">
+                    <label class="auth-label">First Name</label>
+                    <input type="text" name="first_name" class="auth-input" required placeholder="John">
+                </div>
+                <div class="auth-group">
+                    <label class="auth-label">Last Name</label>
+                    <input type="text" name="last_name" class="auth-input" required placeholder="Dove">
+                </div>
+                <div class="auth-group">
+                    <label class="auth-label">Email Address</label>
+                    <input type="email" name="email" class="auth-input" required placeholder="you@example.com">
+                </div>
+                <div class="auth-group">
+                    <label class="auth-label">Contact Number</label>
+                    <input type="text" name="phone_num" class="auth-input" required placeholder="031-----">
+                </div>
+
+                <div class="auth-group">
+                    <label class="auth-label">Password</label>
+                    <input type="password" name="password" class="auth-input" required placeholder="At least 8 characters">
+                </div>
+                <button type="submit" class="btn-auth">Create Account</button>
+            </form>
+            <p class="auth-footer">
+                Already have an account? <a href="{{url_for('users.user_login')}}" class="auth-link">Login Here</a>
+            </p>
+        </div>
+    </div>
+</section>
+
+{% include 'layouts/footer.htm' %}
