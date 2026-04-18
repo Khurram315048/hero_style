@@ -461,3 +461,40 @@
     width: 130px;
   }
 }
+
+/* Star Rating Input Logic */
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    font-size: 1.5rem;
+}
+.star-rating input { display: none; }
+.star-rating label { color: #ccc; cursor: pointer; transition: 0.2s; }
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label { color: #f39c12; }
+
+/* Review Card Styling */
+.review-card {
+    border-bottom: 1px solid #eee;
+    padding: 1.5rem 0;
+}
+.review-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.star-filled { color: #f39c12; }
+.review-form-card {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #ddd;
+}
+.review-text {
+    margin-top: 10px;
+    color: #444;
+    line-height: 1.5;
+}

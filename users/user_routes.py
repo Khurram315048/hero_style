@@ -211,7 +211,7 @@ def user_orders():
  
     cursor.execute('''
         SELECT * FROM orders
-        WHERE user_id=%s AND is_deleted=0
+        WHERE user_id=%s AND is_deleted=0          
         ORDER BY ordered_at DESC
     ''', (user_id,))
  
@@ -231,7 +231,7 @@ def order_details(order_id):
     cursor.execute('''
         SELECT * FROM orders
         WHERE order_id=%s AND user_id=%s AND is_deleted=0
-    ''', (order_id, user_id))
+    ''', (order_id,user_id))
     order=cursor.fetchone()
 
     if not order:
@@ -253,9 +253,139 @@ def order_details(order_id):
     cursor.execute('''
         SELECT payment_method,amount,status
         FROM order_payments
-        WHERE order_id=%s
+        WHERE order_id=%s 
     ''', (order_id,))
     payment=cursor.fetchone()
 
     cursor.close()
     return render_template('order_details.htm',order=order,order_items=order_items,payment=payment)
+
+
+@user_bp.route('/cancel_order/<int:order_id>',methods=['POST'])
+@login_required
+def cancel_order(order_id):
+    cursor=mysql.connection.cursor()
+    user_id=session.get('user_id')
+
+    cursor.execute('''SELECT status FROM orders 
+                      WHERE order_id=%s AND user_id=%s AND is_deleted=0''', 
+                   (order_id,user_id))
+    order=cursor.fetchone()
+
+    if not order:
+        cursor.close()
+        session['toast']='Order not found or already deleted!'
+        return redirect(url_for('users.user_orders'))
+
+    
+    current_status=order['status']
+    if current_status != 'pending':
+        cursor.close()
+        session['toast']=f'Cannot cancel an order that is already {current_status}!'
+        return redirect(url_for('users.user_orders'))
+
+    cursor.execute('''UPDATE orders 
+                      SET status='cancelled',updated_at=%s,is_cancelled=1,cancelled_at=%s 
+                      WHERE order_id=%s AND user_id=%s AND is_deleted=0''',
+                   (datetime.now(),datetime.now(),order_id,user_id))
+    mysql.connection.commit()
+    cursor.close()
+    
+    session['toast']='Order has been cancelled successfully!'
+    return redirect(url_for('users.user_orders'))
+
+
+@user_bp.route('/submit_review/<int:product_id>',methods=['GET','POST'])
+@login_required
+def submit_review(product_id):
+    cursor=mysql.connection.cursor()
+    user_id=session.get('user_id')
+    rating=request.form.get('rating')
+    comment=request.form.get('comment')
+
+    if not rating or not comment:
+        session['toast']='Please provide both a rating and a comment.'
+        return redirect(request.referrer)
+
+    
+    if not user_id:
+        session['toast']='Please Login to write review!'
+        return redirect(url_for('users.user_login'))
+    
+    cursor.execute('SELECT review_id FROM product_reviews WHERE product_id=%s',(product_id,))
+    review_id=cursor.fetchone()
+    if review_id:
+        session['toast']='Review Already Exist!'
+        return redirect(request.referrer)
+    
+    cursor.execute('''INSERT INTO product_reviews(product_id,user_id,rating,comment,status,created_at)
+                   VALUES(%s,%s,%s,%s,%s,%s)''',(product_id,user_id,rating,comment,'pending',datetime.now()))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Thank You! your review has been posted'
+    return redirect(request.referrer)
+
+
+
+@user_bp.route('/my_reviews',methods=['GET'])
+@login_required
+def my_reviews():
+    user_id=session.get('user_id')
+    if not user_id:
+        session['toast']='Please Login'
+        return redirect(request.referrer)
+
+    cursor=mysql.connection.cursor()
+    cursor.execute('''
+        SELECT r.review_id,r.user_id,r.rating,r.comment,r.created_at,r.status,
+               p.product_id,p.title,
+               pi.image_url
+        FROM product_reviews r
+        JOIN products p ON r.product_id=p.product_id
+        LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
+        WHERE r.user_id=%s AND r.is_deleted=0
+        ORDER BY r.created_at DESC
+    ''', (user_id,))
+    reviews=cursor.fetchall()
+    cursor.close()
+
+    return render_template('my_reviews.htm',reviews=reviews)
+
+
+
+@user_bp.route('/update_review/<int:review_id>',methods=['GET','POST'])
+@login_required
+def update_review(review_id):
+    cursor=mysql.connection.cursor()
+
+    rating=request.form.get('rating')
+    comment=request.form.get('comment')
+    user_id=session.get('user_id')
+    if not user_id:
+        session['toast']='Please login!'
+        return redirect(url_for('users.user_login'))
+    
+    cursor.execute('''UPDATE product_reviews SET rating=%s,comment=%s WHERE user_id=%s AND review_id=%s''',
+                   (rating,comment,user_id,review_id))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Thank You! For updating the product review'
+    return redirect(url_for('users.my_reviews'))
+
+
+@user_bp.route('/delete_review/<int:review_id>',methods=['GET','POST'])
+@login_required
+def delete_review(review_id):
+    cursor=mysql.connection.cursor()
+    user_id=session.get('user_id')
+    if not user_id:
+        session['toast']='Please login!'
+        return redirect(url_for('users.user_login'))
+    
+    cursor.execute('UPDATE product_reviews SET is_deleted=1 WHERE review_id=%s AND user_id=%s',(review_id,user_id))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Thank You! Review has been deleted successfully'
+    return redirect(url_for('users.my_reviews'))
+
+

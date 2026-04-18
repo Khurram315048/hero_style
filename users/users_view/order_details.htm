@@ -64,6 +64,9 @@
                             <p class="order-item-title">{{ item['title'] }}</p>
                             <p class="order-item-qty">Qty: {{ item['quantity'] }}</p>
                         </div>
+                        <form action="#" method="POST" onsubmit="return confirm('Are you sure?');">
+                            <button type="submit" class="btn btn-danger btn-sm">Return Item</button>
+                        </form>
                         <div class="order-item-price">
                             Rs. {{ "{:,.0f}".format(item['subtotal']) }}
                         </div>

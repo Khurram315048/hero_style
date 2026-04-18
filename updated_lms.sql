@@ -34,7 +34,7 @@ CREATE TABLE `cart_items` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `carts` (
   PRIMARY KEY (`cart_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -158,7 +158,7 @@ CREATE TABLE `order_details` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -167,7 +167,7 @@ CREATE TABLE `order_details` (
 
 LOCK TABLES `order_details` WRITE;
 /*!40000 ALTER TABLE `order_details` DISABLE KEYS */;
-INSERT INTO `order_details` VALUES (1,1,2,1199.00,1,50.00,1199.00,'2026-04-17 15:24:29'),(2,2,17,5999.00,1,50.00,5999.00,'2026-04-18 04:25:20'),(3,3,1,11999.00,1,50.00,11999.00,'2026-04-18 04:45:31');
+INSERT INTO `order_details` VALUES (1,1,2,1199.00,1,50.00,1199.00,'2026-04-17 15:24:29'),(2,2,17,5999.00,1,50.00,5999.00,'2026-04-18 04:25:20'),(3,3,1,11999.00,1,50.00,11999.00,'2026-04-18 04:45:31'),(4,4,3,1299.00,1,0.00,1299.00,'2026-04-18 07:44:08'),(5,4,20,2999.00,1,0.00,2999.00,'2026-04-18 07:44:08'),(6,4,15,53999.00,1,0.00,53999.00,'2026-04-18 07:44:08');
 /*!40000 ALTER TABLE `order_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -190,7 +190,7 @@ CREATE TABLE `order_payments` (
   PRIMARY KEY (`payment_id`),
   KEY `order_id` (`order_id`),
   CONSTRAINT `order_payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,8 +199,37 @@ CREATE TABLE `order_payments` (
 
 LOCK TABLES `order_payments` WRITE;
 /*!40000 ALTER TABLE `order_payments` DISABLE KEYS */;
-INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'pending',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'pending',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'pending',NULL,'2026-04-18 04:45:31');
+INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'pending',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'pending',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'pending',NULL,'2026-04-18 04:45:31'),(4,4,'bank_transfer',NULL,58297.00,'pending',NULL,'2026-04-18 07:44:08');
 /*!40000 ALTER TABLE `order_payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `order_returns`
+--
+
+DROP TABLE IF EXISTS `order_returns`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `order_returns` (
+  `return_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `reason` text NOT NULL,
+  `status` enum('requested','approved','rejected','received','refunded') DEFAULT 'requested',
+  `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `resolved_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`return_id`),
+  KEY `return_order_fk` (`order_id`),
+  CONSTRAINT `return_order_fk` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `order_returns`
+--
+
+LOCK TABLES `order_returns` WRITE;
+/*!40000 ALTER TABLE `order_returns` DISABLE KEYS */;
+/*!40000 ALTER TABLE `order_returns` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -224,12 +253,14 @@ CREATE TABLE `orders` (
   `billing_address` text DEFAULT NULL,
   `ordered_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `is_cancelled` int(11) NOT NULL DEFAULT 0,
+  `cancelled_at` timestamp NULL DEFAULT NULL,
   `is_deleted` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`order_id`),
   UNIQUE KEY `order_number` (`order_number`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -238,7 +269,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0),(2,2,'HW-EB002F12','pending',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 04:25:20',0),(3,2,'HW-28D13CFD','pending',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-18 04:45:31',0);
+INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0,NULL,0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 07:06:43',1,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-18 07:08:00',0,NULL,0),(4,2,'HW-EBED1858','pending',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-04-18 07:44:08',0,NULL,0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -313,6 +344,40 @@ LOCK TABLES `product_images` WRITE;
 /*!40000 ALTER TABLE `product_images` DISABLE KEYS */;
 INSERT INTO `product_images` VALUES (1,1,'/static/uploads/smart_watches/img1a.png','Smart Watch',1,800,800,'2026-03-28 06:14:48'),(2,2,'/static/uploads/smart_watches/img2a.png','smart black watch',1,800,700,'2026-03-28 06:18:49'),(3,3,'/static/uploads/smart_watches/img3a.png','smart blue watch',1,800,800,'2026-03-28 06:49:31'),(4,4,'/static/uploads/smart_watches/img4a.png','smart purple watch',1,800,800,'2026-03-28 06:50:35'),(5,5,'/static/uploads/smart_watches/img5a.png','smart silver watch',1,800,800,'2026-03-28 06:51:08'),(6,6,'/static/uploads/metal_watches/img1m.png','Silver Metal Watch',1,800,800,'2026-03-28 09:08:23'),(7,7,'/static/uploads/metal_watches/img2m.png','Silver Blue Metal Watch',1,800,800,'2026-03-28 09:15:55'),(8,8,'/static/uploads/metal_watches/img3m.png','Silver Black Metal Watch',1,800,800,'2026-03-28 09:15:55'),(9,9,'/static/uploads/metal_watches/img4m.png','Silver Vintage Metal Watch',1,800,800,'2026-03-28 09:15:55'),(10,10,'/static/uploads/metal_watches/img5m.png','Black Bold Metal Watch',1,700,700,'2026-03-28 09:19:37'),(11,11,'/static/uploads/leather_watches/img1l.png','Brown Leather Watch',1,800,800,'2026-03-28 09:15:55'),(12,12,'/static/uploads/leather_watches/img2l.png','Black Leather Watch',1,800,800,'2026-03-28 09:15:55'),(13,13,'/static/uploads/leather_watches/img3l.png','Gold Leather Watch',1,800,800,'2026-03-28 09:15:55'),(14,14,'/static/uploads/leather_watches/img4l.png','Brown Lean Watch',1,800,800,'2026-03-28 09:15:55'),(15,15,'/static/uploads/leather_watches/img5l.png','Bold Black Watch',1,800,800,'2026-03-28 09:15:55'),(16,16,'/static/uploads/ear_buds/img1.png','Hero Elite Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(17,17,'/static/uploads/ear_buds/img2.png','Hero Sound Max Earbuds',1,800,800,'2026-04-06 15:58:00'),(18,18,'/static/uploads/ear_buds/img3.png','Hero Fit Sport Earbuds',1,800,800,'2026-04-06 15:58:00'),(19,19,'/static/uploads/ear_buds/img4.png','Hero Studio Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(20,20,'/static/uploads/ear_buds/img5.png','Hero Lite Compact Earbuds',1,800,800,'2026-04-06 15:58:00');
 /*!40000 ALTER TABLE `product_images` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `product_reviews`
+--
+
+DROP TABLE IF EXISTS `product_reviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_reviews` (
+  `review_id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `rating` tinyint(4) NOT NULL CHECK (`rating` between 1 and 5),
+  `comment` text NOT NULL,
+  `status` enum('pending','approved','hidden') DEFAULT 'approved',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_deleted` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`review_id`),
+  KEY `fk_review_product` (`product_id`),
+  KEY `fk_review_user` (`user_id`),
+  CONSTRAINT `fk_review_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `product_reviews`
+--
+
+LOCK TABLES `product_reviews` WRITE;
+/*!40000 ALTER TABLE `product_reviews` DISABLE KEYS */;
+INSERT INTO `product_reviews` VALUES (1,2,2,4,'good product.','approved','2026-04-18 11:08:36',1),(2,12,2,5,'execellent product','pending','2026-04-18 11:41:30',0);
+/*!40000 ALTER TABLE `product_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -486,4 +551,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-18 10:59:36
+-- Dump completed on 2026-04-18 17:36:49

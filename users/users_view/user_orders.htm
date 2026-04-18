@@ -16,17 +16,39 @@
                             <th>Status</th>
                             <th>Total Amount</th>
                             <th>Action</th>
+                            <th>View</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for order in orders %}
-                        <tr>
-                            <td>{{ order.order_number }}</td>
-                            <td>{{ order.ordered_at.strftime('%d %b, %Y') }}</td>
-                            <td><span class="status-pill status-shipped">{{ order.status }}</span></td>
-                            <td>PKR{{order.total_amount }}</td>
-                            <td><a href="{{url_for('users.order_details',order_id=order['order_id'])}}" class="btn-table">View Details</a></td>
-                        </tr>
+                       <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.ordered_at.strftime('%d %b, %Y') }}</td>
+                                <td>
+                                    <span class="status-pill status-{{ order.status }}">
+                                        {{ order.status | capitalize }}
+                                    </span>
+                                </td>
+                                <td>PKR {{ order.total_amount }}</td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                        <form action="{{ url_for('users.cancel_order', order_id=order.order_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Cancel Order</button>
+                                        </form>
+                                    {% elif order.status == 'cancelled' %}
+                                        <span class="text-muted small">Order Cancelled</span>
+                                    {% endif %}
+
+                                    {% if order.status == 'delivered' %}
+                                         <form action="#" method="POST" onsubmit="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Return Items</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('users.order_details', order_id=order.order_id) }}" class="btn-table">View Details</a>
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

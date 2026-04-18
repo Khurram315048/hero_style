@@ -1,5 +1,3 @@
-
-
 {% include 'layouts/header.htm' %}
 
   {% if product %}
@@ -32,7 +30,7 @@
           <p class="product-description">{{ product.short_description or 'No description available.' }}</p>
 
           <div class="stock-status">
-            {% if product.stock_quantity >0  %}
+            {% if product.stock_quantity > 0 %}
               <span class="in-stock"><i class="fas fa-check-circle"></i> In Stock — Ready to Ship</span>
             {% else %}
               <span class="out-of-stock"><i class="fas fa-times-circle"></i> Out of Stock</span>
@@ -40,7 +38,7 @@
           </div>
 
           <div class="purchase-section">
-             <div class="quantity-control">
+            <div class="quantity-control">
               <label for="quantity">Quantity</label>
               <div class="quantity-buttons">
                 <button type="button" onclick="updateQuantity(-1)">−</button>
@@ -50,16 +48,16 @@
             </div>
 
             <div class="actions">
-            <form method="POST" action="/orders/cart/add" style="display:inline;">
-              <input type="hidden" name="product_id" value="{{ product.product_id }}">
-              <input type="hidden" name="redirect_to" value="{{ request.path }}">
-              <input type="hidden" name="quantity" id="qty-hidden" value="1">
-              <button type="submit" class="btn btn-add-cart">+ Add to Cart</button>
-            </form>
-             <form method="POST" action="{{ url_for('orders.buy_now', product_id=product.product_id) }}" style="display:inline;">
-              <input type="hidden" name="quantity" id="qty-hidden-buy" value="1">
-              <button type="submit" class="btn btn-buy-now">Buy Now</button>
-            </form>
+              <form method="POST" action="/orders/cart/add" style="display:inline;">
+                <input type="hidden" name="product_id" value="{{ product.product_id }}">
+                <input type="hidden" name="redirect_to" value="{{ request.path }}">
+                <input type="hidden" name="quantity" id="qty-hidden" value="1">
+                <button type="submit" class="btn btn-add-cart">+ Add to Cart</button>
+              </form>
+              <form method="POST" action="{{ url_for('orders.buy_now', product_id=product.product_id) }}" style="display:inline;">
+                <input type="hidden" name="quantity" id="qty-hidden-buy" value="1">
+                <button type="submit" class="btn btn-buy-now">Buy Now</button>
+              </form>
             </div>
           </div>
 
@@ -74,12 +72,14 @@
 
       <section class="product-tabs">
         <div class="tab-buttons">
-          <button class="tab-btn active" onclick="showTab('description')">Description</button>
-          <button class="tab-btn" onclick="showTab('specifications')">Specifications</button>
-          <button class="tab-btn" onclick="showTab('shipping')">Shipping</button>
+          <button class="tab-btn active" onclick="showTab('description', this)">Description</button>
+          <button class="tab-btn" onclick="showTab('specifications', this)">Specifications</button>
+          <button class="tab-btn" onclick="showTab('shipping', this)">Shipping</button>
+          <button class="tab-btn" onclick="showTab('reviews', this)">Reviews & Comments</button>
         </div>
 
         <div class="tab-content">
+
           <div id="description" class="tab-pane active">
             <h3>About This Watch</h3>
             <p>{{ product.short_description or 'No extra details at this time.' }}</p>
@@ -97,7 +97,7 @@
               <tr><th>Display Size</th><td>{{ product.display_size }}</td></tr>
               <tr><th>Connectivity</th><td>{{ product.connectivity }}</td></tr>
               <tr><th>Brightness</th><td>{{ product.brightness_nits }}</td></tr>
-              <tr><th>Strap Material</th><td>{{ product.case_material}}-{{ product.strap_material }}</td></tr>
+              <tr><th>Strap Material</th><td>{{ product.case_material }}-{{ product.strap_material }}</td></tr>
               <tr><th>Water Resistance</th><td>{{ product.water_resistance }}</td></tr>
               <tr><th>Warranty Months</th><td>{{ product.warranty_months }}</td></tr>
               <tr><th>Weight</th><td>{{ product.weight }}</td></tr>
@@ -113,10 +113,69 @@
               <li>7-day return policy on unworn products</li>
             </ul>
           </div>
+
+          <div id="reviews" class="tab-pane">
+            <div class="reviews-container">
+
+              <div class="reviews-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h3>Customer Reviews</h3>
+                  <div class="rating-summary">
+                    <span class="stars">★★★★☆</span>
+                    <span class="text-muted">(4 out of 5 based on 12 reviews)</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="toggleReviewForm()">Write a Review</button>
+              </div>
+
+              <div id="review-form-container" style="display: none;" class="review-form-card">
+                <h4>Submit Your Review</h4>
+                <form action="{{ url_for('users.submit_review', product_id=product.product_id) }}" method="POST">
+                  <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" /><label for="star5">★</label>
+                    <input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label>
+                    <input type="radio" id="star3" name="rating" value="3" /><label for="star3">★</label>
+                    <input type="radio" id="star2" name="rating" value="2" /><label for="star2">★</label>
+                    <input type="radio" id="star1" name="rating" value="1" /><label for="star1">★</label>
+                  </div>
+                  <textarea name="comment" class="form-control" rows="3" placeholder="Write your experience with this product..." required></textarea>
+                  <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Post Review</button>
+                    <button type="button" class="btn btn-link" onclick="toggleReviewForm()">Cancel</button>
+                  </div>
+                </form>
+              </div>
+
+              <hr>
+
+              <div class="reviews-list">
+                {% if reviews %}
+                  {% for review in reviews %}
+                  <div class="review-card">
+                    <div class="review-meta">
+                      <strong>{{ review.first_name }} {{ review.last_name }}</strong>
+                      <span class="review-date text-muted">{{ review.created_at.strftime('%d %b, %Y') }}</span>
+                    </div>
+                    <div class="user-rating">
+                      {% for i in range(review.rating) %}<span class="star-filled">★</span>{% endfor %}
+                    </div>
+                    <p class="review-text">{{ review.comment }}</p>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="text-center py-4">
+                    <p class="text-muted">No reviews yet. Be the first to review this product!</p>
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
 
-        <div class="products-grid">
+      <div class="products-grid">
         {% for related in relateds %}
           <div class="product-card" onclick="window.location='/products/{{ related.product_id }}'">
             <div class="card-image-wrap">
@@ -134,7 +193,15 @@
                 <span class="card-badge badge-new">New</span>
               {% endif %}
 
-              <button class="card-wishlist" title="Add to Wishlist" onclick="event.stopPropagation()">...</button>
+              <form method="POST" action="/orders/wishlist/add">
+                <input type="hidden" name="product_id" value="{{ related.product_id }}">
+                <input type="hidden" name="redirect_to" value="{{ request.path }}">
+                <button class="card-wishlist" title="Add to Wishlist" onclick="event.stopPropagation()">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                  </svg>
+                </button>
+              </form>
               <button class="card-quick-add" onclick="event.stopPropagation()">+ Add to Cart</button>
             </div>
 
@@ -154,7 +221,9 @@
           </div>
         {% endfor %}
       </div>
+
     </main>
+
   {% else %}
     <main class="product-page">
       <h1>Product not found</h1>
@@ -163,18 +232,28 @@
   {% endif %}
 
 <script>
-  function updateQuantity(delta){
-    const qtyInput=document.getElementById('quantity');
-    const qtyHidden=document.getElementById('qty-hidden');
-    const qtyHiddenB=document.getElementById('qty-hidden-buy');
-    if(!qtyInput) return;
-    const next=Math.max(1,Math.min(10,parseInt(qtyInput.value) + delta));
-    qtyInput.value=next;
-    if(qtyHidden)  qtyHidden.value=next;
-    if(qtyHiddenB) qtyHiddenB.value=next;
+  function updateQuantity(delta) {
+    const qtyInput = document.getElementById('quantity');
+    const qtyHidden = document.getElementById('qty-hidden');
+    const qtyHiddenB = document.getElementById('qty-hidden-buy');
+    if (!qtyInput) return;
+    const next = Math.max(1, Math.min(10, parseInt(qtyInput.value) + delta));
+    qtyInput.value = next;
+    if (qtyHidden) qtyHidden.value = next;
+    if (qtyHiddenB) qtyHiddenB.value = next;
+  }
+
+  function showTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleReviewForm() {
+    const form = document.getElementById('review-form-container');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 </script>
 
-
-  
 {% include 'layouts/footer.htm' %}
