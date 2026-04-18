@@ -31,47 +31,6 @@
                         <small class="form-hint">Email is used for order notifications.</small>
                     </div>
 
-                    <div class="form-group">
-                        <label class="auth-label">Contact Number</label>
-                        <input type="text" name="phone" class="auth-input" value="{{user_details.phone}}" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="auth-label">Country</label>
-                        <div class="select-wrap">
-                            <select id="city" name="country" required>
-                                <option value="{{user_details.country}}" disabled selected>Select country</option>
-                                <option>Pakistan</option>
-                                <option>USA</option>
-                                <option>Germany</option>
-                                <option>France</option>
-                                <option>UK</option>
-                                <option>Other</option>
-                            </select>
-                            </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="auth-label">City</label>
-                        <div class="select-wrap">
-                        <select id="city" name="city" required>
-                            <option value="{{user_details.country}}" disabled selected>Select city</option>
-                            <option>Karachi</option>
-                            <option>Lahore</option>
-                            <option>Islamabad</option>
-                            <option>Rawalpindi</option>
-                            <option>Faisalabad</option>
-                            <option>Multan</option>
-                            <option>Peshawar</option>
-                            <option>Quetta</option>
-                            <option>Hyderabad</option>
-                            <option>Other</option>
-                        </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="auth-label">Address</label>
-                        <textarea name="address" class="auth-input" rows="3" placeholder="Enter your full address here...">{{user_details.address}}</textarea>
-                    </div>
                     {% endif %}
                     <div class="profile-form-footer">
                         <button type="submit" class="btn-auth">Save Changes</button>

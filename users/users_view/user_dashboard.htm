@@ -15,30 +15,38 @@
                     </div>
                 </div>
             </div>
+                    <section class="recent-order-box">
+                        <h2 class="section-subtitle">
+                            Latest Order: 
+                            {% if latest_order %}
+                                {{ latest_order['order_number'] }}
+                            {% else %}
+                                No orders yet
+                            {% endif %}
+                        </h2>
 
-            <section class="recent-order-box">
-                <h2 class="section-subtitle">Latest Order: HW-123</h2>
-                
-                <div class="order-stepper dashboard-stepper">
-                    <div class="step completed">
-                        <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                        <span>Placed</span>
+                    {% if latest_order %}
+                    <div class="order-stepper dashboard-stepper">
+                        <div class="step {% if latest_order['status'] in ['pending','confirmed','shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Placed</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] in ['confirmed','shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Confirmed</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] in ['shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Shipped</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] == 'delivered' %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Delivered</span>
+                        </div>
                     </div>
-                    <div class="step active">
-                        <div class="step-circle"></div>
-                        <span>Processing</span>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <span>Shipped</span>
-                    </div>
-                    <div class="step">
-                        <div class="step-circle"></div>
-                        <span>Delivered</span>
-                    </div>
-                </div>
-                <a href="{{ url_for('users.user_orders') }}" class="auth-link">View Details →</a>
-            </section>
+                    <a href="{{ url_for('users.user_orders') }}" class="auth-link">View Details →</a>
+                    {% endif %}
+                </section>
             {% else %}
                 <p>No recent orders found.</p>
             {% endif %}

@@ -97,6 +97,5 @@ def inject_cart_count():
     return dict(cart_count=get_cart_count())
 
 
-
 if __name__ == '__main__':
     app.run(port=50001, debug=True)

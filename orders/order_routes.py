@@ -184,81 +184,77 @@ def place_order():
     cart_items, grand_total=get_cart_items()
     if not cart_items:
         return redirect(url_for('orders.view_cart'))
-
+ 
     first_name=request.form.get('first_name', '').strip()
     last_name=request.form.get('last_name', '').strip()
-    phone=request.form.get('phone', '').strip()
     city=request.form.get('city', '').strip()
     postal_code=request.form.get('postal_code', '').strip()
     shipping_address=request.form.get('shipping_address', '').strip()
     payment_method=request.form.get('payment_method', 'COD')
     promo_code=request.form.get('promo_code', '').strip() or None
-    email=request.form.get('email', '').strip() or None  
-
+    email=request.form.get('email', '').strip() or None
+ 
     full_address=f"{shipping_address},{city} {postal_code}".strip(', ')
-
+ 
     subtotal=float(request.form.get('subtotal',grand_total))
     shipping_charges=float(request.form.get('shipping_charges',0))
     discount_amount=float(request.form.get('discount_amount',0))
     total_amount=float(request.form.get('total_amount',grand_total))
-
-
+ 
     if subtotal==0:
         subtotal=grand_total
         shipping_charges=0 if subtotal >= 10000 else 250
         total_amount=subtotal + shipping_charges - discount_amount
-
+ 
     order_number='HW-' + uuid.uuid4().hex[:8].upper()
     cursor=mysql.connection.cursor(DictCursor)
-
-    try:
-        cursor.execute("SELECT user_id FROM users WHERE phone=%s",(phone,))
+    user_id=None
+ 
+    if session.get('user_id'):
+        user_id=session['user_id']
+ 
+    if not user_id and email:
+        cursor.execute("SELECT user_id FROM users WHERE email=%s",(email,))
         existing=cursor.fetchone()
-
         if existing:
             user_id=existing['user_id']
-        else:
-            cursor.execute("""INSERT INTO users(role_id,first_name,last_name,email,phone,
-                    password_hash,address,city,country)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (2,first_name,last_name,email,phone,
-                  'guest',shipping_address,city,'Pakistan'))
-            user_id=cursor.lastrowid
-
+ 
+    if not user_id:
         cursor.execute("""
-            INSERT INTO orders(user_id,order_number,status,subtotal,discount_amount,
-                 promo_code,shipping_charges,total_amount,
-                 shipping_address,billing_address,ordered_at)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (user_id,order_number,'pending',subtotal,discount_amount,
-              promo_code,shipping_charges,total_amount,
-              full_address,full_address,datetime.now()))
-        order_id=cursor.lastrowid
-
-
-        for item in cart_items:
-            item_subtotal=round(item['price'] * item['quantity'], 2)
-            cursor.execute("""
-                INSERT INTO order_details(order_id,product_id,product_amount,quantity,discount_per_item,subtotal)
-                VALUES (%s,%s,%s,%s,%s,%s)
-            """, (order_id,item['product_id'],item['price'],
-                  item['quantity'],50.00,item_subtotal))
-
-        cursor.execute("""
-            INSERT INTO order_payments(order_id,payment_method,amount,status)
-            VALUES (%s,%s,%s,%s)
-        """, (order_id,payment_method,total_amount,'pending'))
-
+            INSERT INTO users(role_id,first_name,last_name,email,password_hash,address,city,country)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (2,first_name,last_name,email,'guest',shipping_address,city,'Pakistan'))
         mysql.connection.commit()
-
-    except Exception as e:
-        mysql.connection.rollback()
-        cursor.close()
-        return f"Order failed: {str(e)}", 500
-
-    cursor.close()
-
+        user_id=cursor.lastrowid
+ 
     
+    cursor.execute("""
+        INSERT INTO orders(user_id,order_number,status,subtotal,discount_amount,
+             promo_code,shipping_charges,total_amount,
+             shipping_address,billing_address,ordered_at)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """, (user_id,order_number,'pending',subtotal,discount_amount,
+          promo_code,shipping_charges,total_amount,
+          full_address,full_address,datetime.now()))
+    mysql.connection.commit()
+    order_id=cursor.lastrowid
+ 
+    for item in cart_items:
+        item_subtotal=round(item['price'] * item['quantity'], 2)
+        cursor.execute("""
+            INSERT INTO order_details(order_id,product_id,product_amount,quantity,discount_per_item,subtotal)
+            VALUES (%s,%s,%s,%s,%s,%s)
+        """, (order_id,item['product_id'],item['price'],item['quantity'],0.00,item_subtotal))
+ 
+   
+    cursor.execute("""
+        INSERT INTO order_payments(order_id,payment_method,amount,status)
+        VALUES (%s,%s,%s,%s)
+    """, (order_id,payment_method,total_amount,'pending'))
+ 
+    mysql.connection.commit()
+    cursor.close()
+ 
     cart_id=session.pop('cart_id', None)
     if cart_id:
         c=mysql.connection.cursor(DictCursor)
@@ -266,9 +262,9 @@ def place_order():
         c.execute("DELETE FROM carts WHERE cart_id=%s",(cart_id,))
         mysql.connection.commit()
         c.close()
-
+ 
     session.modified=True
-
+ 
     return render_template('order_confirmed.htm',order_id=order_id,order_number=order_number,
                            total_amount=total_amount,payment_method=payment_method,
                            customer_name=f"{first_name} {last_name}")

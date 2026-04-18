@@ -17,11 +17,11 @@ def user_login():
 
         cursor.execute('SELECT * FROM users WHERE email=%s',(email,))
         user=cursor.fetchone()
-        if user:
+        if user and user['role_id']==2:
             if check_password_hash(user['password_hash'],password):
                 session['user_id']=user['user_id']
                 session.permanent=True if request.form.get('remember_me') else False
-                flash('User Logined','success')
+                session['toast']='User Logined!'
                 return redirect(url_for('users.user_dashboard'))
             else:
                 flash('Password Doesnot Match','danger')
@@ -42,7 +42,6 @@ def user_signup():
         first_name=request.form.get('first_name')
         last_name=request.form.get('last_name')
         email=request.form.get('email')
-        phone_num=request.form.get('phone_num')
         plain_password=request.form.get('password')
         hashed_password=generate_password_hash(plain_password)
 
@@ -53,8 +52,8 @@ def user_signup():
             return redirect(url_for('users.user_login'))
         
         cursor.execute('''INSERT INTO users
-                    (role_id,first_name,last_name,email,phone,password_hash,last_login_at,created_at,updated_at)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',(2,first_name,last_name,email,phone_num,
+                    (role_id,first_name,last_name,email,password_hash,last_login_at,created_at,updated_at)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)''',(2,first_name,last_name,email,
                                                 hashed_password,datetime.now(),datetime.now(),datetime.now()))
         mysql.connection.commit()
         cursor.close()
@@ -62,6 +61,15 @@ def user_signup():
         return redirect(url_for('users.user_login'))
     
     return render_template('user_signup.htm')
+
+
+
+@user_bp.route('/logout')
+def logout():
+    session.clear()
+
+    session['toast']='You have been logged out.'
+    return redirect(url_for('homepage'))
 
 
 @user_bp.route('/user_options',methods=['GET','POST'])
@@ -73,8 +81,31 @@ def user_options():
     return render_template('user_options.htm',user=user)
 
 
-@user_bp.route('/reset_password')
+@user_bp.route('/reset_password',methods=['GET','POST'])
 def reset_password():
+    cursor=mysql.connection.cursor()
+    if request.method=='POST':
+        email=request.form.get('email')
+        new_password=request.form.get('new_password')
+
+        cursor.execute('SELECT email FROM users WHERE email=%s',(email,))
+        user=cursor.fetchone()  
+
+        if not user:
+            cursor.close()
+            session['toast']='Email Does Not Exist!'
+            return redirect(url_for('users.user_signup'))
+
+        password_hash=generate_password_hash(new_password)
+        cursor.execute(
+            'UPDATE users SET password_hash=%s WHERE email=%s AND is_active=%s',
+            (password_hash,email,1)  
+        )
+        mysql.connection.commit()
+        cursor.close()
+        session['toast']='Password Updated Successfully!'
+        return redirect(url_for('users.user_login'))
+
     return render_template('reset_password.htm')
 
 
@@ -86,17 +117,26 @@ def user_dashboard():
     user_id=session.get('user_id')
 
     cursor.execute('''
-        SELECT u.*,COUNT(o.order_id) AS total_orders 
-        FROM users u 
-        LEFT JOIN orders o ON u.user_id=o.user_id 
-        WHERE u.user_id=%s 
+        SELECT u.*,COUNT(o.order_id) AS total_orders,
+               MAX(o.order_id) AS latest_order_id
+        FROM users u
+        LEFT JOIN orders o ON u.user_id=o.user_id AND o.is_deleted=0
+        WHERE u.user_id=%s
         GROUP BY u.user_id
-    ''',(user_id,))
-    
+    ''', (user_id,))
     user_exist=cursor.fetchone()
+
+    latest_order=None
+    if user_exist and user_exist['latest_order_id']:
+        cursor.execute('''
+            SELECT order_number,status,total_amount,ordered_at
+            FROM orders
+            WHERE order_id=%s
+        ''', (user_exist['latest_order_id'],))
+        latest_order=cursor.fetchone()
+
     cursor.close()
-    
-    return render_template('user_dashboard.htm',user_exist=user_exist)
+    return render_template('user_dashboard.htm', user_exist=user_exist, latest_order=latest_order)
 
 
 
@@ -112,14 +152,9 @@ def user_profile():
         first_name=request.form.get('first_name')
         last_name=request.form.get('last_name')
         email=request.form.get('email')
-        phone=request.form.get('phone')
-        country=request.form.get('country')
-        city=request.form.get('city')
-        address=request.form.get('address')
 
-        cursor.execute('''UPDATE users SET first_name=%s,last_name=%s,email=%s,
-                       phone=%s,country=%s,city=%s,address=%s
-                       WHERE user_id=%s AND is_active=%s''',(first_name,last_name,email,phone,country,city,address,user_id,1))
+        cursor.execute('''UPDATE users SET first_name=%s,last_name=%s,email=%s
+                       WHERE user_id=%s AND is_active=%s''',(first_name,last_name,email,user_id,1))
         mysql.connection.commit()
         cursor.close
         session['toast']='Profile Updated Successfully!'
@@ -171,17 +206,56 @@ def remove_from_the_list():
 @user_bp.route('/user_orders')
 @login_required
 def user_orders():
-    user_id = session.get('user_id')
-    cursor = mysql.connection.cursor()
-
-    # Query mein ORDER BY add kiya gaya hai takay naye orders pehle nazar aayein
+    user_id=session.get('user_id')
+    cursor=mysql.connection.cursor()
+ 
     cursor.execute('''
-        SELECT * FROM orders 
-        WHERE user_id = %s AND is_deleted = 0 
+        SELECT * FROM orders
+        WHERE user_id=%s AND is_deleted=0
         ORDER BY ordered_at DESC
     ''', (user_id,))
-    
-    orders = cursor.fetchall()
-    cursor.close() # Connection close karna zaroori hai
+ 
+    orders=cursor.fetchall()
+    cursor.close()
+ 
+    return render_template('user_orders.htm',orders=orders)
 
-    return render_template('user_orders.htm', orders=orders)
+
+
+@user_bp.route('/order_details/<int:order_id>',methods=['GET'])
+@login_required
+def order_details(order_id):
+    user_id=session.get('user_id')
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''
+        SELECT * FROM orders
+        WHERE order_id=%s AND user_id=%s AND is_deleted=0
+    ''', (order_id, user_id))
+    order=cursor.fetchone()
+
+    if not order:
+        session['toast']='Order not found!'
+        cursor.close()
+        return redirect(url_for('users.user_orders'))
+
+    cursor.execute('''
+        SELECT od.quantity, od.subtotal,
+               p.title,
+               pi.image_url
+        FROM order_details od
+        JOIN products p ON p.product_id=od.product_id
+        JOIN product_images pi ON pi.product_id=od.product_id
+        WHERE od.order_id=%s
+    ''', (order_id,))
+    order_items=cursor.fetchall()
+
+    cursor.execute('''
+        SELECT payment_method,amount,status
+        FROM order_payments
+        WHERE order_id=%s
+    ''', (order_id,))
+    payment=cursor.fetchone()
+
+    cursor.close()
+    return render_template('order_details.htm',order=order,order_items=order_items,payment=payment)

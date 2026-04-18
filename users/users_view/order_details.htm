@@ -1,0 +1,126 @@
+{% include 'layouts/header.htm' %}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        {% include 'layouts/user_options.htm' %}
+
+        <main class="profile-content">
+
+            <div class="profile-header">
+                <a href="{{ url_for('users.user_orders') }}" class="back-link">
+                    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Back to Orders
+                </a>
+                <h1 class="section-title">Order Details</h1>
+                <div class="order-detail-meta">
+                    <span class="order-detail-number">{{ order['order_number'] }}</span>
+                    <span class="order-status-badge status-{{ order['status'] }}">{{ order['status']|capitalize }}</span>
+                </div>
+                <p class="order-detail-date">Placed on {{ order['ordered_at'].strftime('%d %B %Y, %I:%M %p') }}</p>
+            </div>
+
+            <section class="recent-order-box">
+                <h2 class="section-subtitle">Order Progress</h2>
+                <div class="order-stepper dashboard-stepper">
+                    <div class="step {% if order['status'] in ['pending','confirmed','shipped','delivered'] %}completed{% endif %}">
+                        <div class="step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span>Placed</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step {% if order['status'] in ['confirmed','shipped','delivered'] %}completed{% endif %}">
+                        <div class="step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span>Confirmed</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step {% if order['status'] in ['shipped','delivered'] %}completed{% endif %}">
+                        <div class="step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span>Shipped</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step {% if order['status'] == 'delivered' %}completed{% endif %}">
+                        <div class="step-circle">
+                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <span>Delivered</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="order-detail-section">
+                <h2 class="section-subtitle">Items Ordered</h2>
+                <div class="order-items-list">
+                    {% for item in order_items %}
+                    <div class="order-item-row">
+                        <div class="order-item-img">
+                            <img src="{{ item['image_url'] or '/static/uploads/default.jpg' }}" alt="{{ item['title'] }}">
+                        </div>
+                        <div class="order-item-info">
+                            <p class="order-item-title">{{ item['title'] }}</p>
+                            <p class="order-item-qty">Qty: {{ item['quantity'] }}</p>
+                        </div>
+                        <div class="order-item-price">
+                            Rs. {{ "{:,.0f}".format(item['subtotal']) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <div class="order-detail-bottom">
+
+                <section class="order-detail-section order-detail-half">
+                    <h2 class="section-subtitle">Shipping Address</h2>
+                    <div class="order-address-box">
+                        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <p>{{ order['shipping_address'] }}</p>
+                    </div>
+                </section>
+
+                <section class="order-detail-section order-detail-half">
+                    <h2 class="section-subtitle">Payment Summary</h2>
+                    <div class="order-summary-box">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>Rs. {{ "{:,.0f}".format(order['subtotal']) }}</span>
+                        </div>
+                        {% if order['discount_amount'] and order['discount_amount'] > 0 %}
+                        <div class="summary-row summary-discount">
+                            <span>Discount
+                                {% if order['promo_code'] %}
+                                    <span class="promo-tag">{{ order['promo_code'] }}</span>
+                                {% endif %}
+                            </span>
+                            <span>- Rs. {{ "{:,.0f}".format(order['discount_amount']) }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span>{% if order['shipping_charges'] == 0 %}Free{% else %}Rs. {{ "{:,.0f}".format(order['shipping_charges']) }}{% endif %}</span>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span>Total</span>
+                            <span>Rs. {{ "{:,.0f}".format(order['total_amount']) }}</span>
+                        </div>
+                        {% if payment %}
+                        <div class="order-payment-method">
+                            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            {{ payment['payment_method'] }}
+                            <span class="order-status-badge status-{{ payment['status'] }}">{{ payment['status']|capitalize }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+
+{% include 'layouts/footer.htm' %}
