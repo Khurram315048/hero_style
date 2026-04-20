@@ -172,6 +172,37 @@ INSERT INTO `order_details` VALUES (1,1,2,1199.00,1,50.00,1199.00,'2026-04-17 15
 UNLOCK TABLES;
 
 --
+-- Table structure for table `order_item_returns`
+--
+
+DROP TABLE IF EXISTS `order_item_returns`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `order_item_returns` (
+  `return_id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` int(11) NOT NULL,
+  `order_detail_id` int(11) NOT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `status` enum('requested','approved','rejected') DEFAULT 'requested',
+  `requested_at` datetime DEFAULT current_timestamp(),
+  `resolved_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`return_id`),
+  KEY `order_id` (`order_id`),
+  CONSTRAINT `order_item_returns_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `order_item_returns`
+--
+
+LOCK TABLES `order_item_returns` WRITE;
+/*!40000 ALTER TABLE `order_item_returns` DISABLE KEYS */;
+INSERT INTO `order_item_returns` VALUES (1,4,4,'this item is not good.','requested','2026-04-20 19:02:57','2026-04-20 19:02:57'),(3,4,6,'bad quality','rejected','2026-04-20 19:32:31','2026-04-20 19:32:31');
+/*!40000 ALTER TABLE `order_item_returns` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `order_payments`
 --
 
@@ -220,7 +251,7 @@ CREATE TABLE `order_returns` (
   PRIMARY KEY (`return_id`),
   KEY `return_order_fk` (`order_id`),
   CONSTRAINT `return_order_fk` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -229,6 +260,7 @@ CREATE TABLE `order_returns` (
 
 LOCK TABLES `order_returns` WRITE;
 /*!40000 ALTER TABLE `order_returns` DISABLE KEYS */;
+INSERT INTO `order_returns` VALUES (1,3,'I don\'t need this product .tHANKS','requested','2026-04-20 13:28:24','2026-04-20 13:28:24');
 /*!40000 ALTER TABLE `order_returns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -269,7 +301,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0,NULL,0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 07:06:43',1,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-18 07:08:00',0,NULL,0),(4,2,'HW-EBED1858','pending',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-04-18 07:44:08',0,NULL,0);
+INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0,NULL,0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 07:06:43',1,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-18 07:08:00',0,NULL,0),(4,2,'HW-EBED1858','shipped',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-04-18 13:01:53',1,'2026-04-18 13:00:55',0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -551,4 +583,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-18 17:36:49
+-- Dump completed on 2026-04-20 19:44:50

@@ -210,10 +210,12 @@ def user_orders():
     cursor=mysql.connection.cursor()
  
     cursor.execute('''
-        SELECT * FROM orders
-        WHERE user_id=%s AND is_deleted=0          
-        ORDER BY ordered_at DESC
-    ''', (user_id,))
+        SELECT o.*,r.status as return_status 
+        FROM orders o
+        LEFT JOIN order_returns r ON o.order_id=r.order_id
+        WHERE o.user_id=%s
+        ORDER BY o.ordered_at DESC
+    ''',(user_id,))
  
     orders=cursor.fetchall()
     cursor.close()
@@ -225,12 +227,14 @@ def user_orders():
 @user_bp.route('/order_details/<int:order_id>',methods=['GET'])
 @login_required
 def order_details(order_id):
-    user_id=session.get('user_id')
     cursor=mysql.connection.cursor()
-
+    user_id=session.get('user_id')
+    
     cursor.execute('''
-        SELECT * FROM orders
-        WHERE order_id=%s AND user_id=%s AND is_deleted=0
+        SELECT o.*, r.status AS return_status,r.reason AS return_reason
+        FROM orders o
+        LEFT JOIN order_returns r ON o.order_id=r.order_id
+        WHERE o.order_id=%s AND o.user_id=%s AND is_deleted=0
     ''', (order_id,user_id))
     order=cursor.fetchone()
 
@@ -240,21 +244,22 @@ def order_details(order_id):
         return redirect(url_for('users.user_orders'))
 
     cursor.execute('''
-        SELECT od.quantity, od.subtotal,
-               p.title,
-               pi.image_url
+        SELECT od.order_detail_id, od.quantity, od.subtotal,
+               p.title, p.product_id,
+               pi.image_url,
+               ir.status AS item_return_status
         FROM order_details od
         JOIN products p ON p.product_id=od.product_id
-        JOIN product_images pi ON pi.product_id=od.product_id
-        WHERE od.order_id=%s
+        JOIN product_images pi ON pi.product_id=od.product_id 
+        LEFT JOIN order_item_returns ir ON ir.order_detail_id = od.order_detail_id
+        WHERE od.order_id=%s AND pi.is_active=1
     ''', (order_id,))
     order_items=cursor.fetchall()
 
     cursor.execute('''
         SELECT payment_method,amount,status
-        FROM order_payments
-        WHERE order_id=%s 
-    ''', (order_id,))
+        FROM order_payments WHERE order_id=%s
+    ''',(order_id,))
     payment=cursor.fetchone()
 
     cursor.close()
@@ -388,4 +393,37 @@ def delete_review(review_id):
     session['toast']='Thank You! Review has been deleted successfully'
     return redirect(url_for('users.my_reviews'))
 
+
+
+@user_bp.route('/return_order/<int:order_id>',methods=['GET','POST'])
+@login_required
+def return_order(order_id):
+    cursor=mysql.connection.cursor()
+
+    reason=request.form.get('reason')
+    
+    cursor.execute('''INSERT INTO order_returns(order_id,reason,status,requested_at,resolved_at)
+                   VALUES(%s,%s,%s,%s,%s)''',(order_id,reason,'requested',datetime.now(),datetime.now()))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Thank You! For sharing the sharing the experience with us'
+    return redirect(url_for('users.user_orders'))
+
+
+
+@user_bp.route('/return_items/<int:order_detail_id>',methods=['GET','POST'])
+@login_required
+def return_items(order_detail_id):
+    cursor=mysql.connection.cursor()
+
+    reason=request.form.get('reason')
+    cursor.execute('SELECT order_id FROM order_details WHERE order_detail_id=%s',(order_detail_id,))
+    row=cursor.fetchone()
+    
+    cursor.execute('''INSERT INTO order_item_returns(order_id,order_detail_id,reason,status,requested_at,resolved_at)
+                   VALUES(%s,%s,%s,%s,%s,%s)''',(row['order_id'],order_detail_id,reason,'requested',datetime.now(),datetime.now()))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Thank You! For sharing the sharing the experience with us'
+    return redirect(url_for('users.user_orders'))
 

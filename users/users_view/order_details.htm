@@ -1,5 +1,39 @@
 {% include 'layouts/header.htm' %}
-
+<style>
+    .btn-return-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.btn-return-item:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+    background: var(--light-bg);
+}
+.item-return-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.pill-requested { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.pill-approved  { background: #f0fdf4; color: #14532d; border: 1px solid #bbf7d0; }
+.pill-rejected  { background: #fff1f2; color: #881337; border: 1px solid #fecdd3; }
+</style>
 <div class="profile-page-wrapper">
     <div class="profile-container">
         {% include 'layouts/user_options.htm' %}
@@ -14,6 +48,9 @@
                 <h1 class="section-title">Order Details</h1>
                 <div class="order-detail-meta">
                     <span class="order-detail-number">{{ order['order_number'] }}</span>
+                    {% if order['return_status'] %}
+                    <span class="order-status-badge status-{{ order['return_status'] }}">{{ order['return_status']|capitalize }}</span>
+                    {% endif %}
                     <span class="order-status-badge status-{{ order['status'] }}">{{ order['status']|capitalize }}</span>
                 </div>
                 <p class="order-detail-date">Placed on {{ order['ordered_at'].strftime('%d %B %Y, %I:%M %p') }}</p>
@@ -52,27 +89,84 @@
                 </div>
             </section>
 
-            <section class="order-detail-section">
-                <h2 class="section-subtitle">Items Ordered</h2>
-                <div class="order-items-list">
-                    {% for item in order_items %}
-                    <div class="order-item-row">
-                        <div class="order-item-img">
-                            <img src="{{ item['image_url'] or '/static/uploads/default.jpg' }}" alt="{{ item['title'] }}">
-                        </div>
-                        <div class="order-item-info">
-                            <p class="order-item-title">{{ item['title'] }}</p>
-                            <p class="order-item-qty">Qty: {{ item['quantity'] }}</p>
-                        </div>
-                        <form action="#" method="POST" onsubmit="return confirm('Are you sure?');">
-                            <button type="submit" class="btn btn-danger btn-sm">Return Item</button>
-                        </form>
-                        <div class="order-item-price">
-                            Rs. {{ "{:,.0f}".format(item['subtotal']) }}
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+           <section class="order-detail-section">
+    <h2 class="section-subtitle">Items Ordered</h2>
+
+    {% if order['return_status'] %}
+    <div class="return-status-banner return-banner-{{ order['return_status'] }}">
+        <div class="return-banner-icon">
+            {% if order['return_status'] == 'requested' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {% elif order['return_status'] == 'approved' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+            {% elif order['return_status'] == 'rejected' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {% endif %}
+        </div>
+        <div class="return-banner-text">
+            <strong>
+                {% if order['return_status'] == 'requested' %}Return Request Submitted
+                {% elif order['return_status'] == 'approved' %}Return Approved
+                {% elif order['return_status'] == 'rejected' %}Return Rejected
+                {% endif %}
+            </strong>
+            {% if order['return_reason'] %}
+                <span>Reason: {{ order['return_reason'] }}</span>
+            {% endif %}
+        </div>
+        <span class="return-banner-badge status-{{ order['return_status'] }}">
+            {{ order['return_status'] | capitalize }}
+        </span>
+    </div>
+    {% endif %}
+
+   <div class="order-items-list">
+    {% for item in order_items %}
+    <div class="order-item-row">
+        <div class="order-item-img">
+            <img src="{{ item['image_url'] or '/static/uploads/default.jpg' }}" alt="{{ item['title'] }}">
+        </div>
+        <div class="order-item-info">
+            <p class="order-item-title">{{ item['title'] }}</p>
+            <p class="order-item-qty">Qty: {{ item['quantity'] }}</p>
+        </div>
+        <div class="order-item-price">
+            Rs. {{ "{:,.0f}".format(item['subtotal']) }}
+        </div>
+
+        {% if order['status'] == 'shipped' and not order['return_status'] %}
+            {% if item['item_return_status'] == 'requested' %}
+                <span class="item-return-pill pill-requested">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Return Requested
+                </span>
+            {% elif item['item_return_status'] == 'approved' %}
+                <span class="item-return-pill pill-approved">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                    Return Approved
+                </span>
+            {% elif item['item_return_status'] == 'rejected' %}
+                <span class="item-return-pill pill-rejected">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Return Rejected
+                </span>
+            {% else %}
+                <button type="button" class="edit-btn btn-return-item"
+                    data-order-detail-id="{{ item['order_detail_id'] }}"
+                    data-reason="">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Return Item
+                </button>
+            {% endif %}
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</div>
             </section>
 
             <div class="order-detail-bottom">
@@ -125,5 +219,96 @@
         </main>
     </div>
 </div>
+
+
+
+
+<div id="edit-modal-overlay"  onclick="if(event.target===this) closeEditModal()"
+     style="display:none; position:fixed; inset:0; background:rgba(13,27,42,0.55);
+    z-index:2000; align-items:center; justify-content:center;">
+
+  <div style="background: var(--white); border-radius: var(--radius-md);
+              width: 100%; max-width: 500px; margin: 20px;
+              box-shadow: var(--shadow-lg); overflow: hidden;">
+    <div style="background: var(--navy); padding: 20px 28px;
+                display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <p style="font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+                  color: var(--gold); margin-bottom: 4px;">Return Item</p>
+        <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 20px;
+                   font-weight: 600; color: var(--white); margin: 0;">Kindly Give Reason to Improve us!</h3>
+      </div>
+      <button onclick="closeEditModal()"
+              style="background: none; border: none; cursor: pointer;
+                     color: rgba(255,255,255,0.5); font-size: 22px; line-height: 1;
+                     transition: var(--transition); padding: 4px;"
+              onmouseover="this.style.color='var(--gold)'"
+              onmouseout="this.style.color='rgba(255,255,255,0.5)'">✕</button>
+    </div>
+
+    <form id="edit-review-form" method="POST" action="#" style="padding: 28px;">
+
+      <div style="margin-bottom: 24px;">
+        <label style="font-size: 11px; font-weight: 500; letter-spacing: 2px;
+                      text-transform: uppercase; color: var(--text-light);
+                      display: block; margin-bottom: 10px;">Your Reason</label>
+        <textarea id="modal-reason" name="reason" rows="4" required placeholder="Share your reason with this product..."
+                  style="width: 100%; padding: 12px 16px;border: 1px solid var(--border); border-radius: var(--radius);
+                         font-family: 'DM Sans', sans-serif; font-size: 14px;
+                         color: var(--text-dark); resize: vertical; outline: none;
+                         transition: var(--transition); background: var(--white);"
+                  onfocus="this.style.borderColor='var(--gold)'"
+                  onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" onclick="closeEditModal()"
+                class="btn-outline"
+                style="padding: 10px 24px; font-size: 12px;">
+          Cancel
+        </button>
+        <button type="submit"
+                class="hero-cta"
+                style="padding: 10px 28px; font-size: 12px; border: none; cursor: pointer;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+         Return Item
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+<script>
+    const overlay = document.getElementById('edit-modal-overlay');
+
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const orderDetailId=this.dataset.orderDetailId;
+      const currentReason=this.dataset.reason;
+
+      document.getElementById('edit-review-form').action='/users/return_items/' + orderDetailId;
+      document.getElementById('modal-reason').value=currentReason;
+
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  function closeEditModal(){
+    overlay.style.display='none';
+    document.body.style.overflow='';
+  }
+
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closeEditModal();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') closeEditModal();
+  });
+</script>
 
 {% include 'layouts/footer.htm' %}

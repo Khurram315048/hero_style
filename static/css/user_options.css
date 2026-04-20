@@ -200,3 +200,45 @@
     display: none; /* Usually hidden or turned into a top menu on mobile */
   }
 }
+
+
+/* Container for My Orders and its submenu */
+.nav-item-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Submenu container - hidden by default */
+.submenu {
+    display: none;
+    background-color: #f9f9f9; /* Slightly different background to distinguish */
+    padding-left: 45px;       /* Indent to show they are sub-items */
+    transition: all 0.3s ease;
+}
+
+/* Show submenu when hovering over the group */
+.nav-item-group:hover .submenu {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Styling for sub-links */
+.submenu-item {
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.submenu-item:hover {
+    color: #333; /* Darker on hover */
+    text-decoration: underline;
+}
+
+/* Optional: Active state for sub-items */
+.submenu-item.active {
+    color: #007bff;
+    font-weight: bold;
+}
