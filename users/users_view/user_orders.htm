@@ -32,7 +32,7 @@
                                 <td>PKR {{ order.total_amount }}</td>
                                 <td>
                                     {% if order.status == 'pending' %}
-                                        <form action="{{ url_for('users.cancel_order', order_id=order.order_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                        <form action="{{ url_for('users.cancel_order',order_id=order.order_id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
                                             <button type="submit" class="btn btn-danger btn-sm">Cancel Order</button>
                                         </form>
                                     {% elif order.status == 'cancelled' %}
@@ -41,12 +41,12 @@
 
                                     {% if order.status == 'delivered' %}
                                          <form action="#" method="POST" onsubmit="return confirm('Are you sure?');">
-                                            <button type="submit" class="btn btn-danger btn-sm">Return Items</button>
+                                            <button type="submit" class="btn btn-danger btn-sm">Return Order</button>
                                         </form>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('users.order_details', order_id=order.order_id) }}" class="btn-table">View Details</a>
+                                    <a href="{{ url_for('users.order_details',order_id=order.order_id) }}" class="btn-table">View Details</a>
                                 </td>
                             </tr>
                         {% endfor %}
