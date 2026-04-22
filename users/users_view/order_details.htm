@@ -134,7 +134,7 @@
             Rs. {{ "{:,.0f}".format(item['subtotal']) }}
         </div>
 
-        {% if order['status'] == 'shipped' and not order['return_status'] %}
+        {% if order['status'] == 'delivered' and not order['return_status'] %}
             {% if item['item_return_status'] == 'requested' %}
                 <span class="item-return-pill pill-requested">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

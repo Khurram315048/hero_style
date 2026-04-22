@@ -427,3 +427,43 @@ def return_items(order_detail_id):
     session['toast']='Thank You! For sharing the sharing the experience with us'
     return redirect(url_for('users.user_orders'))
 
+
+@user_bp.route('/my_returns', methods=['GET', 'POST'])
+@login_required
+def my_returns():
+    cursor = mysql.connection.cursor()
+
+    user_id = session.get('user_id')
+    if not user_id:
+        session['toast'] = 'Please Login!'
+        return redirect(request.referrer)
+
+    cursor.execute('''SELECT o.order_id,o.order_number,o.status AS order_status,o.total_amount,
+            o.shipping_address,o.ordered_at,o.discount_amount,o.promo_code,
+            o.subtotal,od.product_amount,od.quantity,od.subtotal  AS item_subtotal,
+            op.payment_method,op.status  AS payment_status
+            orr.reason AS return_reason,
+            orr.status AS return_status,
+            orr.requested_at  AS return_date,
+            p.title AS product_title,
+            pi.image_url
+        FROM order_returns orr
+        JOIN orders o ON orr.order_id=o.order_id
+        JOIN order_payments op ON o.order_id=op.order_id
+        JOIN order_details od  ON o.order_id=od.order_id
+        JOIN products p ON od.product_id=p.product_id
+        JOIN product_images pi ON od.product_id=pi.product_id
+        WHERE o.is_deleted=0 AND pi.is_active=1 AND o.user_id=%s''',(user_id,))
+
+    return_details=cursor.fetchall()
+    cursor.close()
+
+    return render_template('my_returns.htm',return_details=return_details)
+
+
+
+@user_bp.route('/my_cancellations',methods=['GET','POST'])
+@login_required
+def my_cancellations():
+    return render_template('my_cancellations.htm')
+

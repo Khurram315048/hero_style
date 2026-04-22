@@ -12,10 +12,10 @@
                     <thead>
                         <tr>
                             <th>Order ID</th>
-                            <th>Date</th>
-                            <th>Order Status</th>
+                            <th>Order Date</th>
+                            <th>Cancellation Date</th>
+                            <th>Status</th>
                             <th>Total Amount</th>
-                            <th>Action</th>
                             <th>View</th>
                         </tr>
                     </thead>
@@ -30,7 +30,7 @@
                                     </span>
                                 </td>
                                 <td>PKR {{ order.total_amount }}</td>
-                               <td>
+                                <td>
                                  {% if order.status == 'delivered' %}
                                     {% if order.return_status == 'requested' %}
                                         <span class="status-pill" style="background:#fff3cd; color:#856404;">
@@ -147,10 +147,6 @@
       document.body.style.overflow = 'hidden';
     });
   });
-
-
-
-
 
   function closeEditModal(){
     overlay.style.display='none';

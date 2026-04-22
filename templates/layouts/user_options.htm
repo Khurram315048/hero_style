@@ -21,8 +21,8 @@
                         My Orders
                     </a>
                     <div class="submenu">
-                        <a href="#" class="submenu-item">My Returns</a>
-                        <a href="#" class="submenu-item">My Cancellations</a>
+                        <a href="{{url_for('users.my_returns')}}" class="submenu-item">My Returns</a>
+                        <a href="{{url_for('users.my_cancellations')}}" class="submenu-item">My Cancellations</a>
                     </div>
                 </div>
                <a href="{{ url_for('users.user_wishlist') }}" class="profile-nav-item">
