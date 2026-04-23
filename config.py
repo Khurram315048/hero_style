@@ -1,7 +1,7 @@
 import secrets
 import os
 
-
+SECRET_KEY=os.environ.get('SECRET_KEY', 'your-fallback-secret')
 TEMPLATES_AUTO_RELOAD=True
 MYSQL_HOST='localhost'
 MYSQL_USER='root'
