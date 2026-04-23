@@ -248,6 +248,7 @@ CREATE TABLE `order_returns` (
   `status` enum('requested','approved','rejected','received','refunded') DEFAULT 'requested',
   `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `resolved_at` timestamp NULL DEFAULT NULL,
+  `is_cancelled` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`return_id`),
   KEY `return_order_fk` (`order_id`),
   CONSTRAINT `return_order_fk` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
@@ -260,7 +261,7 @@ CREATE TABLE `order_returns` (
 
 LOCK TABLES `order_returns` WRITE;
 /*!40000 ALTER TABLE `order_returns` DISABLE KEYS */;
-INSERT INTO `order_returns` VALUES (1,3,'I don\'t need this product .tHANKS','requested','2026-04-20 13:28:24','2026-04-20 13:28:24');
+INSERT INTO `order_returns` VALUES (1,3,'i am testing the return cancel method.','requested','2026-04-23 14:02:01','2026-04-20 13:28:24',1);
 /*!40000 ALTER TABLE `order_returns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -301,7 +302,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0,NULL,0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 07:06:43',1,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-18 07:08:00',0,NULL,0),(4,2,'HW-EBED1858','shipped',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-04-18 13:01:53',1,'2026-04-18 13:00:55',0);
+INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','pending',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-04-17 15:24:29',0,NULL,0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-04-18 07:06:43',1,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-23 14:22:37',1,'2026-04-23 14:22:21',0),(4,2,'HW-EBED1858','shipped',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-04-18 13:01:53',1,'2026-04-18 13:00:55',0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -408,7 +409,7 @@ CREATE TABLE `product_reviews` (
 
 LOCK TABLES `product_reviews` WRITE;
 /*!40000 ALTER TABLE `product_reviews` DISABLE KEYS */;
-INSERT INTO `product_reviews` VALUES (1,2,2,4,'good product.','approved','2026-04-18 11:08:36',1),(2,12,2,5,'execellent product','pending','2026-04-18 11:41:30',0);
+INSERT INTO `product_reviews` VALUES (1,2,2,4,'good product.','approved','2026-04-18 11:08:36',1),(2,12,2,5,'execellent product','approved','2026-04-18 11:41:30',0);
 /*!40000 ALTER TABLE `product_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -583,4 +584,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-22 23:33:04
+-- Dump completed on 2026-04-23 19:28:20

@@ -428,23 +428,23 @@ def return_items(order_detail_id):
     return redirect(url_for('users.user_orders'))
 
 
-@user_bp.route('/my_returns', methods=['GET', 'POST'])
+@user_bp.route('/my_returns',methods=['GET', 'POST'])
 @login_required
 def my_returns():
-    cursor = mysql.connection.cursor()
+    cursor=mysql.connection.cursor()
 
-    user_id = session.get('user_id')
+    user_id=session.get('user_id')
     if not user_id:
-        session['toast'] = 'Please Login!'
+        session['toast']='Please Login!'
         return redirect(request.referrer)
 
     cursor.execute('''SELECT o.order_id,o.order_number,o.status AS order_status,o.total_amount,
             o.shipping_address,o.ordered_at,o.discount_amount,o.promo_code,
-            o.subtotal,od.product_amount,od.quantity,od.subtotal  AS item_subtotal,
-            op.payment_method,op.status  AS payment_status
+            o.subtotal,od.product_amount,od.quantity,od.subtotal AS item_subtotal,
+            op.payment_method,op.status AS payment_status,
             orr.reason AS return_reason,
+            orr.requested_at AS return_date,
             orr.status AS return_status,
-            orr.requested_at  AS return_date,
             p.title AS product_title,
             pi.image_url
         FROM order_returns orr
@@ -453,7 +453,7 @@ def my_returns():
         JOIN order_details od  ON o.order_id=od.order_id
         JOIN products p ON od.product_id=p.product_id
         JOIN product_images pi ON od.product_id=pi.product_id
-        WHERE o.is_deleted=0 AND pi.is_active=1 AND o.user_id=%s''',(user_id,))
+        WHERE o.is_deleted=0 AND pi.is_active=1 AND orr.is_cancelled=0 AND o.user_id=%s''',(user_id,))
 
     return_details=cursor.fetchall()
     cursor.close()
@@ -461,9 +461,44 @@ def my_returns():
     return render_template('my_returns.htm',return_details=return_details)
 
 
+@user_bp.route('/return_cancel/<int:order_id>',methods=['GET','POST'])
+@login_required
+def return_cancel(order_id):
+    cursor=mysql.connection.cursor()
+    reason=request.form.get('reason')
+
+    cursor.execute('''UPDATE order_returns SET reason=%s,is_cancelled=1,requested_at=%s WHERE
+                       order_id=%s''',(reason,datetime.now(),order_id))
+    mysql.connection.commit()
+    session['toast']='Request Send Successfully!'
+    return redirect(request.referrer)
+    
+   
 
 @user_bp.route('/my_cancellations',methods=['GET','POST'])
 @login_required
 def my_cancellations():
-    return render_template('my_cancellations.htm')
+    cursor=mysql.connection.cursor()
 
+    user_id=session.get('user_id')
+    if not user_id:
+        session['toast']='Please Login!'
+        return redirect(request.referrer)
+
+    cursor.execute('''SELECT o.order_id,o.order_number,o.status AS order_status,o.total_amount,
+            o.shipping_address,o.ordered_at,o.discount_amount,o.promo_code,
+            o.subtotal,od.product_amount,od.quantity,od.subtotal AS item_subtotal,
+            o.cancelled_at AS cancellation_date,
+            op.payment_method,op.status AS payment_status,
+            p.title AS product_title,
+            pi.image_url
+        FROM orders o 
+        JOIN order_payments op ON o.order_id=op.order_id
+        JOIN order_details od ON o.order_id=od.order_id
+        JOIN products p ON od.product_id=p.product_id
+        JOIN product_images pi ON od.product_id=pi.product_id
+        WHERE o.is_deleted=0 AND pi.is_active=1 AND o.user_id=%s AND o.is_cancelled=1''',(user_id,))
+
+    cancel_details=cursor.fetchall()
+    cursor.close()
+    return render_template('my_cancellations.htm',cancel_details=cancel_details)
