@@ -8,8 +8,9 @@ from werkzeug.utils import secure_filename
 from products import prod_bp
 from orders import order_bp
 from users import user_bp
+from orders.order_routes import get_cart_count
 
-app = Flask(__name__,static_folder='static',template_folder='templates')
+app=Flask(__name__,static_folder='static',template_folder='templates')
 
 
 ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'pdf'}
@@ -31,7 +32,7 @@ app.config['MYSQL_HOST']=MYSQL_HOST
 app.config['MYSQL_USER']=MYSQL_USER
 app.config['MYSQL_PASSWORD']=MYSQL_PASSWORD
 app.config['MYSQL_DB']=MYSQL_DB
-app.config['MYSQL_PORT']=3307
+app.config['MYSQL_PORT']=MYSQL_PORT #3307
 app.config['MYSQL_CURSORCLASS']='DictCursor'
 
 mysql.init_app(app)
@@ -93,7 +94,7 @@ def support():
 
 @app.context_processor
 def inject_cart_count():
-    from orders.order_routes import get_cart_count
+    
     return dict(cart_count=get_cart_count())
 
 
