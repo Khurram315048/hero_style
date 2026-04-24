@@ -32,7 +32,7 @@ app.config['MYSQL_HOST']=MYSQL_HOST
 app.config['MYSQL_USER']=MYSQL_USER
 app.config['MYSQL_PASSWORD']=MYSQL_PASSWORD
 app.config['MYSQL_DB']=MYSQL_DB
-app.config['MYSQL_PORT']=MYSQL_PORT #3307
+app.config['MYSQL_PORT']=3307
 app.config['MYSQL_CURSORCLASS']='DictCursor'
 
 mysql.init_app(app)
@@ -99,4 +99,4 @@ def inject_cart_count():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=int(os.environ.get('PORT', 5000)))
+    app.run(port=5000,debug=True)
