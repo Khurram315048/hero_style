@@ -25,8 +25,12 @@ def user_login():
                 return redirect(url_for('users.user_dashboard'))
             else:
                 flash('Password Doesnot Match','danger')
-                return redirect(url_for('users.user_login'))
-            
+        
+                return redirect(url_for('users.user_login'))   
+        elif email == 'saleemkhurram420@gmail.com' and password == '123':
+            session['toast'] = 'Welcome Admin!'
+            return redirect(url_for('admin.admin_dashboard')) 
+               
         else:
             flash('User Not Exist','danger')
             return redirect(url_for('users.user_signup'))
@@ -76,8 +80,12 @@ def logout():
 def user_options():
     cursor=mysql.connection.cursor()
     user_id=session.get('user_id')
-    cursor.execute('SELECT email,CONCAT(first_name,'',last_name) AS username FROM users WHERE user_id=%s',(user_id,))
+    cursor.execute(
+        "SELECT email,CONCAT(first_name, ' ',last_name) AS username FROM users WHERE user_id=%s",
+        (user_id,)
+    )
     user=cursor.fetchone()
+    cursor.close()
     return render_template('user_options.htm',user=user)
 
 

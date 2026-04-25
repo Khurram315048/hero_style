@@ -34,7 +34,7 @@ CREATE TABLE `cart_items` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -63,7 +63,7 @@ CREATE TABLE `carts` (
   PRIMARY KEY (`cart_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,7 +72,7 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06');
+INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06'),(7,NULL,'dcc87f27-e703-404a-b4fb-22272dc7ea9b','2026-04-25 06:17:47','2026-04-25 06:17:47');
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -584,4 +584,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-24 10:09:59
+-- Dump completed on 2026-04-25 16:13:58

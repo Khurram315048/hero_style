@@ -1,7 +1,7 @@
 import secrets
 import os
 
-SECRET_KEY='SECRET_KEY',secrets.token_hex(16)
+SECRET_KEY=secrets.token_hex(16)
 TEMPLATES_AUTO_RELOAD=True
 MYSQL_HOST='localhost'
 MYSQL_USER='root'

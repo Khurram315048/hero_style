@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from products import prod_bp
 from orders import order_bp
 from users import user_bp
+from admin import admin_bp
 from orders.order_routes import get_cart_count
 
 app=Flask(__name__,static_folder='static',template_folder='templates')
@@ -22,6 +23,7 @@ def allowed_file(filename):
 app.register_blueprint(prod_bp)
 app.register_blueprint(order_bp)
 app.register_blueprint(user_bp)
+app.register_blueprint(admin_bp)
 
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 app.config['TEMPLATES_AUTO_RELOAD']=TEMPLATES_AUTO_RELOAD
