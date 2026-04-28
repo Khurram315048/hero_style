@@ -5,8 +5,12 @@ hero_watches
 │  ├─ admin_models.py
 │  ├─ admin_routes.py
 │  ├─ admin_views
+│  │  ├─ admin_base.htm
 │  │  └─ admin_dashboard.htm
-│  └─ __init__.py
+│  ├─ __init__.py
+│  └─ __pycache__
+│     ├─ admin_routes.cpython-312.pyc
+│     └─ __init__.cpython-312.pyc
 ├─ auto_export_db.py
 ├─ categories
 │  ├─ categ_models.py
@@ -47,6 +51,8 @@ hero_watches
 ├─ README.md
 ├─ static
 │  ├─ css
+│  │  ├─ admin_css
+│  │  │  └─ dashboard_css.css
 │  │  ├─ auth.css
 │  │  ├─ cart_css.css
 │  │  ├─ cart_one.css

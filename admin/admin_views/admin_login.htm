@@ -5,14 +5,14 @@
         <div class="auth-visual">
             <div class="brand-logo">HS</div>
             <h2>Excellence Awaits</h2>
-            <p>Access your curated collection and order history.</p>
+            <p>Access your System.</p>
         </div>
         <div class="auth-form-side">
             <div class="auth-header">
                 <h1>Sign In</h1>
                 <p>Welcome back to Hero Style.</p>
             </div>
-            <form method="POST" action="{{url_for('users.user_login')}}">
+            <form method="POST" action="{{url_for('admin.admin_login')}}">
                 <div class="auth-group">
                     <label class="auth-label">Email Address</label>
                     <input type="email" name="email" class="auth-input" required placeholder="name@example.com">
@@ -23,12 +23,12 @@
                 </div>
                 <div class="auth-options">
                     <label><input type="checkbox" name="remember_me"> Remember me</label>
-                    <a href="{{url_for('users.reset_password')}}" class="auth-link">Forgot Password?</a>
+                    <a href="{{url_for('admin.admin_reset')}}" class="auth-link">Forgot Password?</a>
                 </div>
                 <button type="submit"  name="user_login "class="btn-auth">Enter Dashboard</button>
             </form>
             <p class="auth-footer">
-                New to Hero? <a href="{{url_for('users.user_signup')}}" class="auth-link">Create Account</a>
+                New to Hero? <a href="{{url_for('admin.admin_signup')}}" class="auth-link">Create Account</a>
             </p>
         </div>
     </div>

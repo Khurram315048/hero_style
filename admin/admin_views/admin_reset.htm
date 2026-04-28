@@ -13,7 +13,7 @@
                 <h1>Reset Password</h1>
                 <p>Lost your keys to the collection?</p>
             </div>
-            <form method="POST" action="{{url_for('users.reset_password')}}">
+            <form method="POST" action="{{url_for('admin.admin_reset')}}">
                 <div class="auth-group">
                     <label class="auth-label">Enter Registered Email</label>
                     <input type="email" name="email" class="auth-input" required placeholder="you@example.com">
@@ -23,7 +23,7 @@
                 <button type="submit" class="btn-auth">Password Reset</button>
             </form>
             <p class="auth-footer">
-                Suddenly remembered? <a href="{{url_for('users.user_login')}}" class="auth-link">Back to Login</a>
+                Suddenly remembered? <a href="{{url_for('admin.admin_login')}}" class="auth-link">Back to Login</a>
             </p>
         </div>
     </div>

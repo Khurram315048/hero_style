@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hero Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/dashboard_css.css') }}">
+</head>
+<body>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if session.get('toast') %}
+    <div class="toast" id="toast">{{ session.pop('toast') }}</div>
+    <script>
+      setTimeout(() => {
+        const t = document.getElementById('toast');
+        if(t) t.style.opacity = '0';
+      }, 3000);
+    </script>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+
+</body>
+</html>

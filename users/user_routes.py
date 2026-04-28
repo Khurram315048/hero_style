@@ -13,29 +13,27 @@ def user_login():
     if request.method=='POST':
         email=request.form.get('email')
         password=request.form.get('password')
-        #check_password=check_password_hash(password)
-
-        cursor.execute('SELECT * FROM users WHERE email=%s',(email,))
-        user=cursor.fetchone()
-        if user and user['role_id']==2:
-            if check_password_hash(user['password_hash'],password):
-                session['user_id']=user['user_id']
-                session.permanent=True if request.form.get('remember_me') else False
-                session['toast']='User Logined!'
-                return redirect(url_for('users.user_dashboard'))
-            else:
-                flash('Password Doesnot Match','danger')
         
-                return redirect(url_for('users.user_login'))   
-        elif email == 'saleemkhurram420@gmail.com' and password == '123':
-            session['toast'] = 'Welcome Admin!'
-            return redirect(url_for('admin.admin_dashboard')) 
-               
-        else:
-            flash('User Not Exist','danger')
+        cursor.execute('SELECT * FROM users WHERE email=%s AND is_active=1',(email,))
+        user=cursor.fetchone()
+        cursor.close()
+
+        if not user:
+            flash('Account does not exist','danger')
             return redirect(url_for('users.user_signup'))
 
+        if not check_password_hash(user['password_hash'],password):
+            flash('Password does not match','danger')
+            return redirect(url_for('users.user_login'))
+
+        session['user_id']=user['user_id']
+        session['role']='user'
+        session.permanent=True if request.form.get('remember_me') else False
+        session['toast']='Welcome back!'
+        return redirect(url_for('users.user_dashboard'))
+
     return render_template('user_login.htm')
+
 
 
 

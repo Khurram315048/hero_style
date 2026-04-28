@@ -40,6 +40,11 @@ app.config['MYSQL_CURSORCLASS']='DictCursor'
 mysql.init_app(app)
 
 
+
+
+
+
+
 @app.route('/')
 def homepage():
     cursor=mysql.connection.cursor()

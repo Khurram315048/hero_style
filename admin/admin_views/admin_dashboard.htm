@@ -1,11 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-</head>
-<body>
-    <h2>Admin Here</h2>
-</body>
-</html>
+{% extends 'admin_base.htm' %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<div class="admin-wrapper">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">&#9676;</span>
+      <span class="brand-name">HeroAdmin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <p class="nav-section-label">Main</p>
+      <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-item active">
+        <span class="nav-icon">&#9632;</span> Dashboard
+      </a>
+
+      <p class="nav-section-label">Catalog</p>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9635;</span> Products
+      </a>
+      
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9636;</span> Categories
+      </a>
+
+      <p class="nav-section-label">Sales</p>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9633;</span> Orders
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9651;</span> Returns
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9650;</span> Cancellations
+      </a>
+
+      <p class="nav-section-label">Users</p>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9675;</span> Customers
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9734;</span> Reviews
+      </a>
+
+      <p class="nav-section-label">Support</p>
+      <a href="#" class="nav-item">
+        <span class="nav-icon">&#9993;</span> Support Forms
+      </a>
+
+      <p class="nav-section-label">Account</p>
+      <a href="{{ url_for('admin.logout') }}" class="nav-item logout">
+        <span class="nav-icon">&#8592;</span> Logout
+      </a>
+
+    </nav>
+  </aside>
+
+
+  <div class="main-content">
+
+  
+    <header class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="topbar-right">
+        <span class="admin-badge">Admin</span>
+      </div>
+    </header>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <p class="stat-label">Total Orders</p>
+        <p class="stat-value">--</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Total Revenue</p>
+        <p class="stat-value">--</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Total Customers</p>
+        <p class="stat-value">--</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">Pending Returns</p>
+        <p class="stat-value">--</p>
+      </div>
+    </section>
+
+
+    <section class="quick-links">
+      <h2 class="section-heading">Quick Actions</h2>
+      <div class="quick-grid">
+        <a href="#" class="quick-card">
+          <span class="quick-icon">&#43;</span>
+          <span>Add Product</span>
+        </a>
+       
+        <a href="#" class="quick-card">
+          <span class="quick-icon">&#43;</span>
+          <span>Add Category</span>
+        </a>
+        <a href="#" class="quick-card">
+          <span class="quick-icon">&#128203;</span>
+          <span>View Orders</span>
+        </a>
+        <a href="#" class="quick-card">
+          <span class="quick-icon">&#9993;</span>
+          <span>Support Inbox</span>
+        </a>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+</script>
+
+{% endblock %}
