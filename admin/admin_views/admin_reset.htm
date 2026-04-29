@@ -1,32 +1,56 @@
-{% include 'layouts/header.htm' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Hero Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_auth.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-
-<section class="auth-page">
+<section class="admin-auth-wrapper">
     <div class="auth-card">
+
         <div class="auth-visual">
-            <div class="brand-logo">HS</div>
-            <h2>Secure Access</h2>
-            
-        </div>
-        <div class="auth-form-side">
-            <div class="auth-header">
-                <h1>Reset Password</h1>
-                <p>Lost your keys to the collection?</p>
+            <div class="visual-content">
+                <div class="brand-logo">HS</div>
+                <h2>Admin Control</h2>
+                <p>Management & Excellence</p>
             </div>
-            <form method="POST" action="{{url_for('admin.admin_reset')}}">
+            <div class="visual-footer">
+                &copy; 2026 Developed by <a href="#" target="_blank" class="profile-nav-item">Muhammad Khurram</a>
+            </div>
+        </div>
+
+        <div class="auth-form-side">
+            <div class="form-header">
+                <h1>Reset Password</h1>
+                <p>Enter your credentials to access the dashboard</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('admin.admin_reset') }}">
                 <div class="auth-group">
-                    <label class="auth-label">Enter Registered Email</label>
-                    <input type="email" name="email" class="auth-input" required placeholder="you@example.com">
-                    <label class="auth-label">Enter New Password</label>
-                    <input type="password" name="new_password" class="auth-input" required placeholder="#example123@">
+                    <label class="auth-label">Email Address</label>
+                    <input type="email" name="email" class="auth-input" required placeholder="admin@herostyle.com">
                 </div>
-                <button type="submit" class="btn-auth">Password Reset</button>
+
+                <div class="auth-group">
+                    <label class="auth-label">New Password</label>
+                    <input type="password" name="new_password" class="auth-input" required placeholder="••••••••">
+                </div>
+
+
+                <button type="submit" class="btn-admin-auth">Update Credentials</button>
             </form>
-            <p class="auth-footer">
-                Suddenly remembered? <a href="{{url_for('admin.admin_login')}}" class="auth-link">Back to Login</a>
-            </p>
+
+            <div class="auth-footer">
+                <p>Remember credentials?.</p>
+                <a href="{{ url_for('admin.admin_login') }}" class="auth-link">Back to Login</a>
+            </div>
         </div>
     </div>
 </section>
 
-{% include 'layouts/footer.htm' %}
+</body>
+</html>

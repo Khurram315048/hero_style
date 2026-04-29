@@ -6,7 +6,10 @@ hero_watches
 │  ├─ admin_routes.py
 │  ├─ admin_views
 │  │  ├─ admin_base.htm
-│  │  └─ admin_dashboard.htm
+│  │  ├─ admin_dashboard.htm
+│  │  ├─ admin_login.htm
+│  │  ├─ admin_reset.htm
+│  │  └─ admin_signup.htm
 │  ├─ __init__.py
 │  └─ __pycache__
 │     ├─ admin_routes.cpython-312.pyc
@@ -18,9 +21,6 @@ hero_watches
 │  ├─ views
 │  └─ __init__.py
 ├─ config.py
-├─ layouts
-│  ├─ admin_base.html
-│  └─ user_base.html
 ├─ main.py
 ├─ orders
 │  ├─ order_models.py
@@ -52,6 +52,7 @@ hero_watches
 ├─ static
 │  ├─ css
 │  │  ├─ admin_css
+│  │  │  ├─ admin_auth.css
 │  │  │  └─ dashboard_css.css
 │  │  ├─ auth.css
 │  │  ├─ cart_css.css
@@ -97,13 +98,6 @@ hero_watches
 │     └─ support_forms
 │        ├─ sample.PNG
 │        └─ tbl_pic.PNG
-├─ templates
-│  ├─ homepage.htm
-│  ├─ layouts
-│  │  ├─ footer.htm
-│  │  ├─ header.htm
-│  │  └─ user_options.htm
-│  └─ support.htm
 ├─ updated_lms.sql
 ├─ users
 │  ├─ users_view

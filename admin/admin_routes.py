@@ -103,9 +103,30 @@ def logout():
 
 
 
-@admin_bp.route('/admin_dashboard')
+@admin_bp.route('/admin_options',methods=['GET','POST'])
+def admin_options():
+    cursor=mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    cursor.execute(
+        '''SELECT email,username FROM admins WHERE admin_id=%s''',
+        (admin_id,)
+    )
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('admin_options.htm',admin=admin)
+
+
+@admin_bp.route('/admin_dashboard',methods=['GET','POST'])
 def admin_dashboard():
-    return render_template('admin_dashboard.htm')
+    cursor=mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    cursor.execute(
+        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
+        (admin_id,)
+    )
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('admin_dashboard.htm',admin=admin)
 
 
 @admin_bp.route('/admin_base')

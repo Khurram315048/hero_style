@@ -26,7 +26,94 @@
     </script>
   {% endif %}
 
-  {% block content %}{% endblock %}
+  <div class="admin-wrapper">
+
+    <!-- ✅ SIDEBAR — Sirf yahan ek baar — sab files inherit karengi -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">&#9676;</span>
+        <span class="brand-name">HeroAdmin</span>
+      </div>
+
+      <nav class="sidebar-nav">
+
+        <p class="nav-section-label">Main</p>
+        <a href="{{ url_for('admin.admin_dashboard') }}" 
+           class="nav-item {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+          <span class="nav-icon">&#9632;</span> Dashboard
+        </a>
+
+        <p class="nav-section-label">Catalog</p>
+        <a href="{{ url_for('admin.products') }}" 
+           class="nav-item {% if request.endpoint == 'admin.products' %}active{% endif %}">
+          <span class="nav-icon">&#9635;</span> Products
+        </a>
+        <a href="{{ url_for('admin.categories') }}" 
+           class="nav-item {% if request.endpoint == 'admin.categories' %}active{% endif %}">
+          <span class="nav-icon">&#9636;</span> Categories
+        </a>
+
+        <p class="nav-section-label">Sales</p>
+        <a href="{{ url_for('admin.orders') }}" 
+           class="nav-item {% if request.endpoint == 'admin.orders' %}active{% endif %}">
+          <span class="nav-icon">&#9633;</span> Orders
+        </a>
+        <a href="{{ url_for('admin.returns') }}" 
+           class="nav-item {% if request.endpoint == 'admin.returns' %}active{% endif %}">
+          <span class="nav-icon">&#9651;</span> Returns
+        </a>
+        <a href="{{ url_for('admin.cancellations') }}" 
+           class="nav-item {% if request.endpoint == 'admin.cancellations' %}active{% endif %}">
+          <span class="nav-icon">&#9650;</span> Cancellations
+        </a>
+
+        <p class="nav-section-label">Users</p>
+        <a href="{{ url_for('admin.customers') }}" 
+           class="nav-item {% if request.endpoint == 'admin.customers' %}active{% endif %}">
+          <span class="nav-icon">&#9675;</span> Customers
+        </a>
+        <a href="{{ url_for('admin.reviews') }}" 
+           class="nav-item {% if request.endpoint == 'admin.reviews' %}active{% endif %}">
+          <span class="nav-icon">&#9734;</span> Reviews
+        </a>
+
+        <p class="nav-section-label">Support</p>
+        <a href="{{ url_for('admin.support') }}" 
+           class="nav-item {% if request.endpoint == 'admin.support' %}active{% endif %}">
+          <span class="nav-icon">&#9993;</span> Support Forms
+        </a>
+
+        <p class="nav-section-label">Account</p>
+        <a href="{{ url_for('admin.logout') }}" class="nav-item logout">
+          <span class="nav-icon">&#8592;</span> Logout
+        </a>
+
+      </nav>
+    </aside>
+
+    <!-- ✅ MAIN CONTENT — har page ka apna content yahan aayega -->
+    <div class="main-content">
+
+      <!-- ✅ TOPBAR — bhi base mein — har page pe same rahega -->
+      <header class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+        <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="topbar-right">
+          <span class="admin-badge">Admin</span>
+        </div>
+      </header>
+
+      <!-- ✅ BLOCK — har child file sirf yeh fill karegi -->
+      {% block content %}{% endblock %}
+
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+  </script>
 
 </body>
 </html>
