@@ -1,6 +1,6 @@
 from flask import render_template,request,flash,redirect,url_for,session
 from werkzeug.security import generate_password_hash,check_password_hash
-from utils.auth import login_required
+from utils.auth import admin_required
 import datetime 
 from datetime import datetime
 from admin import admin_bp
@@ -95,6 +95,7 @@ def admin_reset():
 
 
 @admin_bp.route('/logout')
+@admin_required
 def logout():
     session.clear()
 
@@ -104,6 +105,7 @@ def logout():
 
 
 @admin_bp.route('/admin_options',methods=['GET','POST'])
+@admin_required
 def admin_options():
     cursor=mysql.connection.cursor()
     admin_id=session.get('admin_id')
@@ -117,6 +119,7 @@ def admin_options():
 
 
 @admin_bp.route('/admin_dashboard',methods=['GET','POST'])
+@admin_required
 def admin_dashboard():
     cursor=mysql.connection.cursor()
     admin_id=session.get('admin_id')
@@ -125,10 +128,20 @@ def admin_dashboard():
         (admin_id,)
     )
     admin=cursor.fetchone()
+    cursor.execute('SELECT COUNT(*) AS total_orders FROM orders WHERE is_cancelled=0 AND is_deleted=0')
+    result=cursor.fetchone()
+    total_orders=result['total_orders'] 
+    cursor.execute('SELECT COUNT(user_id) AS total_customers FROM orders WHERE is_cancelled=0 AND is_deleted=0')
+    result_cust=cursor.fetchone()
+    total_customers=result_cust['total_customers']
+    cursor.execute('SELECT SUM(total_amount) AS total_revenue FROM orders WHERE is_cancelled=0 AND is_deleted=0')
+    result_sum=cursor.fetchone()
+    total_revenue=result_sum['total_revenue']
+    cursor.execute('SELECT COUNT(*) AS total_forms FROM forms WHERE is_deleted=0')
+    result_form=cursor.fetchone()
+    total_forms=result_form['total_forms']
     cursor.close()
-    return render_template('admin_dashboard.htm',admin=admin)
+    return render_template('admin_dashboard.htm',admin=admin,total_forms=total_forms,
+                           total_orders=total_orders,total_customers=total_customers,total_revenue=total_revenue)
 
 
-@admin_bp.route('/admin_base')
-def admin_base():
-    return render_template('admin_base.htm')

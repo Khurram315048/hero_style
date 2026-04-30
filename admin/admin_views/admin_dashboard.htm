@@ -1,6 +1,6 @@
 {% block content %}
 <div class="dashboard-wrapper">
-    
+    <title>Admin Portal | Hero Style</title>
     {% include 'layouts/admin_options.htm' %}
 
     <main class="main-content">
@@ -29,19 +29,27 @@
             <section class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-label">Total Orders</span>
-                    <p class="stat-value">1,284</p>
+                    {% if total_orders %}
+                    <p class="stat-value">{{ total_orders }}</p>
+                    {% endif %}
                 </div>
                 <div class="stat-card">
                     <span class="stat-label">Total Revenue</span>
-                    <p class="stat-value">$12,450</p>
+                     {% if total_revenue %}
+                    <p class="stat-value">PKR{{ total_revenue }}</p>
+                    {% endif %}
                 </div>
                 <div class="stat-card">
                     <span class="stat-label">Total Customers</span>
-                    <p class="stat-value">840</p>
+                    {% if total_customers %}
+                    <p class="stat-value">{{ total_customers }}</p>
+                    {% endif %}
                 </div>
                 <div class="stat-card">
                     <span class="stat-label">Support Messages</span>
-                    <p class="stat-value">12</p>
+                    {% if total_forms %}
+                    <p class="stat-value">{{ total_forms }}</p>
+                    {% endif %}
                 </div>
             </section>
 
