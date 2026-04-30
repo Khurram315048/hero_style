@@ -1,0 +1,331 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | All Products</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <div class="content-body">
+
+            <div class="page-title-row">
+                <h1 class="page-title">All <span>Products</span></h1>
+                <button class="btn btn-primary" id="openAddModal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Product
+                </button>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="productSearch"
+                        placeholder="Search by name, ID, title, category..."
+                        autocomplete="off"
+                    />
+                </div>
+                <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Product Title</th>
+                            <th>Product Number</th>
+                            <th>Category</th>
+                            <th>Base Price</th>
+                            <th>Sale Price</th>
+                            <th>IN Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        {% if products %}
+                            {% for product in products %}
+                            <tr
+                                data-id="{{ product.product_id | lower }}"
+                                data-title="{{ product.title | lower if product.title else '' }}"
+                                data-category="{{ product.category | lower if product.category else '' }}"
+                            >
+                                <td style="color: var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                <td>
+                                    {% if product.image %}
+                                        <img src="{{ product.image }}" alt="{{ product.name }}" class="table-img" />
+                                    {% else %}
+                                        <div class="table-img" style="display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="product-name-cell">
+                                        <div>
+                                            <div class="pname">{{ product.name }}</div>
+                                            {% if product.title %}
+                                            <div class="psku">{{ product.title }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-muted">{{ product.id }}</span>
+                                </td>
+                                <td>{{ product.category if product.category else '—' }}</td>
+                                <td style="color: var(--text-primary); font-weight:600;">
+                                    PKR {{ product.price if product.price else '—' }}
+                                </td>
+                                <td>{{ product.stock if product.stock is defined else '—' }}</td>
+                                <td>
+                                    {% if product.status == 'active' or product.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% elif product.status == 'out_of_stock' %}
+                                        <span class="badge badge-danger">Out of Stock</span>
+                                    {% else %}
+                                        <span class="badge badge-muted">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="#" class="btn-icon" title="View">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </a>
+                                        <a href="#" class="btn-icon" title="Edit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                        </a>
+                                        <a href="#"
+                                           class="btn-icon danger"
+                                           title="Delete"
+                                           onclick="return confirm('Delete This cannot be undone.')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="9">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📦</div>
+                                        <h4>No Products Found</h4>
+                                        <p>Start by adding your first product.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div id="noResults" style="display:none;">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h4>No Results</h4>
+                        <p>No products match your search query.</p>
+                    </div>
+                </div>
+
+                {% if products %}
+                <div class="table-footer">
+                    <span class="table-info" id="totalCount">{{ products | length }} product(s)</span>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+
+<div class="modal-overlay" id="addProductModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Add New Product</span>
+            <button class="modal-close" id="closeAddModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" action="#" enctype="multipart/form-data" id="addProductForm">
+
+                <div class="form-grid">
+                    <div class="form-group span-2">
+                        <label class="form-label">Product Title <span class="required">*</span></label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Wireless Headphones" required />
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Title / Subtitle</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Premium Noise Cancelling" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category <span class="required">*</span></label>
+                        <select name="category" class="form-control" required>
+                            <option value="" disabled selected>Select category</option>
+                            {% if categories %}
+                                {% for cat in categories %}
+                                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="electronics">Electronics</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="home">Home & Kitchen</option>
+                                <option value="sports">Sports</option>
+                                <option value="other">Other</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Base Price (PKR) <span class="required">*</span></label>
+                        <input type="number" name="base_price" class="form-control" placeholder="0.00" min="0" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sale Price (PKR) <span class="required">*</span></label>
+                        <input type="number" name="sale_price" class="form-control" placeholder="0.00" min="0" step="0.01" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Stock Quantity</label>
+                        <input type="number" name="stock" class="form-control" placeholder="0" min="0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="draft">Draft</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" placeholder="Write product description..."></textarea>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Product Image</label>
+                        <label class="file-input-wrapper" for="productImageInput">
+                            <div class="file-icon">🖼️</div>
+                            <span>Click to upload image</span>
+                            <p>PNG, JPG, WEBP — Max 5MB</p>
+                            <input type="file" id="productImageInput" name="image" accept="image/*" onchange="previewImage(this)" />
+                        </label>
+                        <img id="imagePreview" src="#" alt="Preview" style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelAddModal">Cancel</button>
+            <button class="btn btn-primary" onclick="document.getElementById('addProductForm').submit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Add Product
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal=document.getElementById('addProductModal');
+    const openBtn=document.getElementById('openAddModal');
+    const closeBtn=document.getElementById('closeAddModal');
+    const cancelBtn=document.getElementById('cancelAddModal');
+
+    function openModal(){
+        modal.classList.add('active'); 
+    }
+    function closeModal(){
+        modal.classList.remove('active'); 
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', (e) => { 
+        if(e.target === modal)
+         closeModal(); 
+        });
+
+    document.addEventListener('keydown', (e) => { 
+        if(e.key === 'Escape') 
+        closeModal(); 
+    });
+
+    function previewImage(input){
+        const preview=document.getElementById('imagePreview');
+        if(input.files && input.files[0]){
+            const reader=new FileReader();
+            reader.onload = (e) =>{
+                preview.src=e.target.result;
+                preview.style.display='block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+   
+    const searchInput=document.getElementById('productSearch');
+    const tableBody=document.getElementById('productsTableBody');
+    const noResults=document.getElementById('noResults');
+    const searchCount=document.getElementById('searchCount');
+    const totalCount=document.getElementById('totalCount');
+
+    searchInput.addEventListener('input', function () {
+        const q=this.value.trim().toLowerCase();
+        const rows=tableBody ? tableBody.querySelectorAll('tr[data-name]') : [];
+        let visible=0;
+
+        rows.forEach(row =>{
+            const name=row.dataset.name || '';
+            const id=row.dataset.id    || '';
+            const title=row.dataset.title  || '';
+            const category=row.dataset.category || '';
+
+            const match = !q || name.includes(q) || id.includes(q) || title.includes(q) || category.includes(q);
+
+            row.style.display=match ? '' : 'none';
+            if(match) visible++;
+        });
+
+        if 
+        (noResults)
+        noResults.style.display=(rows.length > 0 && visible === 0) ? 'block' : 'none';
+
+        if(searchCount){
+            searchCount.textContent = q ? `${visible} result(s) for "${q}"` : '';
+        }
+        if(totalCount){
+            totalCount.textContent = q ? `${visible} of ${rows.length} product(s)` : `${rows.length} product(s)`;
+        }
+    });
+</script>
+
+{% endblock %}

@@ -145,3 +145,17 @@ def admin_dashboard():
                            total_orders=total_orders,total_customers=total_customers,total_revenue=total_revenue)
 
 
+
+@admin_bp.route('/main_products',methods=['GET','POST'])
+@admin_required
+def main_products():
+    cursor=mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    cursor.execute(
+        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
+        (admin_id,)
+    )
+    admin=cursor.fetchone()
+    return render_template('main_products.htm',admin=admin)
+
+
