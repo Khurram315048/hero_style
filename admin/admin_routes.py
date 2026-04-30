@@ -156,6 +156,16 @@ def main_products():
         (admin_id,)
     )
     admin=cursor.fetchone()
-    return render_template('main_products.htm',admin=admin)
+
+    cursor.execute('''SELECT pr.* , pi.* , cat.*
+                   FROM products pr
+                   JOIN product_images pi ON pr.product_id=pi.product_id
+                   JOIN categories cat ON pr.category_id=cat.category_id
+                    ''')
+    products=cursor.fetchall()
+    cursor.execute('SELECT * FROM categories WHERE is_active=1')
+    categories=cursor.fetchall()
+    cursor.close()
+    return render_template('main_products.htm',admin=admin,products=products,categories=categories)
 
 
