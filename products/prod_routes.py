@@ -1,6 +1,7 @@
-from flask import render_template
+from flask import render_template,request,jsonify
 from products import prod_bp
 from utils.db import mysql
+import MySQLdb.cursors
 
 
 
@@ -200,3 +201,41 @@ def mix_products():
         return render_template('404.htm'), 404
     
     return render_template('mix_products.htm',products=products)
+
+
+
+@prod_bp.route('/search')
+def search():
+    q = request.args.get('q', '').strip()
+    fmt = request.args.get('format', 'html')
+
+    if not q:
+        if fmt == 'json':
+            return jsonify([])
+        return render_template('all_products.htm', products=[])
+
+    # ↓ DictCursor use karo
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""
+    SELECT p.product_id, p.title, p.base_price, p.sale_price,
+           pi.image_url, pi.alt_text,
+           c.name AS category_name,
+           p.short_description
+    FROM products p
+    LEFT JOIN product_images pi 
+        ON p.product_id = pi.product_id AND pi.is_active = 1
+    LEFT JOIN categories c 
+        ON p.category_id = c.category_id
+    WHERE p.status = 'active'
+    AND (p.title LIKE %s OR p.product_no LIKE %s)
+    GROUP BY p.product_id
+    LIMIT 20
+    """, (f'%{q}%', f'%{q}%'))
+    
+    products = cursor.fetchall()  # ab yeh list of dicts hogi
+    cursor.close()
+
+    if fmt == 'json':
+        return jsonify(products)  # ← dict(p) ki zaroorat nahi
+
+    return render_template('all_products.htm', products=products)

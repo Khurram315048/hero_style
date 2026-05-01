@@ -40,7 +40,7 @@
   </ul>
 
   <div class="nav-icons">
-          
+  
       <a href="/users/user_profile" class="nav-icon-btn" title="User Profile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -53,7 +53,9 @@
       <span id="cart-count" class="cart-count"></span>
     </a>
   </div>
-  
+ 
+
+
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
  
 {% if session.get('toast') %}
@@ -61,6 +63,8 @@
   document.addEventListener('DOMContentLoaded',function(){
     showCartToast("{{ session.pop('toast') }}");
   });
+
+
 </script>
 {% endif %}
 </nav>
