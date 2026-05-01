@@ -45,7 +45,7 @@ def admin_login():
         session['admin_id']=admin['admin_id']
         session['role']='admin'
         session.permanent=True if request.form.get('remember_me') else False
-        session['toast']='Welcome back!'
+        session['admin_toast']='Welcome back!'
         return redirect(url_for('admin.admin_dashboard'))
 
     return render_template('admin_login.htm')
@@ -68,13 +68,13 @@ def admin_signup():
         cursor.execute('SELECT email FROM admins WHERE email=%s',(email,))
         exist=cursor.fetchone()
         if exist:
-            session['toast']='Already Registered!'
+            session['admin_toast']='Already Registered!'
             return redirect(url_for('admin.admin_login'))
         
         cursor.execute('''INSERT INTO admins(role_id,first_name,last_name,username,email,password_hash)
                     VALUES(%s,%s,%s,%s,%s,%s)''',(1,first_name,last_name,username,email,hash_password))
         mysql.connection.commit()
-        session['toast']='You have been registered successfully!'
+        session['admin_toast']='You have been registered successfully!'
         return redirect(url_for('admin.admin_login'))
     
     return render_template('admin_signup.htm')
@@ -92,7 +92,7 @@ def admin_reset():
 
         if not admin:
             cursor.close()
-            session['toast']='Email Does Not Exist!'
+            session['admin_toast']='Email Does Not Exist!'
             return redirect(url_for('admin.admin_signup'))
 
         password_hash=generate_password_hash(new_password)
@@ -102,7 +102,7 @@ def admin_reset():
         )
         mysql.connection.commit()
         cursor.close()
-        session['toast']='Password Updated Successfully!'
+        session['admin_toast']='Password Updated Successfully!'
         return redirect(url_for('admin.admin_login'))
 
     return render_template('admin_reset.htm')
@@ -113,7 +113,7 @@ def admin_reset():
 def logout():
     session.clear()
 
-    session['toast']='You have been logged out.'
+    session['admin_toast']='You have been logged out.'
     return redirect(url_for('admin.admin_login'))
 
 
@@ -178,7 +178,7 @@ def admin_profile():
         cursor.execute('''UPDATE admins SET first_name=%s,last_name=%s,username=%s,email=%s 
                        WHERE admin_id=%s AND is_deleted=0''',(first_name,last_name,user_name,email,admin_id))
         mysql.connection.commit()
-        session['toast']='Profile Updated Success!'
+        session['admin_toast']='Profile Updated Success!'
         return redirect(request.referrer)
 
 
@@ -254,7 +254,7 @@ def add_product():
         mysql.connection.commit()
 
     cursor.close()
-    session['toast']='Product Added Successfully!'
+    session['admin_toast']='Product Added Successfully!'
     return redirect(url_for('admin.main_products'))
 
 
@@ -262,12 +262,89 @@ def add_product():
 @admin_required
 def delete_product(product_id):
     cursor=mysql.connection.cursor()
+    cursor.execute('SELECT status FROM products WHERE product_id=%s',(product_id,))
+    result=cursor.fetchone()
+    if result['status'] == 'archived':
+        session['admin_toast']='Product already deleted!'
+        cursor.close()
+        return redirect(request.referrer)
+    
     cursor.execute('''UPDATE products SET status=%s,updated_at=%s WHERE product_id=%s''',('archived',datetime.now(),product_id))
     cursor.execute('''UPDATE product_images SET is_active=%s WHERE product_id=%s''',(0,product_id))
     mysql.connection.commit()
     cursor.close()
-    session['toast']='Product has been deleted successfully!'
+    session['admin_toast']='Product has been deleted successfully!'
     return redirect(url_for('admin.main_products'))
-    
+
+
+
+
+@admin_bp.route('/edit_product/<int:product_id>',methods=['POST'])
+@admin_required
+def edit_product(product_id):
+    cursor=mysql.connection.cursor()
+
+    title=request.form.get('title')
+    category_id=request.form.get('category')
+    base_price=request.form.get('base_price')
+    sale_price=request.form.get('sale_price')
+    stock=request.form.get('stock')
+    status=request.form.get('status','active')
+    short_desc=request.form.get('short_description')
+    long_desc=request.form.get('long_description')
+    display_type=request.form.get('display_type')
+    brightness_nits=request.form.get('brightness_nits') or None
+    battery_life=request.form.get('battery_life')
+    connectivity=request.form.get('connectivity')
+    strap_material=request.form.get('strap_material')
+    case_material=request.form.get('case_material')
+    water_resistance=request.form.get('water_resistance')
+    weight=request.form.get('weight')
+    warranty_month=request.form.get('warranty_month')
+    always_display=request.form.get('always_display')
+    product_no=request.form.get('product_no')
+    image=request.files.get('image')
+    width=12
+    height=12
+
+    cursor.execute('''
+        UPDATE products SET product_no=%s,category_id=%s,title=%s,base_price=%s,sale_price=%s,
+        stock_quantity=%s,status=%s,updated_at=%s WHERE product_id=%s''', 
+        (product_no,category_id,title,base_price,sale_price,stock,status,datetime.now(),product_id))
+    mysql.connection.commit()
+    product_id=cursor.lastrowid
+
+    cursor.execute('''
+        UPDATE  product_details SET product_id=%s,short_description=%s,long_description=%s,
+                   display_type=%s,brightness_nits=%s,
+         battery_life=%s,connectivity=%s,strap_material=%s,case_material=%s,water_resistance=%s,
+         weight=%s,warranty_months=%s,is_always_on_display=%s,updated_at=%s WHERE product_id=%s''',
+         (product_id,short_desc,long_desc,display_type,brightness_nits,
+          battery_life,connectivity,strap_material,case_material,water_resistance,
+          weight,warranty_month,always_display,datetime.now(),product_id))
+    mysql.connection.commit()
+
+
+    if image and image.filename != '':
+
+        cursor.execute('SELECT name FROM categories WHERE category_id=%s',(category_id,))
+        cat=cursor.fetchone()
+        cat_name=cat['name'].lower().replace(' ', '_')  
+        filename=secure_filename(image.filename)
+        upload_folder=os.path.join('static','uploads',cat_name)
+        os.makedirs(upload_folder,exist_ok=True)
+        image_path=os.path.join(upload_folder,filename)
+        image.save(image_path)
+        image_url='/' + image_path.replace('\\', '/')
+
+        cursor.execute('''
+            UPDATE  product_images SET product_id=%s,image_url=%s,alt_text=%s,
+                       is_active=%s,width=%s,height=%s,created_at=%s WHERE product_id=%s''', 
+                    (product_id,image_url,title,1,width,height,datetime.now(),product_id))
+        mysql.connection.commit()
+
+    cursor.close()
+    session['admin_toast']='Product Updated Successfully!'
+    return redirect(url_for('admin.main_products'))
 
 

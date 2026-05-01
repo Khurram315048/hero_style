@@ -148,16 +148,45 @@
                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                             </svg>
                                             </a>
-                                        <a href="#" class="btn-icon" title="Edit">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                            </svg>
-                                        </a>
+                                            {% if product.status == 'archived' %}
+                                            <span class="badge badge-muted">-</span>
+                                            {% else %}
+                                            <a href="javascript:void(0)"
+                                            class="btn-icon edit-product-btn"
+                                            title="Edit"
+                                            data-id="{{ product.product_id }}"
+                                            data-title="{{ product.title }}"
+                                            data-short="{{ product.short_description }}"
+                                            data-long="{{ product.long_description }}"
+                                            data-base="{{ product.base_price }}"
+                                            data-sale="{{ product.sale_price }}"
+                                            data-stock="{{ product.stock_quantity }}"
+                                            data-status="{{ product.status }}"
+                                            data-display="{{ product.display_type }}"
+                                            data-brightness="{{ product.brightness_nits }}"
+                                            data-battery="{{ product.battery_life }}"
+                                            data-connectivity="{{ product.connectivity }}"
+                                            data-strap="{{ product.strap_material }}"
+                                            data-case="{{ product.case_material }}"
+                                            data-water="{{ product.water_resistance }}"
+                                            data-weight="{{ product.weight }}"
+                                            data-warranty="{{ product.warranty_months }}"
+                                            data-is_display="{{ product.is_always_on_display }}"
+                                            data-img="{{ product.image_url }}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                            </a>
+                                            {% endif %}
+                                        {% if product.status == 'archived' %}
+                                            <span class="badge badge-muted">-</span>
+                                        {% else %}    
+
                                         <a href="{{url_for('admin.delete_product',product_id=product.product_id)}}"
                                            class="btn-icon danger"
                                            title="Delete"
-                                           onclick="return confirm('Delete {{product.title}}? This cannot be undone.')">
+                                           onclick="return confirm('Delete {{product.title}}? This cannot be undone.')" >
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <polyline points="3 6 5 6 21 6"/>
                                                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
@@ -165,6 +194,7 @@
                                                 <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                                             </svg>
                                         </a>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -201,6 +231,7 @@
         </div>
     </main>
 </div>
+
 
 <div class="modal-overlay" id="addProductModal">
     <div class="modal">
@@ -470,7 +501,153 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="editProductModal">
+    <div class="modal">
 
+        <div class="modal-header">
+            <span class="modal-title">Edit Product</span>
+            <button class="modal-close" id="closeEditModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" action="#" enctype="multipart/form-data" id="editProductForm">
+                <div class="form-grid">
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Product Title <span class="required">*</span></label>
+                        <input type="text" name="title" id="edit_title" class="form-control" required />
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Short Description</label>
+                        <input type="text" name="short_description" id="edit_short_description" class="form-control" />
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Long Description</label>
+                        <textarea name="long_description" id="edit_long_description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category <span class="required">*</span></label>
+                        <select name="category" id="edit_category" class="form-control" required>
+                            <option value="" disabled>Select category</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.category_id }}">{{ cat.name }}</option>
+                            {% else %}
+                                <option disabled>No categories found</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select name="status" id="edit_status" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="draft">Draft</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Base Price (PKR) <span class="required">*</span></label>
+                        <input type="number" name="base_price" id="edit_base_price" class="form-control" min="0" step="0.01" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sale Price (PKR) <span class="required">*</span></label>
+                        <input type="number" name="sale_price" id="edit_sale_price" class="form-control" min="0" step="0.01" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Stock Quantity</label>
+                        <input type="number" name="stock" id="edit_stock" class="form-control" min="0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product Warranty (Months)</label>
+                        <input type="number" name="warranty_month" id="edit_warranty" class="form-control" min="0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Display Type</label>
+                        <input type="text" name="display_type" id="edit_display" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Brightness Nits</label>
+                        <input type="number" name="brightness_nits" id="edit_brightness" class="form-control" min="0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Battery Life</label>
+                        <input type="text" name="battery_life" id="edit_battery" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Connectivity</label>
+                        <input type="text" name="connectivity" id="edit_connectivity" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Strap Material</label>
+                        <input type="text" name="strap_material" id="edit_strap" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Case Material</label>
+                        <input type="text" name="case_material" id="edit_case" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Water Resistance</label>
+                        <input type="text" name="water_resistance" id="edit_water" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product Weight</label>
+                        <input type="text" name="weight" id="edit_weight" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product On Display</label>
+                        <select name="always_display" id="edit_is_display" class="form-control">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Product Image</label>
+                        <img id="edit_image_preview" src="#" alt="Current Image"
+                             style="display:none; margin-bottom:10px; width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
+                        <label class="file-input-wrapper" for="editProductImageInput">
+                            <div class="file-icon">🖼️</div>
+                            <span>Click to replace image</span>
+                            <p>PNG, JPG, WEBP — Max 5MB</p>
+                            <input type="file" id="editProductImageInput" name="image" accept="image/*" onchange="previewEditImage(this)" />
+                        </label>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelEditModal">Cancel</button>
+            <button class="btn btn-primary" onclick="document.getElementById('editProductForm').submit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+
+    </div>
+</div>
 
 
 <script>
@@ -585,6 +762,69 @@ searchInput.addEventListener('input', function (){
     document.getElementById('searchCount').textContent = q ? `${visible} result(s) for "${q}"` : '';
     document.getElementById('totalCount').textContent = q ? `${visible} of ${rows.length} product(s)` : `${rows.length} product(s)`;
 });
+
+
+
+const editModal=document.getElementById('editProductModal');
+document.querySelectorAll('.edit-product-btn').forEach(btn => {
+    btn.addEventListener('click', function(){
+        const data=this.dataset;
+
+        document.getElementById('editProductForm').action='/admin/edit_product/' +data.id;
+
+        document.getElementById('edit_title').value=data.title || '';
+        document.getElementById('edit_short_description').value=data.short || '';
+        document.getElementById('edit_long_description').value=data.long || '';
+        document.getElementById('edit_base_price').value=data.base || '';
+        document.getElementById('edit_sale_price').value=data.sale || '';
+        document.getElementById('edit_stock').value=data.stock || '';
+        document.getElementById('edit_warranty').value=data.warranty || '';
+        document.getElementById('edit_display').value=data.display || '';
+        document.getElementById('edit_brightness').value=data.brightness || '';
+        document.getElementById('edit_battery').value=data.battery || '';
+        document.getElementById('edit_connectivity').value=data.connectivity || '';
+        document.getElementById('edit_strap').value=data.strap || '';
+        document.getElementById('edit_case').value=data.case || '';
+        document.getElementById('edit_water').value=data.water || '';
+        document.getElementById('edit_weight').value=data.weight || '';
+        document.getElementById('edit_status').value=data.status || 'active';
+        document.getElementById('edit_is_display').value=data.is_display === 'True' ? '1' : '0';
+
+
+        const imgPrev=document.getElementById('edit_image_preview');
+        if(data.img && data.img !== 'None' && data.img !== ''){
+            imgPrev.src=data.img;
+            imgPrev.style.display = 'block';
+        } 
+        else{
+            imgPrev.style.display = 'none';
+        }
+
+        editModal.classList.add('active');
+    });
+});
+
+
+document.querySelectorAll('#closeEditModal, #cancelEditModal').forEach(btn => {
+    btn.addEventListener('click', () => editModal.classList.remove('active'));
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === editModal) editModal.classList.remove('active');
+});
+
+
+function previewEditImage(input){
+    const preview=document.getElementById('edit_image_preview');
+    if(input.files && input.files[0]){
+        const reader=new FileReader();
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 </script>
 
 {% endblock %}

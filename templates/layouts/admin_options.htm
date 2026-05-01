@@ -70,3 +70,35 @@
 
     </nav>
 </aside>
+
+{% if session.get('admin_toast') %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    showAdminToast("{{ session.pop('admin_toast') }}");
+  });
+</script>
+{% endif %}
+
+<script>
+function showAdminToast(msg) {
+  let toast=document.createElement('div');
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; right: 24px;
+    background: #0d1b2a; color: #c9a84c;
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 8px; padding: 12px 20px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 9999; opacity: 0;
+    transition: opacity 0.3s ease;
+    max-width: 280px;
+  `;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.style.opacity = '1', 10);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+</script>
