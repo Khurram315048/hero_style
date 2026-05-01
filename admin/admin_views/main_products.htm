@@ -5,6 +5,29 @@
     {% include 'layouts/admin_options.htm' %}
 
     <main class="main-content">
+          <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                 <a href="/" class="view-site-btn" target="_blank" title="View Public Site">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                         </svg>
+                            <span>User View</span>
+                </a>
+                <span style="font-size: 13px; color: #777;">Welcome back,
+                    <a href="{{url_for('admin.admin_profile')}}" class="view-site-btn"  title="View Admin Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                            <span>{% if admin %}
+                                {{ admin.first_name }} {{ admin.last_name }}  
+                             </span>
+                            {% endif %}
+                    </a>
+            </div>
+        </header>
         <div class="content-body">
 
             <div class="page-title-row">
@@ -131,7 +154,7 @@
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                             </svg>
                                         </a>
-                                        <a href="#"
+                                        <a href="{{url_for('admin.delete_product',product_id=product.product_id)}}"
                                            class="btn-icon danger"
                                            title="Delete"
                                            onclick="return confirm('Delete {{product.title}}? This cannot be undone.')">
@@ -179,9 +202,9 @@
     </main>
 </div>
 
-
 <div class="modal-overlay" id="addProductModal">
     <div class="modal">
+
         <div class="modal-header">
             <span class="modal-title">Add New Product</span>
             <button class="modal-close" id="closeAddModal">
@@ -192,12 +215,16 @@
         </div>
 
         <div class="modal-body">
-            <form method="POST" action="#" enctype="multipart/form-data" id="addProductForm">
-
+            <form method="POST" action="{{url_for('admin.add_product')}}" enctype="multipart/form-data" id="addProductForm">
                 <div class="form-grid">
+
                     <div class="form-group span-2">
                         <label class="form-label">Product Title <span class="required">*</span></label>
                         <input type="text" name="title" class="form-control" placeholder="e.g. Wireless Headphones" required />
+                    </div>
+                    <div class="form-group span-2">
+                        <label class="form-label">Product Unique Number <span class="required">*</span></label>
+                        <input type="text" name="product_no" class="form-control" placeholder="SM-001" required />
                     </div>
 
                     <div class="form-group span-2">
@@ -205,21 +232,28 @@
                         <input type="text" name="short_description" class="form-control" placeholder="e.g. Premium Noise Cancelling" />
                     </div>
 
+                    <div class="form-group span-2">
+                        <label class="form-label">Long Description</label>
+                        <textarea name="long_description" class="form-control" rows="3" placeholder="e.g. Detailed product description..."></textarea>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Category <span class="required">*</span></label>
                         <select name="category" class="form-control" required>
                             <option value="" disabled selected>Select category</option>
-                            {% if categories %}
-                                {% for cat in categories %}
+                            {% for cat in categories %}
                                 <option value="{{ cat.category_id }}">{{ cat.name }}</option>
-                                {% endfor %}
                             {% else %}
-                                <option value="electronics">Electronics</option>
-                                <option value="clothing">Clothing</option>
-                                <option value="home">Home & Kitchen</option>
-                                <option value="sports">Sports</option>
-                                <option value="other">Other</option>
-                            {% endif %}
+                                <option disabled>No categories found</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="draft">Draft</option>
                         </select>
                     </div>
 
@@ -227,6 +261,7 @@
                         <label class="form-label">Base Price (PKR) <span class="required">*</span></label>
                         <input type="number" name="base_price" class="form-control" placeholder="0.00" min="0" step="0.01" required />
                     </div>
+
                     <div class="form-group">
                         <label class="form-label">Sale Price (PKR) <span class="required">*</span></label>
                         <input type="number" name="sale_price" class="form-control" placeholder="0.00" min="0" step="0.01" required />
@@ -238,16 +273,56 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-control">
-                            <option value="active">Active</option>
-                            <option value="draft">Draft</option>
-                        </select>
+                        <label class="form-label">Product Warranty (Months)</label>
+                        <input type="number" name="warranty_month" class="form-control" placeholder="12" min="0" />
                     </div>
-                    
-                    <div class="form-group span-2">
-                        <label class="form-label">Long Description</label>
-                        <textarea name="long_description" class="form-control" placeholder="Write product long description..."></textarea>
+
+                    <div class="form-group">
+                        <label class="form-label">Display Type</label>
+                        <input type="text" name="display_type" class="form-control" placeholder="e.g. AMOLED" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Brightness Nits</label>
+                        <input type="number" name="brightness_nits" class="form-control" placeholder="0" min="0" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Battery Life</label>
+                        <input type="text" name="battery_life" class="form-control" placeholder="e.g. 7 days" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Connectivity</label>
+                        <input type="text" name="connectivity" class="form-control" placeholder="e.g. Bluetooth 5.3" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Strap Material</label>
+                        <input type="text" name="strap_material" class="form-control" placeholder="e.g. Silicone" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Case Material</label>
+                        <input type="text" name="case_material" class="form-control" placeholder="e.g. Zinc Alloy" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Water Resistance</label>
+                        <input type="text" name="water_resistance" class="form-control" placeholder="e.g. 3 ATM" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product Weight</label>
+                        <input type="text" name="weight" class="form-control" placeholder="e.g. 45g" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product On Display</label>
+                        <select name="always_display" class="form-control">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
                     </div>
 
                     <div class="form-group span-2">
@@ -258,10 +333,11 @@
                             <p>PNG, JPG, WEBP — Max 5MB</p>
                             <input type="file" id="productImageInput" name="image" accept="image/*" onchange="previewImage(this)" />
                         </label>
-                        <img id="imagePreview" src="#" alt="Preview" style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
+                        <img id="imagePreview" src="#" alt="Preview"
+                             style="display:none; margin-top:10px; width:80px; height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
                     </div>
-                </div>
 
+                </div>
             </form>
         </div>
 
@@ -274,6 +350,7 @@
                 Add Product
             </button>
         </div>
+
     </div>
 </div>
 

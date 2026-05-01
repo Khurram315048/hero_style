@@ -1,12 +1,26 @@
-from flask import render_template,request,flash,redirect,url_for,session
+from flask import render_template,request,flash,redirect,url_for,session,g
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import admin_required
-import datetime 
+import uuid
 from datetime import datetime
 from admin import admin_bp
 from utils.db import mysql
+import os
+from werkzeug.utils import secure_filename
 
 
+@admin_bp.context_processor
+def inject_admin():
+    admin=None
+    admin_id=session.get('admin_id')
+    if admin_id:
+        cursor=mysql.connection.cursor()
+        cursor.execute(
+            'SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',
+            (admin_id,))
+        admin=cursor.fetchone()
+        cursor.close()
+    return dict(admin=admin)
 
 
 @admin_bp.route('/admin_login',methods=['GET','POST'])
@@ -104,30 +118,17 @@ def logout():
 
 
 
-@admin_bp.route('/admin_options',methods=['GET','POST'])
+@admin_bp.route('/admin_options')
 @admin_required
 def admin_options():
-    cursor=mysql.connection.cursor()
-    admin_id=session.get('admin_id')
-    cursor.execute(
-        '''SELECT email,username FROM admins WHERE admin_id=%s''',
-        (admin_id,)
-    )
-    admin=cursor.fetchone()
-    cursor.close()
-    return render_template('admin_options.htm',admin=admin)
+    return render_template('admin_options.htm')
 
 
 @admin_bp.route('/admin_dashboard',methods=['GET','POST'])
 @admin_required
 def admin_dashboard():
     cursor=mysql.connection.cursor()
-    admin_id=session.get('admin_id')
-    cursor.execute(
-        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
-        (admin_id,)
-    )
-    admin=cursor.fetchone()
+
     cursor.execute('SELECT COUNT(*) AS total_orders FROM orders WHERE is_cancelled=0 AND is_deleted=0')
     result=cursor.fetchone()
     total_orders=result['total_orders'] 
@@ -141,7 +142,7 @@ def admin_dashboard():
     result_form=cursor.fetchone()
     total_forms=result_form['total_forms']
     cursor.close()
-    return render_template('admin_dashboard.htm',admin=admin,total_forms=total_forms,
+    return render_template('admin_dashboard.htm',total_forms=total_forms,
                            total_orders=total_orders,total_customers=total_customers,total_revenue=total_revenue)
 
 
@@ -150,13 +151,6 @@ def admin_dashboard():
 @admin_required
 def main_products():
     cursor=mysql.connection.cursor()
-    admin_id=session.get('admin_id')
-    cursor.execute(
-        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
-        (admin_id,)
-    )
-    admin=cursor.fetchone()
-
     cursor.execute('''SELECT pr.* , pi.* , cat.*, pd.*
                    FROM products pr
                    JOIN product_images pi ON pr.product_id=pi.product_id
@@ -167,7 +161,7 @@ def main_products():
     cursor.execute('SELECT * FROM categories WHERE is_active=1')
     categories=cursor.fetchall()
     cursor.close()
-    return render_template('main_products.htm',admin=admin,products=products,categories=categories)
+    return render_template('main_products.htm',products=products,categories=categories)
 
 
 @admin_bp.route('/admin_profile',methods=['GET','POST'])
@@ -190,10 +184,90 @@ def admin_profile():
 
     cursor.execute('SELECT * FROM admins WHERE admin_id=%s AND is_deleted=0',(admin_id,))
     admin_details=cursor.fetchone()
-    cursor.execute(
-        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
-        (admin_id,)
-    )
-    admin=cursor.fetchone()
     cursor.close()
-    return render_template('admin_profile.htm',admin=admin,admin_details=admin_details)
+    return render_template('admin_profile.htm',admin_details=admin_details)
+
+
+
+@admin_bp.route('/add_product',methods=['POST'])
+@admin_required
+def add_product():
+    cursor=mysql.connection.cursor()
+
+    title=request.form.get('title')
+    category_id=request.form.get('category')
+    base_price=request.form.get('base_price')
+    sale_price=request.form.get('sale_price')
+    stock=request.form.get('stock', 0)
+    status=request.form.get('status','active')
+    short_desc=request.form.get('short_description')
+    long_desc=request.form.get('long_description')
+    display_type=request.form.get('display_type')
+    brightness_nits=request.form.get('brightness_nits') or None
+    battery_life=request.form.get('battery_life')
+    connectivity=request.form.get('connectivity')
+    strap_material=request.form.get('strap_material')
+    case_material=request.form.get('case_material')
+    water_resistance=request.form.get('water_resistance')
+    weight=request.form.get('weight')
+    warranty_month=request.form.get('warranty_month', 12)
+    always_display=request.form.get('always_display', 0)
+    product_no=request.form.get('product_no')
+    image=request.files.get('image')
+    width=12
+    height=12
+
+    cursor.execute('''
+        INSERT INTO products(product_no,category_id,title,base_price,sale_price,stock_quantity,status,created_at,updated_at)
+        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    ''', (product_no,category_id,title,base_price,sale_price,stock,status,datetime.now(),datetime.now()))
+    mysql.connection.commit()
+    product_id=cursor.lastrowid
+
+    cursor.execute('''
+        INSERT INTO product_details(product_id,short_description,long_description,display_type,brightness_nits,
+         battery_life,connectivity,strap_material,case_material,water_resistance,
+         weight,warranty_months,is_always_on_display,created_at,updated_at)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    ''',(product_id,short_desc,long_desc,display_type,brightness_nits,
+          battery_life,connectivity,strap_material,case_material,water_resistance,
+          weight,warranty_month,always_display,datetime.now(),datetime.now()))
+    mysql.connection.commit()
+
+
+    if image and image.filename != '':
+
+        cursor.execute('SELECT name FROM categories WHERE category_id=%s',(category_id,))
+        cat=cursor.fetchone()
+        cat_name=cat['name'].lower().replace(' ', '_')  
+        filename=secure_filename(image.filename)
+        upload_folder=os.path.join('static','uploads',cat_name)
+        os.makedirs(upload_folder,exist_ok=True)
+        image_path=os.path.join(upload_folder,filename)
+        image.save(image_path)
+        image_url='/' + image_path.replace('\\', '/')
+
+        cursor.execute('''
+            INSERT INTO product_images(product_id,image_url,alt_text,is_active,width,height,created_at)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+        ''', (product_id,image_url,title,1,width,height,datetime.now()))
+        mysql.connection.commit()
+
+    cursor.close()
+    session['toast']='Product Added Successfully!'
+    return redirect(url_for('admin.main_products'))
+
+
+@admin_bp.route('/delete_product/<int:product_id>',methods=['GET','POST'])
+@admin_required
+def delete_product(product_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute('''UPDATE products SET status=%s,updated_at=%s WHERE product_id=%s''',('archived',datetime.now(),product_id))
+    cursor.execute('''UPDATE product_images SET is_active=%s WHERE product_id=%s''',(0,product_id))
+    mysql.connection.commit()
+    cursor.close()
+    session['toast']='Product has been deleted successfully!'
+    return redirect(url_for('admin.main_products'))
+    
+
+
