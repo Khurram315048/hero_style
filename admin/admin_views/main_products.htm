@@ -97,11 +97,34 @@
                                 </td>
                                 <td>
                                     <div class="action-group">
-                                        <a href="#" class="btn-icon" title="View">
+                                        <a href="javascript:void(0)" 
+                                            class="btn-icon view-product-btn" 
+                                            title="View"
+                                            data-title="{{product.title}}"
+                                            data-short="{{product.short_description}}"
+                                            data-category="{{product.name}}"
+                                            data-base="{{product.base_price}}"
+                                            data-sale="{{product.sale_price }}"
+                                            data-stock="{{product.stock_quantity}}"
+                                            data-status="{{product.status}}"
+                                            data-long="{{product.long_description}}"
+                                            data-display="{{product.display_type}}"
+                                            data-brightness="{{product.brightness_nits}}"
+                                            data-battery="{{product.battery_life}}"
+                                            data-connectivity="{{product.connectivity}}"
+                                            data-strap="{{product.strap_material}}"
+                                            data-case="{{product.case_material}}"
+                                            data-water="{{product.water_resistance}}"
+                                            data-weight="{{product.weight}}"
+                                            data-warranty="{{product.warranty_months}}"
+                                            data-is_display="{{product.is_always_on_display}}"
+                                            data-updated="{{product.updated_at}}"
+                                            data-created="{{product.created_at}}"
+                                            data-img="{{product.image_url}}">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
                                             </svg>
-                                        </a>
+                                            </a>
                                         <a href="#" class="btn-icon" title="Edit">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -254,83 +277,236 @@
     </div>
 </div>
 
+
+
+
+<div class="modal-overlay" id="viewProductModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">View Product Details</span>
+            <button class="modal-close" id="closeViewModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group span-2">
+                    <label class="form-label">Product Title</label>
+                    <input type="text" id="view_title" class="form-control" readonly />
+                </div>
+
+                <div class="form-group span-2">
+                    <label class="form-label">Short Description</label>
+                    <input type="text" id="view_short_description" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <input type="text" id="view_category" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Stock Quantity</label>
+                    <input type="text" id="view_stock" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Base Price (PKR)</label>
+                    <input type="text" id="view_base_price" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Sale Price (PKR)</label>
+                    <input type="text" id="view_sale_price" class="form-control" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <input type="text" id="view_status" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Display_type</label>
+                    <input type="text" id="view_display" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Brightness Nits</label>
+                    <input type="text" id="view_brightness" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Battery Life</label>
+                    <input type="text" id="view_battery" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Connectivity</label>
+                    <input type="text" id="view_connectivity" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Strap Material</label>
+                    <input type="text" id="view_strap" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Case</label>
+                    <input type="text" id="view_case" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Water Resistance</label>
+                    <input type="text" id="view_water" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Weight</label>
+                    <input type="text" id="view_weight" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Warranty (Months)</label>
+                    <input type="text" id="view_warranty" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product on Display?</label>
+                    <input type="text" id="is_display" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Updated At</label>
+                    <input type="text" id="view_updated" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Product Created At</label>
+                    <input type="text" id="view_created" class="form-control" readonly />
+                </div>
+                <div class="form-group span-2">
+                    <label class="form-label">Long Description</label>
+                    <textarea id="view_long_description" class="form-control" style="min-height: 100px;" readonly></textarea>
+                </div>
+
+                <div class="form-group span-2">
+                    <label class="form-label">Product Image</label>
+                    <img id="view_image_preview" src="#" alt="Preview" style="display:block; width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid var(--border);" />
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="doneViewModal">Done</button>
+        </div>
+    </div>
+</div>
+
+
+
+
 <script>
-    const modal=document.getElementById('addProductModal');
-    const openBtn=document.getElementById('openAddModal');
-    const closeBtn=document.getElementById('closeAddModal');
-    const cancelBtn=document.getElementById('cancelAddModal');
 
-    function openModal(){
-        modal.classList.add('active'); 
-    }
-    function closeModal(){
-        modal.classList.remove('active'); 
-    }
+const addModal = document.getElementById('addProductModal');
+const viewModal = document.getElementById('viewProductModal');
+const openAddBtn = document.getElementById('openAddModal');
+const viewButtons = document.querySelectorAll('.view-product-btn');
+const closeButtons = document.querySelectorAll('.modal-close, #cancelAddModal, #closeViewModal, #doneViewModal');
 
-    openBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
 
-    modal.addEventListener('click', (e) => { 
-        if(e.target === modal)
-         closeModal(); 
-        });
 
-    document.addEventListener('keydown', (e) => { 
-        if(e.key === 'Escape') 
-        closeModal(); 
-    });
+function closeAllModals() {
+    addModal.classList.remove('active');
+    viewModal.classList.remove('active');
+}
 
-    function previewImage(input){
-        const preview=document.getElementById('imagePreview');
-        if(input.files && input.files[0]){
-            const reader=new FileReader();
-            reader.onload = (e) =>{
-                preview.src=e.target.result;
-                preview.style.display='block';
-            };
-            reader.readAsDataURL(input.files[0]);
+
+openAddBtn.addEventListener('click', () => {
+    addModal.classList.add('active');
+});
+
+
+viewButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        const data = this.dataset;
+
+        document.getElementById('view_title').value = data.title || 'N/A';
+        document.getElementById('view_short_description').value = data.short || 'N/A';
+        document.getElementById('view_category').value = data.category || 'N/A';
+        document.getElementById('view_base_price').value = data.base || '0.00';
+        document.getElementById('view_sale_price').value = data.sale || '0.00';
+        document.getElementById('view_stock').value = data.stock || '0';
+        document.getElementById('view_status').value = (data.status || 'N/A').toUpperCase();
+        document.getElementById('view_display').value = data.display || '—';
+        document.getElementById('view_brightness').value = data.brightness || '—';
+        document.getElementById('view_battery').value = data.battery || '—';
+        document.getElementById('view_connectivity').value = data.connectivity || '—';
+        document.getElementById('view_strap').value = data.strap || '—';
+        document.getElementById('view_case').value = data.case || '—';
+        document.getElementById('view_water').value = data.water || '—';
+        document.getElementById('view_weight').value = data.weight || '—';
+        document.getElementById('view_warranty').value = data.warranty || '—';
+        document.getElementById('is_display').value = data.is_display === 'True' ? 'Yes' : 'No';
+        document.getElementById('view_updated').value = data.updated || '—';
+        document.getElementById('view_created').value = data.created || '—';
+        document.getElementById('view_long_description').value = data.long || 'No description provided.';
+        
+      
+        const imgPreview = document.getElementById('view_image_preview');
+        if(data.img && data.img !== 'None' && data.img !== '') {
+            imgPreview.src = data.img;
+            imgPreview.style.display = 'block';
+        } else {
+            imgPreview.style.display = 'none';
         }
+
+        viewModal.classList.add('active');
+    });
+});
+
+
+closeButtons.forEach(btn => {
+    btn.addEventListener('click', closeAllModals);
+});
+
+
+window.addEventListener('click', (e) => {
+    if (e.target === addModal || e.target === viewModal) {
+        closeAllModals();
     }
+});
 
-   
-    const searchInput=document.getElementById('productSearch');
-    const tableBody=document.getElementById('productsTableBody');
-    const noResults=document.getElementById('noResults');
-    const searchCount=document.getElementById('searchCount');
-    const totalCount=document.getElementById('totalCount');
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllModals();
+});
 
-    searchInput.addEventListener('input', function (){
-    const q=this.value.trim().toLowerCase();
-    const rows=tableBody ? tableBody.querySelectorAll('tr[data-id]') : [];
-    let visible=0;
 
-    rows.forEach(row =>{
-        const id=row.dataset.id  || '';
-        const no=row.dataset.product_no || '';
-        const title=row.dataset.title  || '';
-        const category=row.dataset.category || '';
+function previewImage(input){
+    const preview = document.getElementById('imagePreview');
+    if(input.files && input.files[0]){
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
 
-        const match = !q || 
-                      no.includes(q) ||
-                      id.includes(q) || 
-                      title.includes(q) || 
-                      category.includes(q);
 
-        row.style.display=match ? '' : 'none';
+const searchInput = document.getElementById('productSearch');
+const tableBody = document.getElementById('productsTableBody');
+
+searchInput.addEventListener('input', function (){
+    const q = this.value.trim().toLowerCase();
+    const rows = tableBody.querySelectorAll('tr[data-id]');
+    let visible = 0;
+
+    rows.forEach(row => {
+        const id = row.dataset.id || '';
+        const no = row.dataset.no || ''; 
+        const title = row.dataset.title || '';
+        const category = row.dataset.category || '';
+
+        const match = !q || id.includes(q) || no.includes(q) || title.includes(q) || category.includes(q);
+        row.style.display = match ? '' : 'none';
         if(match) visible++;
     });
 
-    if(noResults){
-        noResults.style.display=(rows.length > 0 && visible === 0) ? 'block' : 'none';
-    }
-
-    if(searchCount){
-        searchCount.textContent=q ? `${visible} result(s) for "${q}"` : '';
-    }
-    if(totalCount){
-        totalCount.textContent=q ? `${visible} of ${rows.length} product(s)` : `${rows.length} product(s)`;
-    }
+    document.getElementById('noResults').style.display = (rows.length > 0 && visible === 0) ? 'block' : 'none';
+    document.getElementById('searchCount').textContent = q ? `${visible} result(s) for "${q}"` : '';
+    document.getElementById('totalCount').textContent = q ? `${visible} of ${rows.length} product(s)` : `${rows.length} product(s)`;
 });
 </script>
 

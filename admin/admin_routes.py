@@ -157,11 +157,12 @@ def main_products():
     )
     admin=cursor.fetchone()
 
-    cursor.execute('''SELECT pr.* , pi.* , cat.*
+    cursor.execute('''SELECT pr.* , pi.* , cat.*, pd.*
                    FROM products pr
                    JOIN product_images pi ON pr.product_id=pi.product_id
                    JOIN categories cat ON pr.category_id=cat.category_id
-                    ''')
+                   JOIN product_details pd ON pr.product_id=pd.product_id
+                ''')
     products=cursor.fetchall()
     cursor.execute('SELECT * FROM categories WHERE is_active=1')
     categories=cursor.fetchall()
@@ -169,3 +170,30 @@ def main_products():
     return render_template('main_products.htm',admin=admin,products=products,categories=categories)
 
 
+@admin_bp.route('/admin_profile',methods=['GET','POST'])
+@admin_required
+def admin_profile():
+    cursor=mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    if request.method=='POST':
+        first_name=request.form.get('first_name')
+        last_name=request.form.get('last_name')
+        user_name=request.form.get('user_name')
+        email=request.form.get('email')
+
+        cursor.execute('''UPDATE admins SET first_name=%s,last_name=%s,username=%s,email=%s 
+                       WHERE admin_id=%s AND is_deleted=0''',(first_name,last_name,user_name,email,admin_id))
+        mysql.connection.commit()
+        session['toast']='Profile Updated Success!'
+        return redirect(request.referrer)
+
+
+    cursor.execute('SELECT * FROM admins WHERE admin_id=%s AND is_deleted=0',(admin_id,))
+    admin_details=cursor.fetchone()
+    cursor.execute(
+        '''SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s''',
+        (admin_id,)
+    )
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('admin_profile.htm',admin=admin,admin_details=admin_details)

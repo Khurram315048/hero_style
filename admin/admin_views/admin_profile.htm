@@ -1,0 +1,94 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Hero Style</title>
+
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <h2>Admin <span>Profile</span></h2>
+            </div>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View User View
+                </a>
+            </div>
+        </header>
+
+        <div class="content-body">
+            <div class="page-title-row">
+                <h1 class="page-title">Account <span>Settings</span></h1>
+            </div>
+
+            <div class="table-wrapper" style="padding: 32px; margin-bottom: 32px;">
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 700;">Personal Information</h3>
+                    <p style="color: var(--text-muted); font-size: 13px;">Update your personal information and contact details.</p>
+                </div>
+
+                {% if admin_details %}
+                <form action="{{url_for('admin.admin_profile')}}" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">First Name <span class="required">*</span></label>
+                            <input type="text" name="first_name" class="form-control" value="{{admin_details.first_name}}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name <span class="required">*</span></label>
+                            <input type="text" name="last_name" class="form-control" value="{{admin_details.last_name}}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Username <span class="required">*</span></label>
+                            <input type="text" name="user_name" class="form-control" value="{{admin_details.username}}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="required">*</span></label>
+                            <input type="email" name="email" class="form-control" value="{{admin_details.email}}" required>
+                            <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Email is used for order notifications and recovery.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <h4>Admin details not found</h4>
+                    <p>There was an error retrieving your profile information.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="table-wrapper" style="padding: 32px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                    <div>
+                        <h3 style="font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--danger);">Security</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Manage your password and account access.</p>
+                    </div>
+                    <a href="{{ url_for('admin.admin_reset') }}" class="btn btn-outline">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Reset Account Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
