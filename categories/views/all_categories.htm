@@ -1,0 +1,369 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | All Categories</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank" title="View Public Site">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size: 13px; color: #777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn" title="View Admin Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{% if admin %}
+                            {{ admin.first_name }} {{ admin.last_name }}
+                             </span>
+                            {% endif %}
+                       
+                    </a>
+                </span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div class="page-title-row">
+                <h1 class="page-title">All <span>Categories</span></h1>
+                <button class="btn btn-primary" id="openAddModal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Category
+                </button>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="categorySearch"
+                        placeholder="Search by name or ID..."
+                        autocomplete="off"
+                    />
+                </div>
+                <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="categoriesTable">
+                    <thead>
+                        <tr>
+                            <th>Sr#</th>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Total Products</th>
+                            <th>Active Products</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        {% if categories %}
+                            {% for cat in categories %}
+                            <tr
+                                data-id="{{ cat.category_id }}"
+                                data-name="{{ cat.name | lower }}">
+                                <td style="color: var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                <td>
+                                    <div class="product-name-cell">
+                                        <div class="pname">{{ cat.name | title }}</div>
+                                    </div>
+                                </td>
+                                <td style="font-size:12px; color: var(--text-muted); max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    {{ cat.description or '—' }}
+                                </td>
+                                <td>
+                                    <span class="badge badge-muted">{{ cat.total_products }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-success">{{ cat.active_products }}</span>
+                                </td>
+                                <td>
+                                    {% if cat.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color: var(--text-muted);">
+                                    {{ cat.created_at.strftime('%d %b %Y') if cat.created_at else '—' }}
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="{{ url_for('categories.category_product',category_id=cat.category_id) }}"
+                                            class="btn-icon"
+                                            title="View Products in {{ cat.name }}">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle cx="12" cy="12" r="3"></circle>
+                                                </svg>
+                                            </a>
+                                        <a href="javascript:void(0)"
+                                           class="btn-icon edit-category-btn"
+                                           title="Edit"
+                                           data-id="{{ cat.category_id }}"
+                                           data-name="{{ cat.name }}"
+                                           data-description="{{ cat.description or '' }}"
+                                           data-is-active="{{ cat.is_active }}">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                        <a href="{{ url_for('categories.toggle_category',category_id=cat.category_id) }}"
+                                            class="btn-icon {% if cat.is_active %}warning{% else %}success{% endif %}"
+                                            title="{{ 'Deactivate' if cat.is_active else 'Activate' }}"
+                                            onclick="return confirm('{% if cat.is_active %}Deactivate{% else %}Activate{% endif %} {{ cat.name }}?')">
+                                                {% if cat.is_active %}
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                                </svg>
+                                                {% else %}
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                                {% endif %}
+                                            </a>
+                                        {% if cat.total_products == 0 %}
+                                        <a href="{{url_for('categories.delete_category',category_id=cat.category_id)}}"
+                                           class="btn-icon danger"
+                                           title="Delete"
+                                           onclick="return confirm('Delete \'{{ cat.name }}\'? This cannot be undone.')">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                            </svg>
+                                        </a>
+                                        {% else %}
+                                        <span class="badge badge-muted" title="Cannot delete: has products">—</span>
+                                        {% endif %}
+
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📦</div>
+                                        <h4>No Categories Found</h4>
+                                        <p>Start by adding your first category.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div id="noResults" style="display:none;">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <h4>No Results</h4>
+                        <p>No categories match your search query.</p>
+                    </div>
+                </div>
+
+                {% if categories %}
+                <div class="table-footer">
+                    <span class="table-info" id="totalCount">{{ categories | length }} category(s)</span>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+</div>
+
+
+<div class="modal-overlay" id="addCategoryModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Add New Category</span>
+            <button class="modal-close" id="closeAddModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" action="{{url_for('categories.add_category')}}" id="addCategoryForm">
+                <div class="form-grid">
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Category Name <span class="required">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Smart Watches" required />
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Short description about this category..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select name="is_active" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelAddModal">Cancel</button>
+            <button class="btn btn-primary" onclick="document.getElementById('addCategoryForm').submit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Add Category
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="editCategoryModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Edit Category</span>
+            <button class="modal-close" id="closeEditModal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <form method="POST" action="#" id="editCategoryForm">
+                <div class="form-grid">
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Category Name <span class="required">*</span></label>
+                        <input type="text" name="name" id="edit_name" class="form-control" required />
+                    </div>
+
+                    <div class="form-group span-2">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select name="is_active" id="edit_is_active" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelEditModal">Cancel</button>
+            <button class="btn btn-primary" onclick="document.getElementById('editCategoryForm').submit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+const addModal=document.getElementById('addCategoryModal');
+const editModal=document.getElementById('editCategoryModal');
+const openAddBtn=document.getElementById('openAddModal');
+
+function closeAllModals(){
+    addModal.classList.remove('active');
+    editModal.classList.remove('active');
+}
+
+openAddBtn.addEventListener('click', () => addModal.classList.add('active'));
+
+document.querySelectorAll('#closeAddModal,#cancelAddModal').forEach(btn => {
+    btn.addEventListener('click', () => addModal.classList.remove('active'));
+});
+
+document.querySelectorAll('#closeEditModal, #cancelEditModal').forEach(btn => {
+    btn.addEventListener('click', () => editModal.classList.remove('active'));
+});
+
+window.addEventListener('click', (e) => {
+    if(e.target === addModal)  addModal.classList.remove('active');
+    if(e.target === editModal) editModal.classList.remove('active');
+});
+
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeAllModals();
+});
+
+document.querySelectorAll('.edit-category-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const data=this.dataset;
+
+        document.getElementById('editCategoryForm').action=
+            '/categories/edit_category/' + data.id;
+
+        document.getElementById('edit_name').value=data.name || '';
+        document.getElementById('edit_description').value=data.description || '';
+        document.getElementById('edit_is_active').value=data.isActive == '1' ? '1' : '0';
+
+        editModal.classList.add('active');
+    });
+});
+
+const searchInput=document.getElementById('categorySearch');
+const tableBody=document.getElementById('categoriesTableBody');
+const noResults=document.getElementById('noResults');
+const searchCount=document.getElementById('searchCount');
+const totalCount=document.getElementById('totalCount');
+
+searchInput.addEventListener('input', function (){
+    const q=this.value.trim().toLowerCase();
+    const rows=tableBody.querySelectorAll('tr[data-id]');
+    let visible=0;
+
+    rows.forEach(row =>{
+        const id=row.dataset.id   || '';
+        const name=row.dataset.name || '';
+        const match = !q || id.includes(q) || name.includes(q);
+        row.style.display = match ? '' : 'none';
+        if(match) visible++;
+    });
+
+    noResults.style.display=(rows.length > 0 && visible === 0) ? 'block' : 'none';
+    searchCount.textContent=q ? `${visible} result(s) for "${q}"` : '';
+    if(totalCount){
+        totalCount.textContent=q
+            ? `${visible} of ${rows.length} category(s)`
+            : `${rows.length} category(s)`;
+    }
+});
+</script>
+
+{% endblock %}

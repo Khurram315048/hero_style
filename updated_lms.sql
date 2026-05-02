@@ -67,7 +67,7 @@ CREATE TABLE `cart_items` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +76,7 @@ CREATE TABLE `cart_items` (
 
 LOCK TABLES `cart_items` WRITE;
 /*!40000 ALTER TABLE `cart_items` DISABLE KEYS */;
-INSERT INTO `cart_items` VALUES (1,1,14,1,1099.00,'2026-04-17 15:17:05'),(3,3,13,1,11999.00,'2026-04-18 03:57:06');
+INSERT INTO `cart_items` VALUES (1,1,14,1,1099.00,'2026-04-17 15:17:05'),(3,3,13,1,11999.00,'2026-04-18 03:57:06'),(11,8,13,1,11999.00,'2026-05-01 16:24:01');
 /*!40000 ALTER TABLE `cart_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -96,7 +96,7 @@ CREATE TABLE `carts` (
   PRIMARY KEY (`cart_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -105,7 +105,7 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06'),(7,NULL,'dcc87f27-e703-404a-b4fb-22272dc7ea9b','2026-04-25 06:17:47','2026-04-25 06:17:47');
+INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06'),(7,NULL,'dcc87f27-e703-404a-b4fb-22272dc7ea9b','2026-04-25 06:17:47','2026-04-25 06:17:47'),(8,NULL,'5b96d78f-8af7-492b-8b96-4326028229ec','2026-05-01 16:24:01','2026-05-01 16:24:01');
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,7 +124,7 @@ CREATE TABLE `categories` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`category_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +133,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (1,'smart watches','watches that give digital vision to you and your life.',1,'2026-03-27 08:01:36'),(2,'metal watches','watches that give bold and uniqueness to the life.',1,'2026-03-27 08:02:48'),(3,'leather watches','watches that are vintage and heritage for the life.',1,'2026-03-27 08:03:34'),(4,'EarBuds','Ear Buds that give the hearing of deep listening.',1,'2026-04-06 15:47:07');
+INSERT INTO `categories` VALUES (1,'smart watches','watches that give digital vision to you and your life.',1,'2026-03-27 08:01:36'),(2,'metal watches','watches that give bold and uniqueness to the life.',1,'2026-03-27 08:02:48'),(3,'leather watches','watches that are vintage and heritage for the life.',1,'2026-03-27 08:03:34'),(4,'EarBuds','Ear Buds that give the hearing of deep listening.',1,'2026-04-06 15:47:07'),(5,'Wireless Headphones','Adding headphones as new category.',1,'2026-05-02 09:59:14');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -619,4 +619,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-01 20:49:16
+-- Dump completed on 2026-05-02 15:17:56

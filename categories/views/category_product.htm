@@ -1,0 +1,114 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | {{ category.name }} Products</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size:13px; color:#777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{% if admin %}{{ admin.first_name }} {{ admin.last_name }}{% endif %}</span>
+                    </a>
+                </span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div class="page-title-row">
+                <h1 class="page-title">
+                    <a href="{{ url_for('categories.all_categories') }}" 
+                       style="color: var(--text-muted); font-size:14px; font-weight:400; margin-right:8px;">
+                        ← Categories
+                    </a>
+                    {{ category.name | title }} <span>Products</span>
+                </h1>
+                <span class="badge badge-muted" style="font-size:13px;">
+                    {{ products | length }} product(s)
+                </span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sr#</th>
+                            <th>Image</th>
+                            <th>Product No</th>
+                            <th>Title</th>
+                            <th>Base Price</th>
+                            <th>Sale Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if products %}
+                            {% for p in products %}
+                            <tr>
+                                <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                <td>
+                                    {% if p.image_url %}
+                                        <img src="{{ p.image_url }}" alt="{{ p.title }}"
+                                             style="width:40px; height:40px; object-fit:cover; border-radius:6px; border:1px solid var(--border);" />
+                                    {% else %}
+                                        <span style="font-size:20px;">📦</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted);">{{ p.product_no or '—' }}</td>
+                                <td><div class="pname">{{ p.title }}</div></td>
+                                <td>PKR {{ "{:,.0f}".format(p.base_price) }}</td>
+                                <td>PKR {{ "{:,.0f}".format(p.sale_price) if p.sale_price else '—' }}</td>
+                                <td>
+                                    <span class="badge {% if p.stock_quantity == 0 %}badge-danger{% elif p.stock_quantity < 5 %}badge-warning{% else %}badge-muted{% endif %}">
+                                        {{ p.stock_quantity }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if p.status == 'active' %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% elif p.status == 'archived' %}
+                                        <span class="badge badge-danger">Archived</span>
+                                    {% else %}
+                                        <span class="badge badge-muted">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted);">
+                                    {{ p.created_at.strftime('%d %b %Y') if p.created_at else '—' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📦</div>
+                                        <h4>No Products Found</h4>
+                                        <p>No products exist under <strong>{{ category.name }}</strong> yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}
