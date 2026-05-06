@@ -348,3 +348,118 @@ def edit_product(product_id):
     return redirect(url_for('admin.main_products'))
 
 
+@admin_bp.route('/active_product<int:product_id>',methods=['GET','POST'])
+@admin_required
+def active_product(product_id):
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('SELECT status FROM products WHERE product_id=%s',(product_id,))
+    id=cursor.fetchone()
+    if id['status'] != 'archived':
+        session['admin_toast']='Cannot perform this operation'
+        return redirect(url_for('admin.main_products'))
+    
+    cursor.execute('UPDATE products SET status=%s,updated_at=%s WHERE product_id=%s',('active',datetime.now(),product_id))
+    mysql.connection.commit()
+    session['admin_toast']='Product activated successfully!'
+    return redirect(url_for('admin.main_products'))
+
+
+
+@admin_bp.route('/all_orders')
+@admin_required
+def all_orders():
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''SELECT o.order_id,o.order_number,o.user_id,o.subtotal,o.status AS order_status,
+                   o.discount_amount,o.shipping_charges,o.total_amount,o.ordered_at, 
+                   CONCAT(u.first_name,' ',u.last_name) AS customer_name,
+                   SUM(d.quantity) AS total_items,
+                   p.status AS pay_status,p.payment_method
+                   FROM orders o
+                   JOIN users u ON o.user_id=u.user_id
+                   JOIN order_payments p ON o.order_id=p.order_id
+                   JOIN order_details d ON o.order_id=d.order_id
+                   WHERE o.is_deleted=0 
+                   GROUP BY o.order_id,o.order_number,o.user_id,customer_name,o.subtotal,
+                    o.discount_amount,o.shipping_charges,o.total_amount,
+                    p.payment_method,p.status,o.status,o.ordered_at''')
+    
+    orders=cursor.fetchall()
+    return render_template('all_orders.htm',orders=orders)
+
+
+
+@admin_bp.route('/update_order_status/<int:order_id>',methods=['POST'])
+@admin_required
+def update_order_status(order_id):
+    cursor=mysql.connection.cursor()
+    status=request.form.get('status')
+    valid=['pending','confirmed','shipped','delivered']
+    if status in valid:
+        cursor.execute("UPDATE orders SET status=%s WHERE order_id=%s",(status,order_id))
+        mysql.connection.commit()
+        session['admin_toast']='Status updated successfully!'
+    return redirect(url_for('admin.all_orders'))
+
+
+
+
+@admin_bp.route('/cancel_order_status/<int:order_id>',methods=['POST'])
+@admin_required
+def cancel_order_status(order_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute("""UPDATE orders SET status='cancelled',is_cancelled=1,cancelled_at=%s 
+                      WHERE order_id=%s""",
+                   (datetime.now(),order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Order cancelled successfully!'
+    return redirect(url_for('admin.all_orders'))
+
+
+
+@admin_bp.route('/delete_order/<int:order_id>',methods=['POST'])
+@admin_required
+def delete_order(order_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute("UPDATE orders SET is_deleted=%s WHERE order_id=%s",(1,order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Order Deleted successfully!'
+    return redirect(url_for('admin.all_orders'))
+
+
+@admin_bp.route('/order_detail/<int:order_id>')
+@admin_required
+def order_detail(order_id):
+    cursor=mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    
+    cursor.execute('''SELECT o.*, CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
+               u.email,p.payment_method,p.status AS pay_status,p.transaction_id
+        FROM orders o
+        JOIN users u ON o.user_id=u.user_id
+        JOIN order_payments p ON o.order_id=p.order_id
+        WHERE o.order_id=%s''',(order_id,))
+    order=cursor.fetchone()
+
+    if not order:
+        return redirect(url_for('admin.all_orders'))
+
+    
+    cursor.execute('''SELECT d.*,p.title,p.product_no,
+               (SELECT image_url FROM product_images 
+                WHERE product_id=p.product_id 
+                AND is_active=1 LIMIT 1) AS image_url
+        FROM order_details d
+        JOIN products p ON d.product_id=p.product_id
+        WHERE d.order_id=%s''',(order_id,))
+    items=cursor.fetchall()
+
+    cursor.execute('''SELECT * FROM order_returns 
+        WHERE order_id=%s
+        ORDER BY requested_at DESC''',(order_id,))
+    returns=cursor.fetchall()
+
+    return render_template('order_detail.htm',order=order,items=items,returns=returns,admin=admin)

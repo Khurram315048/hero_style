@@ -19,14 +19,23 @@ def all_categories():
     admin=cursor.fetchone()
 
     cursor.execute("""SELECT c.category_id,c.name,c.description,c.is_active,c.created_at,
-            COUNT(p.product_id) AS total_products,
-            SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) AS active_products
-        FROM categories c
-        LEFT JOIN products p ON c.category_id=p.category_id
-        GROUP BY c.category_id
-        ORDER BY c.created_at DESC
+        COUNT(DISTINCT p.product_id) AS total_products,
+        SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) AS active_products,
+        COALESCE(SUM(od.subtotal),0) AS total_revenue
+    FROM categories c
+    LEFT JOIN products p ON c.category_id=p.category_id
+    LEFT JOIN order_details od ON p.product_id=od.product_id
+    GROUP BY c.category_id
+    ORDER BY total_revenue DESC
     """)
-    categories=cursor.fetchall()
+    rows=cursor.fetchall()
+    categories=[dict(row) for row in rows]
+
+    max_revenue=max((cat['total_revenue'] for cat in categories),default=0)
+
+    for cat in categories:
+        cat['is_top']=(cat['total_revenue']==max_revenue and max_revenue>0)  
+
     cursor.close()
     
     return render_template('all_categories.htm',admin=admin,categories=categories)

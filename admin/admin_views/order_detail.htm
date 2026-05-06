@@ -1,0 +1,265 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Order Detail</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size:13px; color:#777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>{% if admin %}
+                            {{ admin.first_name }} {{ admin.last_name }}
+                            {% endif %}</span>
+                    </a>
+                </span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div class="page-title-row">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <a href="{{ url_for('admin.all_orders') }}" class="btn btn-outline btn-sm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+                        Back
+                    </a>
+                    <h1 class="page-title">Order <span>#{{ order.order_number }}</span></h1>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    {% if order.order_status == 'delivered' %}
+                        <span class="badge badge-success">Delivered</span>
+                    {% elif order.order_status == 'shipped' %}
+                        <span class="badge badge-accent">Shipped</span>
+                    {% elif order.order_status == 'confirmed' %}
+                        <span class="badge badge-accent">Confirmed</span>
+                    {% elif order.order_status == 'pending' %}
+                        <span class="badge badge-warning">Pending</span>
+                    {% elif order.order_status == 'cancelled' %}
+                        <span class="badge badge-danger">Cancelled</span>
+                    {% elif order.order_status == 'returned' %}
+                        <span class="badge badge-danger">Returned</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+
+                <div class="table-wrapper" style="padding:20px; border-radius:var(--radius);">
+                    <p class="section-heading" style="margin-bottom:14px;">Customer Info</p>
+                    <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0; width:40%;">Full Name</td>
+                            <td style="color:var(--text-primary); font-weight:500;">{{ order.customer_name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Email</td>
+                            <td style="color:var(--text-primary);">{{ order.email }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">User ID</td>
+                            <td style="color:var(--text-muted); font-size:12px;">#{{ order.user_id }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Ordered At</td>
+                            <td style="color:var(--text-primary);">{{ order.ordered_at.strftime('%d %b %Y, %I:%M %p') if order.ordered_at else '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Last Updated</td>
+                            <td style="color:var(--text-primary);">{{ order.updated_at.strftime('%d %b %Y, %I:%M %p') if order.updated_at else '—' }}</td>
+                        </tr>
+                        {% if order.is_cancelled and order.cancelled_at %}
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Cancelled At</td>
+                            <td style="color:var(--danger);">{{ order.cancelled_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+
+                <div class="table-wrapper" style="padding:20px; border-radius:var(--radius);">
+                    <p class="section-heading" style="margin-bottom:14px;">Payment Info</p>
+                    <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0; width:40%;">Method</td>
+                            <td style="color:var(--text-primary); font-weight:500;">{{ order.payment_method }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Payment Status</td>
+                            <td>
+                                {% if order.pay_status == 'paid' %}
+                                    <span class="badge badge-success">Paid</span>
+                                {% elif order.pay_status == 'pending' %}
+                                    <span class="badge badge-muted">Pending</span>
+                                {% elif order.pay_status == 'refunded' %}
+                                    <span class="badge badge-warning">Refunded</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Failed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Transaction ID</td>
+                            <td style="color:var(--text-muted); font-size:12px;">{{ order.transaction_id or '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Subtotal</td>
+                            <td style="color:var(--text-primary);">PKR {{ order.subtotal }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Discount</td>
+                            <td style="color:var(--success);">
+                                {% if order.discount_amount and order.discount_amount > 0 %}
+                                    — PKR {{ order.discount_amount }}
+                                    {% if order.promo_code %}
+                                        <span style="font-size:11px; color:var(--text-muted);">({{ order.promo_code }})</span>
+                                    {% endif %}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted); padding:6px 0;">Shipping</td>
+                            <td style="color:var(--text-primary);">
+                                {% if order.shipping_charges and order.shipping_charges > 0 %}
+                                    PKR {{ order.shipping_charges }}
+                                {% else %}
+                                    Free
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr style="border-top:1px solid var(--border);">
+                            <td style="color:var(--text-primary); font-weight:600; padding:10px 0 4px;">Total</td>
+                            <td style="color:var(--accent); font-weight:700; font-size:15px; padding-top:10px;">PKR {{ order.total_amount }}</td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+                <div class="table-wrapper" style="padding:20px; border-radius:var(--radius);">
+                    <p class="section-heading" style="margin-bottom:10px;">Shipping Address</p>
+                    <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">{{ order.shipping_address or '—' }}</p>
+                </div>
+                <div class="table-wrapper" style="padding:20px; border-radius:var(--radius);">
+                    <p class="section-heading" style="margin-bottom:10px;">Billing Address</p>
+                    <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">{{ order.billing_address or '—' }}</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper" style="margin-bottom:20px;">
+                <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+                    <p class="section-heading" style="margin:0;">Order Items</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sr#</th>
+                            <th>Product</th>
+                            <th>Unit Price</th>
+                            <th>Qty</th>
+                            <th>Discount / Item</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if items %}
+                            {% for item in items %}
+                            <tr>
+                                <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                <td>
+                                    <div class="product-name-cell">
+                                        {% if item.image_url %}
+                                        <img src="{{ item.image_url }}" alt="{{ item.title }}" class="table-img">
+                                        {% else %}
+                                        <div class="table-img" style="display:flex; align-items:center; justify-content:center; background:var(--bg-input);">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:20px;height:20px;color:var(--text-muted);"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="pname">{{ item.title }}</div>
+                                            <div class="psku">{{ item.product_no }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>PKR {{ item.product_amount }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>
+                                    {% if item.discount_per_item and item.discount_per_item > 0 %}
+                                        <span style="color:var(--success);">— PKR {{ item.discount_per_item }}</span>
+                                    {% else %}
+                                        <span style="color:var(--text-muted);">—</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-weight:600; color:var(--text-primary);">PKR {{ item.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📦</div>
+                                        <h4>No Items Found</h4>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if returns %}
+            <div class="table-wrapper">
+                <div style="padding:16px 20px; border-bottom:1px solid var(--border);">
+                    <p class="section-heading" style="margin:0;">Return Requests</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Return ID</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Requested At</th>
+                            <th>Resolved At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in returns %}
+                        <tr>
+                            <td style="color:var(--text-muted); font-size:12px;">#{{ r.return_id }}</td>
+                            <td style="max-width:300px;">{{ r.reason }}</td>
+                            <td>
+                                {% if r.status == 'approved' %}
+                                    <span class="badge badge-success">Approved</span>
+                                {% elif r.status == 'rejected' %}
+                                    <span class="badge badge-danger">Rejected</span>
+                                {% elif r.status == 'refunded' %}
+                                    <span class="badge badge-accent">Refunded</span>
+                                {% elif r.status == 'received' %}
+                                    <span class="badge badge-warning">Received</span>
+                                {% else %}
+                                    <span class="badge badge-muted">Requested</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:12px; color:var(--text-muted);">{{ r.requested_at.strftime('%d %b %Y') if r.requested_at else '—' }}</td>
+                            <td style="font-size:12px; color:var(--text-muted);">{{ r.resolved_at.strftime('%d %b %Y') if r.resolved_at else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+        </div>
+    </main>
+</div>
+{% endblock %}

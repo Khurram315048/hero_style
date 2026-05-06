@@ -1,0 +1,217 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Orders</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size:13px; color:#777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{% if admin %}{{ admin.first_name }} {{ admin.last_name }}{% endif %}</span>
+                    </a>
+                </span>
+            </div>
+        </header>
+        
+        <div class="content-body">
+
+             <div class="toolbar">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        id="orderSearch"
+                        placeholder="Search by name or ID..."
+                        autocomplete="off"
+                    />
+                </div>
+                <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                             <th>Sr#</th>
+                            <th>Order Number</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Subtotal</th>
+                            <th>Discount</th>
+                            <th>Shipping</th>
+                            <th>Total Amount</th>
+                            <th>Payment Method</th>
+                            <th>Payment Status</th>
+                            <th>Order Status</th>
+                            <th>Ordered At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                            {% if orders %}
+                                {% for o in orders %}
+                                    <tr data-id="{{o.order_id}}" 
+                                        data-user-id="{{o.user_id}}"
+                                        data-order-no="{{o.order_number}}">
+                                        <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                        <td style="font-size:12px; color:var(--text-muted);">{{ o.order_number or '—' }}</td>
+                                        <td><div class="pname">{{ o.customer_name }}</div></td>
+                                        <td>{{ o.total_items }}</td>
+                                        <td>PKR {{o.subtotal}}</td>
+                                        <td>PKR {{o.discount_amount if o.discount_amount else '—' }}</td>
+                                        <td>PKR {{ o.shipping_charges}}</td>
+                                        <td>PKR {{o.total_amount}}</td>
+                                        <td>{{ o.payment_method }}</td>
+                                    <td>
+                                        {% if o.pay_status == 'paid' %}
+                                            <span class="badge badge-success">Paid</span>
+                                        {% elif o.pay_status == 'pending' %}
+                                            <span class="badge badge-muted">In Progress</span>
+                                        {% elif o.pay_status == 'refunded' %}
+                                            <span class="badge badge-muted">Refunded</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if o.order_status == 'delivered' %}
+                                            <span class="badge badge-success">Order Delivered</span>
+                                        {% elif o.order_status == 'shipped' %}
+                                            <span class="badge badge-muted">Order Shipped</span>
+                                        {% elif o.order_status == 'confirmed' %}
+                                            <span class="badge badge-muted">Order Confirm</span>
+                                        {% elif o.order_status == 'pending' %}
+                                            <span class="badge badge-muted">Order Pending</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size:12px; color:var(--text-muted);">
+                                        {{ o.ordered_at.strftime('%d %b %Y') if o.ordered_at else '—' }}
+                                    </td>
+                                   <td>
+                                        
+                                    <div class="action-group">
+                                        <a href="{{url_for('admin.order_detail',order_id=o.order_id)}}"
+                                        class="btn btn-outline btn-sm">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            View
+                                        </a>
+
+                                        {% if o.order_status not in ['cancelled', 'delivered'] %}
+                                        <form action="{{url_for('admin.update_order_status',order_id=o.order_id)}}" method="POST">
+                                            <select name="status" class="form-control" style="width:auto; padding:5px 8px; font-size:12px;">
+                                                <option value="pending"   {% if o.order_status == 'pending'   %}selected{% endif %}>Pending</option>
+                                                <option value="confirmed" {% if o.order_status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                                <option value="shipped"   {% if o.order_status == 'shipped'   %}selected{% endif %}>Shipped</option>
+                                                <option value="delivered" {% if o.order_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm"
+                                                    style="border-color:var(--warning); color:var(--warning); background:var(--warning-soft);">
+                                                Update
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                            {% if o.order_status in ['pending','confirmed'] %}
+                                            <form action="{{url_for('admin.cancel_order_status',order_id=o.order_id)}}" method="POST"
+                                                onsubmit="return confirm('Cancel order {{ o.order_number }}?')">
+                                                <button type="submit" name="cancel_status" class="btn btn-danger btn-sm">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                            {% endif %}
+
+                                            <form action="{{url_for('admin.delete_order',order_id=o.order_id)}}" method="POST"
+                                                onsubmit="return confirm('Delete order {{ o.order_number }}?')">
+                                                <button type="submit" class="btn-icon danger">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="emptyRow">
+                                <td colspan="9">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">📦</div>
+                                        <h4>No Orders Found</h4>
+                                        <p>No orders exist yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+        <div id="noResults" style="display:none;">
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h4>No Results</h4>
+                <p>No order match your search.</p>
+            </div>
+        </div>
+
+        <div class="table-footer">
+            <span class="table-info" id="totalCount">{{ orders | length }} order(s)</span>
+        </div>
+    </main>
+</div>
+
+
+  
+
+
+
+<script>
+const searchInput=document.getElementById('orderSearch');
+const tableBody=document.getElementById('categoriesTableBody');
+const noResults=document.getElementById('noResults');
+const searchCount=document.getElementById('searchCount');
+const totalCount=document.getElementById('totalCount');
+
+searchInput.addEventListener('input', function (){
+    const q=this.value.trim().toLowerCase();
+    const rows=tableBody.querySelectorAll('tr[data-id]');
+    let visible=0;
+
+    rows.forEach(row => {
+    const userIid   = row.dataset.userId   || '';
+    const name = row.querySelector('.pname')?.textContent.trim().toLowerCase() || '';
+    const no   = row.dataset.orderNo   || '';
+    const match = !q || id.includes(q) || userId.includes(q) || no.includes(q) || name.includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+});
+
+    noResults.style.display=(rows.length > 0 && visible === 0) ? 'block' : 'none';
+    searchCount.textContent=q ? `${visible} result(s) for "${q}"` : '';
+    if(totalCount){
+        totalCount.textContent=q
+            ? `${visible} of ${rows.length} category(s)`
+            : `${rows.length} category(s)`;
+    }
+});
+</script>
+{% endblock %}

@@ -68,6 +68,8 @@
                             <th>Description</th>
                             <th>Total Products</th>
                             <th>Active Products</th>
+                            <th>Total Revenue</th>
+                            <th>Top Selling Category</th>
                             <th>Status</th>
                             <th>Created At</th>
                             <th>Actions</th>
@@ -94,7 +96,17 @@
                                 <td>
                                     <span class="badge badge-success">{{ cat.active_products }}</span>
                                 </td>
+                                 <td style="font-size:12px;">
+                                    PKR {{ "{:,.0f}".format(cat.total_revenue) if cat.total_revenue else '—' }}
+                                </td>
                                 <td>
+                                    {% if cat.is_top %}
+                                        <span class="badge badge-success">⭐ Top</span>
+                                    {% else %}
+                                        <span class="badge badge-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                    <td>
                                     {% if cat.is_active %}
                                         <span class="badge badge-success">Active</span>
                                     {% else %}
@@ -125,6 +137,7 @@
                                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                             </svg>
+                                        </a>
                                         <a href="{{ url_for('categories.toggle_category',category_id=cat.category_id) }}"
                                             class="btn-icon {% if cat.is_active %}warning{% else %}success{% endif %}"
                                             title="{{ 'Deactivate' if cat.is_active else 'Activate' }}"
@@ -161,7 +174,7 @@
                             {% endfor %}
                         {% else %}
                             <tr id="emptyRow">
-                                <td colspan="8">
+                                <td colspan="10">
                                     <div class="empty-state">
                                         <div class="empty-icon">📦</div>
                                         <h4>No Categories Found</h4>

@@ -77,7 +77,7 @@
                             {% for product in products %}
                             <tr
                                 data-id="{{ product.product_id | lower }}"
-                                data-no="{{ product.product_no | lower }}"
+                                data-product_no="{{ product.product_no | lower }}"
                                 data-title="{{ product.title | lower if product.title else '' }}"
                                 data-category="{{ product.name | lower if product.name else '' }}">
                                 <td style="color: var(--text-muted); font-size:12px;">{{ loop.index }}</td>
@@ -124,6 +124,7 @@
                                             class="btn-icon view-product-btn" 
                                             title="View"
                                             data-title="{{product.title}}"
+                                            data-product-no="{{ product.product_no }}"
                                             data-short="{{product.short_description}}"
                                             data-category="{{product.name}}"
                                             data-base="{{product.base_price}}"
@@ -140,7 +141,7 @@
                                             data-water="{{product.water_resistance}}"
                                             data-weight="{{product.weight}}"
                                             data-warranty="{{product.warranty_months}}"
-                                            data-is_display="{{product.is_always_on_display}}"
+                                            data-is-display="{{product.is_always_on_display}}"
                                             data-updated="{{product.updated_at}}"
                                             data-created="{{product.created_at}}"
                                             data-img="{{product.image_url}}">
@@ -155,6 +156,7 @@
                                             class="btn-icon edit-product-btn"
                                             title="Edit"
                                             data-id="{{ product.product_id }}"
+                                            data-product-no="{{ product.product_no }}"
                                             data-title="{{ product.title }}"
                                             data-short="{{ product.short_description }}"
                                             data-long="{{ product.long_description }}"
@@ -171,7 +173,7 @@
                                             data-water="{{ product.water_resistance }}"
                                             data-weight="{{ product.weight }}"
                                             data-warranty="{{ product.warranty_months }}"
-                                            data-is_display="{{ product.is_always_on_display }}"
+                                            data-is-display="{{ product.is_always_on_display }}"
                                             data-img="{{ product.image_url }}">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -180,7 +182,14 @@
                                             </a>
                                             {% endif %}
                                         {% if product.status == 'archived' %}
-                                            <span class="badge badge-muted">-</span>
+                                            <a href="{{url_for('admin.active_product',product_id=product.product_id)}}"
+                                           class="btn-icon danger"
+                                           title="Activate"
+                                           onclick="return confirm('Activate {{product.title}}?')" >
+                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                        </a>
                                         {% else %}    
 
                                         <a href="{{url_for('admin.delete_product',product_id=product.product_id)}}"
@@ -405,7 +414,10 @@
                     <label class="form-label">Product Title</label>
                     <input type="text" id="view_title" class="form-control" readonly />
                 </div>
-
+                <div class="form-group span-2">
+                    <label class="form-label">Product Number</label>
+                    <input type="text" id="view_no" class="form-control" readonly />
+                </div>
                 <div class="form-group span-2">
                     <label class="form-label">Short Description</label>
                     <input type="text" id="view_short_description" class="form-control" readonly />
@@ -520,6 +532,10 @@
                     <div class="form-group span-2">
                         <label class="form-label">Product Title <span class="required">*</span></label>
                         <input type="text" name="title" id="edit_title" class="form-control" required />
+                    </div>
+                     <div class="form-group span-2">
+                        <label class="form-label">Product No <span class="required">*</span></label>
+                        <input type="text" name="product_no" id="edit_no" class="form-control" required />
                     </div>
 
                     <div class="form-group span-2">
@@ -676,6 +692,7 @@ viewButtons.forEach(btn => {
         const data = this.dataset;
 
         document.getElementById('view_title').value = data.title || 'N/A';
+        document.getElementById('view_no').value = data.productNo;
         document.getElementById('view_short_description').value = data.short || 'N/A';
         document.getElementById('view_category').value = data.category || 'N/A';
         document.getElementById('view_base_price').value = data.base || '0.00';
@@ -691,7 +708,7 @@ viewButtons.forEach(btn => {
         document.getElementById('view_water').value = data.water || '—';
         document.getElementById('view_weight').value = data.weight || '—';
         document.getElementById('view_warranty').value = data.warranty || '—';
-        document.getElementById('is_display').value = data.is_display === 'True' ? 'Yes' : 'No';
+        document.getElementById('is_display').value = data.isDisplay === 'True' ? 'Yes' : 'No';
         document.getElementById('view_updated').value = data.updated || '—';
         document.getElementById('view_created').value = data.created || '—';
         document.getElementById('view_long_description').value = data.long || 'No description provided.';
@@ -749,7 +766,7 @@ searchInput.addEventListener('input', function (){
 
     rows.forEach(row => {
         const id = row.dataset.id || '';
-        const no = row.dataset.no || ''; 
+        const no = row.dataset.productNo || ''; 
         const title = row.dataset.title || '';
         const category = row.dataset.category || '';
 
@@ -773,6 +790,7 @@ document.querySelectorAll('.edit-product-btn').forEach(btn => {
         document.getElementById('editProductForm').action='/admin/edit_product/' +data.id;
 
         document.getElementById('edit_title').value=data.title || '';
+        document.getElementById('edit_no').value=data.productNo;
         document.getElementById('edit_short_description').value=data.short || '';
         document.getElementById('edit_long_description').value=data.long || '';
         document.getElementById('edit_base_price').value=data.base || '';
@@ -788,7 +806,7 @@ document.querySelectorAll('.edit-product-btn').forEach(btn => {
         document.getElementById('edit_water').value=data.water || '';
         document.getElementById('edit_weight').value=data.weight || '';
         document.getElementById('edit_status').value=data.status || 'active';
-        document.getElementById('edit_is_display').value=data.is_display === 'True' ? '1' : '0';
+        document.getElementById('edit_is_display').value=data.isDisplay === 'True' ? '1' : '0';
 
 
         const imgPrev=document.getElementById('edit_image_preview');
