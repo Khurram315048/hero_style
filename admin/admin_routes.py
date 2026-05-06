@@ -457,9 +457,39 @@ def order_detail(order_id):
         WHERE d.order_id=%s''',(order_id,))
     items=cursor.fetchall()
 
-    cursor.execute('''SELECT * FROM order_returns 
-        WHERE order_id=%s
-        ORDER BY requested_at DESC''',(order_id,))
-    returns=cursor.fetchall()
+  
+    return render_template('order_detail.htm',order=order,items=items,admin=admin)
 
-    return render_template('order_detail.htm',order=order,items=items,returns=returns,admin=admin)
+
+
+@admin_bp.route('/returns_orders')
+@admin_required
+def returns_orders():
+    cursor = mysql.connection.cursor()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+
+    active_tab=request.args.get('tab','order')  
+
+    if active_tab == 'order':
+        cursor.execute('''SELECT r.*, o.order_number,
+                   CONCAT(u.first_name,' ',u.last_name) AS customer_name
+            FROM order_returns r
+            JOIN orders o ON r.order_id=o.order_id
+            JOIN users u ON o.user_id=u.user_id
+            WHERE r.is_cancelled=0
+            ORDER BY r.requested_at DESC''')
+    else:
+        cursor.execute('''SELECT ir.*, o.order_number,
+                   CONCAT(u.first_name,' ',u.last_name) AS customer_name,
+                   p.title AS product_title
+            FROM order_item_returns ir
+            JOIN orders o ON ir.order_id=o.order_id
+            JOIN users u ON o.user_id=u.user_id
+            JOIN order_details od ON ir.order_detail_id=od.order_detail_id
+            JOIN products p ON od.product_id=p.product_id
+            ORDER BY ir.requested_at DESC''')
+
+    returns=cursor.fetchall()
+    return render_template('returns_orders.htm',returns=returns,active_tab=active_tab,admin=admin)
