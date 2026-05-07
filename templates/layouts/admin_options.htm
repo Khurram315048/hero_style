@@ -37,9 +37,10 @@
                 Sales
             </a>
             <div class="submenu">
+                <a href="{{ url_for('admin.all_payments') }}" class="submenu-item">Payments</a>
                 <a href="{{url_for('admin.all_orders')}}" class="submenu-item">Orders</a>
                 <a href="{{url_for('admin.returns_orders')}}" class="submenu-item">Returns</a>
-                <a href="#" class="submenu-item">Cancellations</a>
+                <a href="{{url_for('admin.orders_cancels')}}" class="submenu-item">Cancellations</a>
             </div>
         </div>
 
@@ -49,12 +50,12 @@
                 Users
             </a>
             <div class="submenu">
-                <a href="#" class="submenu-item">Customers</a>
-                <a href="#" class="submenu-item">Reviews</a>
+                <a href="{{url_for('admin.customers')}}" class="submenu-item">Customers</a>
+                <a href="{{url_for('admin.all_reviews')}}" class="submenu-item">Reviews</a>
             </div>
         </div>
 
-        <a href="#" class="profile-nav-item">
+        <a href="{{ url_for('admin.support_forms') }}" class="profile-nav-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>

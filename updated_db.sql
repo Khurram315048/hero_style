@@ -168,7 +168,7 @@ CREATE TABLE `forms` (
 
 LOCK TABLES `forms` WRITE;
 /*!40000 ALTER TABLE `forms` DISABLE KEYS */;
-INSERT INTO `forms` VALUES (1,NULL,'Testing','test@gmail.com','+923150484042','order','hfhsosns','addhjnjchocnsa OCsdnc sNLnc',NULL,3,0);
+INSERT INTO `forms` VALUES (1,NULL,'Testing','test@gmail.com','+923150484042','order','hfhsosns','addhjnjchocnsa OCsdnc sNLnc',NULL,3,1);
 /*!40000 ALTER TABLE `forms` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -265,7 +265,7 @@ CREATE TABLE `order_payments` (
 
 LOCK TABLES `order_payments` WRITE;
 /*!40000 ALTER TABLE `order_payments` DISABLE KEYS */;
-INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'pending',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'pending',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'pending',NULL,'2026-04-18 04:45:31'),(4,4,'bank_transfer',NULL,58297.00,'pending',NULL,'2026-04-18 07:44:08');
+INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'refunded',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'paid',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'failed',NULL,'2026-04-18 04:45:31'),(4,4,'bank_transfer',NULL,58297.00,'refunded',NULL,'2026-04-18 07:44:08');
 /*!40000 ALTER TABLE `order_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -337,7 +337,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','cancelled',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-05-06 07:45:22',1,'2026-05-06 07:45:22',0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-05-06 07:22:15',1,'2026-04-18 07:06:43',1),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-30 14:46:28',0,'2026-04-23 14:22:21',0),(4,2,'HW-EBED1858','cancelled',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-05-06 07:26:12',0,'2026-04-18 13:00:55',0);
+INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','delivered',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-05-07 08:36:29',1,'2026-05-06 07:45:22',0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-05-06 07:22:15',1,'2026-04-18 07:06:43',1),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-04-30 14:46:28',0,'2026-04-23 14:22:21',0),(4,2,'HW-EBED1858','cancelled',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-05-07 08:57:44',1,'2026-05-07 08:57:44',0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -444,7 +444,7 @@ CREATE TABLE `product_reviews` (
 
 LOCK TABLES `product_reviews` WRITE;
 /*!40000 ALTER TABLE `product_reviews` DISABLE KEYS */;
-INSERT INTO `product_reviews` VALUES (1,2,2,4,'good product.','approved','2026-04-18 11:08:36',1),(2,12,2,5,'execellent product','approved','2026-04-18 11:41:30',0);
+INSERT INTO `product_reviews` VALUES (1,2,2,4,'good product.','approved','2026-04-18 11:08:36',0),(2,12,2,5,'execellent product','approved','2026-04-18 11:41:30',0);
 /*!40000 ALTER TABLE `product_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -541,7 +541,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (2,2,'Umair','Ullah','umaircentral123@gmail.com','scrypt:32768:8:1$0tw3QYmh0Utrfbab$73159ca26635ead311b2902aaedd280f4b1460f931052a40c6aa99c77a66a6914cd769dfd19c0c4646b26d38533a2de6ed1a8a12eb5961a5933e2c3190b6614f',1,'2026-04-17 11:24:52','2026-04-17 11:24:52','2026-04-18 05:14:09'),(3,2,'Testing','user','testinguser123@gmail.com','guest',1,NULL,'2026-04-17 15:24:29','2026-04-17 15:24:29'),(5,2,'Rizwan','saleem','rizwancentral@gmail.com','scrypt:32768:8:1$0C8yu7ktzmBgFDVv$9fa80e4481129548a617aa8c0019e6f0bb48f9ceeca8544809603118dc8640fd8802f1a6b9682b972de2a3dd61789e512bb9a15124e9018452fb56b1f926e294',1,'2026-04-28 15:16:02','2026-04-28 15:16:02','2026-04-28 15:16:02');
+INSERT INTO `users` VALUES (2,2,'Umair','Ullah','umaircentral123@gmail.com','scrypt:32768:8:1$0tw3QYmh0Utrfbab$73159ca26635ead311b2902aaedd280f4b1460f931052a40c6aa99c77a66a6914cd769dfd19c0c4646b26d38533a2de6ed1a8a12eb5961a5933e2c3190b6614f',1,'2026-04-17 11:24:52','2026-04-17 11:24:52','2026-04-18 05:14:09'),(3,2,'Testing','user','testinguser123@gmail.com','guest',0,NULL,'2026-04-17 15:24:29','2026-05-07 09:52:05'),(5,2,'Rizwan','saleem','rizwancentral@gmail.com','scrypt:32768:8:1$0C8yu7ktzmBgFDVv$9fa80e4481129548a617aa8c0019e6f0bb48f9ceeca8544809603118dc8640fd8802f1a6b9682b972de2a3dd61789e512bb9a15124e9018452fb56b1f926e294',1,'2026-04-28 15:16:02','2026-04-28 15:16:02','2026-04-28 15:16:02');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -619,4 +619,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-07 10:15:21
+-- Dump completed on 2026-05-07 15:12:40

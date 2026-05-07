@@ -1,0 +1,232 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Reviews</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size:13px; color:#777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{% if admin %}{{ admin.first_name }} {{ admin.last_name }}{% endif %}</span>
+                    </a>
+                </span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" class="search-input" id="reviewSearch"
+                           placeholder="Search by product, customer or comment..." autocomplete="off">
+                </div>
+                <select class="search-input" id="statusFilter"
+                        style="width:auto; padding:8px 12px; font-size:13px; cursor:pointer;">
+                    <option value="">All Statuses</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="hidden">Hidden</option>
+                </select>
+                <select class="search-input" id="ratingFilter"
+                        style="width:auto; padding:8px 12px; font-size:13px; cursor:pointer;">
+                    <option value="">All Ratings</option>
+                    <option value="5">5 Stars</option>
+                    <option value="4">4 Stars</option>
+                    <option value="3">3 Stars</option>
+                    <option value="2">2 Stars</option>
+                    <option value="1">1 Star</option>
+                </select>
+                <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Sr#</th>
+                            <th>Product</th>
+                            <th>Customer</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reviewTableBody">
+                        {% if reviews %}
+                            {% for r in reviews %}
+                            <tr data-id="{{ r.review_id }}"
+                                data-status="{{ r.status }}"
+                                data-rating="{{ r.rating }}">
+                                <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
+                                <td>
+                                    <div class="pname" style="font-size:13px;">{{ r.product_title }}</div>
+                                </td>
+                                <td>
+                                    <div style="font-size:13px;">{{ r.customer_name }}</div>
+                                </td>
+                                <td>
+                                    <span style="font-size:13px; color:var(--warning); letter-spacing:1px;">
+                                        {% for i in range(r.rating) %}★{% endfor %}{% for i in range(5 - r.rating) %}☆{% endfor %}
+                                    </span>
+                                    <span style="font-size:11px; color:var(--text-muted); margin-left:4px;">{{ r.rating }}/5</span>
+                                </td>
+                                <td style="max-width:200px;">
+                                    <div style="font-size:12px; color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                        {{ r.comment }}
+                                    </div>
+                                    {% if r.comment | length > 60 %}
+                                    <button class="btn btn-outline btn-sm" style="margin-top:4px; font-size:11px; padding:2px 8px;"
+                                            onclick="showComment('{{ r.customer_name }}', '{{ r.product_title }}', `{{ r.comment | replace('`','') }}`)">
+                                        Read more
+                                    </button>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if r.status == 'approved' %}
+                                        <span class="badge badge-success">Approved</span>
+                                    {% elif r.status == 'hidden' %}
+                                        <span class="badge badge-danger">Hidden</span>
+                                    {% else %}
+                                        <span class="badge badge-muted">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color:var(--text-muted);">
+                                    {{ r.created_at.strftime('%d %b %Y') if r.created_at else '—' }}
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        {% if r.status != 'approved' %}
+                                        <form action="{{ url_for('admin.update_review_status', review_id=r.review_id) }}" method="POST">
+                                            <input type="hidden" name="status" value="approved">
+                                            <button type="submit" class="btn btn-sm"
+                                                    style="border-color:var(--success); color:var(--success); background:var(--success-soft);">
+                                                Approve
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        {% if r.status != 'hidden' %}
+                                        <form action="{{ url_for('admin.update_review_status', review_id=r.review_id) }}" method="POST">
+                                            <input type="hidden" name="status" value="hidden">
+                                            <button type="submit" class="btn btn-sm"
+                                                    style="border-color:var(--warning); color:var(--warning); background:var(--warning-soft);">
+                                                Hide
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <form action="{{ url_for('admin.delete_review', review_id=r.review_id) }}" method="POST"
+                                              onsubmit="return confirm('Permanently delete this review?')">
+                                            <button type="submit" class="btn btn-sm"
+                                                    style="border-color:var(--danger); color:var(--danger); background:var(--danger-soft);">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <div class="empty-icon">⭐</div>
+                                        <h4>No Reviews Found</h4>
+                                        <p>No product reviews have been submitted yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noResults" style="display:none;">
+                <div class="empty-state">
+                    <div class="empty-icon">🔍</div>
+                    <h4>No Results</h4>
+                    <p>No reviews match your search.</p>
+                </div>
+            </div>
+
+            <div class="table-footer">
+                <span class="table-info" id="totalCount">{{ reviews | length }} review(s)</span>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<div id="commentModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9998; align-items:center; justify-content:center;">
+    <div style="background:var(--card-bg,#fff); border-radius:10px; padding:24px; max-width:460px; width:90%; position:relative;">
+        <div id="modalProduct" style="font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:4px;"></div>
+        <div id="modalCustomer" style="font-size:14px; font-weight:600; margin-bottom:12px;"></div>
+        <div id="modalComment" style="font-size:13px; color:var(--text-muted); line-height:1.7; white-space:pre-wrap;"></div>
+        <button onclick="document.getElementById('commentModal').style.display='none'"
+                class="btn btn-outline btn-sm" style="margin-top:16px;">Close</button>
+    </div>
+</div>
+
+<script>
+function showComment(customer, product, comment) {
+    document.getElementById('modalProduct').textContent = product;
+    document.getElementById('modalCustomer').textContent = customer;
+    document.getElementById('modalComment').textContent = comment;
+    document.getElementById('commentModal').style.display = 'flex';
+}
+
+const reviewSearch = document.getElementById('reviewSearch');
+const statusFilter = document.getElementById('statusFilter');
+const ratingFilter = document.getElementById('ratingFilter');
+const tableBody    = document.getElementById('reviewTableBody');
+const noResults    = document.getElementById('noResults');
+const totalCount   = document.getElementById('totalCount');
+const searchCount  = document.getElementById('searchCount');
+
+function filterTable() {
+    const q      = reviewSearch.value.trim().toLowerCase();
+    const status = statusFilter.value.toLowerCase();
+    const rating = ratingFilter.value;
+    const rows   = tableBody.querySelectorAll('tr[data-id]');
+    let visible  = 0;
+
+    rows.forEach(row => {
+        const text      = row.textContent.toLowerCase();
+        const rowStatus = (row.dataset.status || '').toLowerCase();
+        const rowRating = (row.dataset.rating || '');
+        const matchQ = !q      || text.includes(q);
+        const matchS = !status || rowStatus === status;
+        const matchR = !rating || rowRating === rating;
+        row.style.display = (matchQ && matchS && matchR) ? '' : 'none';
+        if (matchQ && matchS && matchR) visible++;
+    });
+
+    noResults.style.display = (rows.length > 0 && visible === 0) ? 'block' : 'none';
+    searchCount.textContent = (q || status || rating) ? `${visible} result(s)` : '';
+    totalCount.textContent  = (q || status || rating)
+        ? `${visible} of ${rows.length} review(s)`
+        : `${rows.length} review(s)`;
+}
+
+reviewSearch.addEventListener('input', filterTable);
+statusFilter.addEventListener('change', filterTable);
+ratingFilter.addEventListener('change', filterTable);
+</script>
+{% endblock %}

@@ -542,5 +542,251 @@ def returns_items_reject(order_id):
 
 
 
+@admin_bp.route('/orders_cancels')
+@admin_required
+def orders_cancels():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT o.order_id,o.order_number,o.total_amount,o.cancelled_at,o.is_cancelled,
+        CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
+        COALESCE(op.payment_method, 'N/A')  AS payment_method,
+        COALESCE(op.status, 'pending')  AS pay_status
+    FROM orders o
+    LEFT JOIN users u ON o.user_id=u.user_id
+    LEFT JOIN order_payments op ON o.order_id=op.order_id
+    WHERE(o.is_cancelled=1 OR o.status='cancelled')
+      AND o.is_deleted=0
+    ORDER BY o.cancelled_at DESC""")
+    cancelled_orders=cursor.fetchall()
+
+    admin_id=session.get('admin_id')
+    cursor.execute(
+        'SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+
+    return render_template('orders_cancels.htm',cancelled_orders=cancelled_orders,admin=admin)
 
 
+@admin_bp.route('/mark_refunded/<int:order_id>', methods=['POST'])
+@admin_required
+def mark_refunded(order_id):
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("""
+        SELECT o.order_id, op.payment_id
+        FROM orders o
+        LEFT JOIN order_payments op ON o.order_id = op.order_id
+        WHERE o.order_id = %s
+          AND (o.is_cancelled = 1 OR o.status = 'cancelled')
+          AND o.is_deleted = 0
+    """, (order_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        cursor.close()
+        session['admin_toast'] = 'Order not found or not eligible for refund.'
+        return redirect(url_for('admin.orders_cancels'))
+
+    payment_id = row['payment_id']
+
+    if payment_id:
+        # Update the payment status to refunded
+        cursor.execute("""
+            UPDATE order_payments 
+            SET status = 'refunded'
+            WHERE payment_id = %s
+        """, (payment_id,))
+    else:
+        # No payment row exists — insert one
+        cursor.execute("""
+            INSERT INTO order_payments (order_id, payment_method, amount, status)
+            SELECT order_id, 'COD', total_amount, 'refunded'
+            FROM orders WHERE order_id = %s
+        """, (order_id,))
+
+    mysql.connection.commit()
+    cursor.close()
+
+    session['admin_toast'] = 'Order marked as refunded successfully.'
+    return redirect(url_for('admin.orders_cancels'))
+
+
+
+@admin_bp.route('/customers')
+@admin_required
+def customers():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT u.user_id,u.first_name,u.last_name,u.email,
+               u.is_active,u.created_at,u.last_login_at,
+               COUNT(DISTINCT o.order_id) AS total_orders,
+               COALESCE(SUM(o.total_amount),0) AS total_spent
+        FROM users u
+        LEFT JOIN orders o ON u.user_id=o.user_id AND o.is_deleted=0
+        WHERE u.role_id=2
+        GROUP BY u.user_id
+        ORDER BY u.created_at DESC""")
+    customers=cursor.fetchall()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('customers.htm',customers=customers,admin=admin)
+
+
+@admin_bp.route('/customers/<int:user_id>/toggle',methods=['POST'])
+@admin_required
+def toggle_customer(user_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute('SELECT is_active FROM users WHERE user_id=%s',(user_id,))
+    row=cursor.fetchone()
+    if not row:
+        cursor.close()
+        session['admin_toast']='Customer not found.'
+        return redirect(url_for('admin.customers'))
+    
+    new_status=0 if row['is_active'] else 1
+    cursor.execute('UPDATE users SET is_active=%s WHERE user_id=%s',(new_status,user_id))
+    mysql.connection.commit()
+    cursor.close()
+    session['admin_toast']='Customer status updated.'
+    return redirect(url_for('admin.customers'))
+
+
+
+@admin_bp.route('/customers/<int:user_id>')
+@admin_required
+def customer_detail(user_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT user_id,first_name,last_name,email,
+               is_active,created_at,last_login_at
+        FROM users WHERE user_id=%s""",(user_id,))
+    customer=cursor.fetchone()
+    if not customer:
+        cursor.close()
+        session['admin_toast']='Customer not found.'
+        return redirect(url_for('admin.customers'))
+    
+    cursor.execute("""SELECT o.order_id,o.order_number,o.status,o.total_amount,
+               o.ordered_at,o.is_cancelled,
+               COALESCE(op.status,'pending') AS pay_status,
+               COALESCE(op.payment_method,'N/A') AS payment_method
+        FROM orders o
+        LEFT JOIN order_payments op ON o.order_id=op.order_id
+        WHERE o.user_id=%s AND o.is_deleted=0
+        ORDER BY o.ordered_at DESC""",(user_id,))
+    orders=cursor.fetchall()
+    
+    cursor.execute("""SELECT p.title,pi.image_url,p.sale_price,w.added_at
+        FROM wishlist w
+        JOIN products p ON w.product_i =p.product_id
+        LEFT JOIN product_images pi ON p.product_id=pi.product_id
+        WHERE w.user_id=%s""",(user_id,))
+    wishlist=cursor.fetchall()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('customer_detail.htm',customer=customer,orders=orders,wishlist=wishlist,admin=admin)
+
+
+
+
+@admin_bp.route('/payments')
+@admin_required
+def all_payments():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT op.payment_id,op.order_id,op.payment_method,
+               op.amount, op.status,op.paid_at,op.created_at,o.order_number,o.is_cancelled,
+               CONCAT(u.first_name,' ',u.last_name) AS customer_name
+        FROM order_payments op
+        JOIN orders o ON op.order_id=o.order_id
+        LEFT JOIN users u ON o.user_id=u.user_id
+        WHERE o.is_deleted=0
+        ORDER BY op.created_at DESC""")
+    payments=cursor.fetchall()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('payments.htm',payments=payments,admin=admin)
+
+
+
+@admin_bp.route('/support_forms')
+@admin_required
+def support_forms():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT form_id,full_name,email,phone_number,
+               category,subject,message,overall_rating,
+               order_id,is_deleted
+        FROM forms
+        WHERE is_deleted=0
+        ORDER BY form_id DESC""")
+    forms=cursor.fetchall()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('support_forms.htm',forms=forms,admin=admin)
+
+
+@admin_bp.route('/support_forms/<int:form_id>/delete', methods=['POST'])
+@admin_required
+def delete_form(form_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute('UPDATE forms SET is_deleted=1 WHERE form_id=%s',(form_id,))
+    mysql.connection.commit()
+    cursor.close()
+    session['admin_toast']='Form submission deleted.'
+    return redirect(url_for('admin.support_forms'))
+
+
+
+@admin_bp.route('/reviews')
+@admin_required
+def all_reviews():
+    cursor=mysql.connection.cursor()
+    cursor.execute("""SELECT pr.review_id,pr.rating,pr.comment,pr.status,
+               pr.created_at,pr.is_deleted,
+               p.title AS product_title,p.product_id,
+               CONCAT(u.first_name,' ',u.last_name) AS customer_name,
+               u.user_id
+        FROM product_reviews pr
+        JOIN products p ON pr.product_id=p.product_id
+        JOIN users u ON pr.user_id=u.user_id
+        WHERE pr.is_deleted=0
+        ORDER BY pr.created_at DESC""")
+    reviews=cursor.fetchall()
+    admin_id=session.get('admin_id')
+    cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
+    admin=cursor.fetchone()
+    cursor.close()
+    return render_template('all_reviews.htm',reviews=reviews,admin=admin)
+
+
+@admin_bp.route('/reviews/<int:review_id>/status',methods=['POST'])
+@admin_required
+def update_review_status(review_id):
+    cursor=mysql.connection.cursor()
+    new_status=request.form.get('status')
+    if new_status not in ('approved','hidden','pending'):
+        session['admin_toast']='Invalid status.'
+        return redirect(url_for('admin.all_reviews'))
+    
+    
+    cursor.execute("""UPDATE product_reviews SET status=%s WHERE review_id=%s""",(new_status,review_id))
+    mysql.connection.commit()
+    cursor.close()
+    session['admin_toast']=f'Review marked as {new_status}.'
+    return redirect(url_for('admin.all_reviews'))
+
+
+@admin_bp.route('/reviews/<int:review_id>/delete',methods=['POST'])
+@admin_required
+def delete_review(review_id):
+    cursor=mysql.connection.cursor()
+    cursor.execute("""UPDATE product_reviews SET is_deleted=1 WHERE review_id=%s""",(review_id,))
+    mysql.connection.commit()
+    cursor.close()
+    session['admin_toast']='Review deleted.'
+    return redirect(url_for('admin.all_reviews'))

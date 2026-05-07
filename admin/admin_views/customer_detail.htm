@@ -1,0 +1,160 @@
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_pages.css') }}">
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Customer Detail</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                <a href="/" class="view-site-btn" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>User View</span>
+                </a>
+                <span style="font-size:13px; color:#777;">Welcome back,
+                    <a href="{{ url_for('admin.admin_profile') }}" class="view-site-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span>{% if admin %}
+                            {{ admin.first_name }} {{ admin.last_name }}
+                            {% endif %}
+                        </span>
+                    </a>
+                </span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <div class="toolbar" style="margin-bottom:20px;">
+                <a href="{{ url_for('admin.customers') }}" class="btn btn-outline btn-sm">
+                    ← Back to Customers
+                </a>
+            </div>
+
+            <div style="display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start;">
+
+                <div class="detail-card" style="padding:20px;">
+                    <div style="text-align:center; margin-bottom:16px;">
+                        <div style="width:64px; height:64px; border-radius:50%; background:var(--accent-soft,#f0f0f0); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:600; margin:0 auto 10px; color:var(--accent);">
+                            {{ customer.first_name[0] }}{{ customer.last_name[0] }}
+                        </div>
+                        <div class="pname" style="font-size:15px;">{{ customer.first_name }} {{ customer.last_name }}</div>
+                        <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">{{ customer.email }}</div>
+                        <div style="margin-top:8px;">
+                            {% if customer.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">
+                    <div style="font-size:12px; color:var(--text-muted); line-height:2;">
+                        <div>Joined: {{ customer.created_at.strftime('%d %b %Y') }}</div>
+                        <div>Last login: {{ customer.last_login_at.strftime('%d %b %Y') if customer.last_login_at else '—' }}</div>
+                        <div>Total orders: {{ orders | length }}</div>
+                        <div>Wishlist items: {{ wishlist | length }}</div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <form action="{{url_for('admin.toggle_customer',user_id=customer.user_id)}}" method="POST"
+                              onsubmit="return confirm('Toggle status for this customer?')">
+                            <button type="submit" class="btn btn-sm" style="width:100%;">
+                                {{ 'Deactivate Account' if customer.is_active else 'Activate Account' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-heading" style="font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;">
+                        Order History
+                    </div>
+                    <div class="table-wrapper" style="margin-bottom:24px;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order Number</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if orders %}
+                                    {% for o in orders %}
+                                    <tr>
+                                        <td style="font-size:12px; color:var(--text-muted);">{{ o.order_number }}</td>
+                                        <td>
+                                            {% if o.status == 'delivered' %}
+                                                <span class="badge badge-success">Delivered</span>
+                                            {% elif o.status == 'cancelled' %}
+                                                <span class="badge badge-danger">Cancelled</span>
+                                            {% elif o.status == 'shipped' %}
+                                                <span class="badge badge-info">Shipped</span>
+                                            {% elif o.status == 'confirmed' %}
+                                                <span class="badge badge-info">Confirmed</span>
+                                            {% else %}
+                                                <span class="badge badge-muted">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if o.pay_status == 'paid' %}
+                                                <span class="badge badge-success">Paid</span>
+                                            {% elif o.pay_status == 'refunded' %}
+                                                <span class="badge badge-muted">Refunded</span>
+                                            {% elif o.pay_status == 'failed' %}
+                                                <span class="badge badge-danger">Failed</span>
+                                            {% else %}
+                                                <span class="badge badge-muted">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>PKR {{ o.total_amount }}</td>
+                                        <td style="font-size:12px; color:var(--text-muted);">
+                                            {{ o.ordered_at.strftime('%d %b %Y') }}
+                                        </td>
+                                        <td>
+                                            <a href="{{url_for('admin.order_detail',order_id=o.order_id)}}"
+                                               class="btn btn-outline btn-sm">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No orders yet.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if wishlist %}
+                    <div class="section-heading" style="font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em;">
+                        Wishlist
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px;">
+                        {% for w in wishlist %}
+                        <div class="detail-card" style="padding:12px; text-align:center;">
+                            {% if w.image_url %}
+                            <img src="{{ w.image_url }}" style="width:60px; height:60px; object-fit:contain; margin-bottom:6px;">
+                            {% endif %}
+                            <div style="font-size:12px; font-weight:500;">{{ w.title }}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">PKR {{ w.sale_price }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}
