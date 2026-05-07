@@ -233,7 +233,7 @@ CREATE TABLE `order_item_returns` (
 
 LOCK TABLES `order_item_returns` WRITE;
 /*!40000 ALTER TABLE `order_item_returns` DISABLE KEYS */;
-INSERT INTO `order_item_returns` VALUES (1,4,4,'this item is not good.','requested','2026-04-20 19:02:57','2026-04-20 19:02:57'),(3,4,6,'bad quality','rejected','2026-04-20 19:32:31','2026-04-20 19:32:31');
+INSERT INTO `order_item_returns` VALUES (1,4,4,'this item is not good.','rejected','2026-04-20 19:02:57','2026-05-07 10:14:32'),(3,4,6,'bad quality','rejected','2026-04-20 19:32:31','2026-05-07 10:14:32');
 /*!40000 ALTER TABLE `order_item_returns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -296,7 +296,7 @@ CREATE TABLE `order_returns` (
 
 LOCK TABLES `order_returns` WRITE;
 /*!40000 ALTER TABLE `order_returns` DISABLE KEYS */;
-INSERT INTO `order_returns` VALUES (1,3,'i am testing the return cancel method.','requested','2026-04-23 14:02:01','2026-04-20 13:28:24',1);
+INSERT INTO `order_returns` VALUES (1,3,'i am testing the return cancel method.','rejected','2026-04-23 14:02:01','2026-05-07 05:06:25',0);
 /*!40000 ALTER TABLE `order_returns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -619,4 +619,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-06 15:45:20
+-- Dump completed on 2026-05-07 10:15:21

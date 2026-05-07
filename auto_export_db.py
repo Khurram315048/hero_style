@@ -9,7 +9,7 @@ DB_PORT     = '3307'
 DB_USER     = 'root'
 DB_PASSWORD = ''         
 DB_NAME     = 'hero_db'       
-OUTPUT_FILE = 'updated_lms.sql'  
+OUTPUT_FILE = 'updated_db.sql'  
 CHECK_EVERY = 10    
 MYSQLDUMP_PATH = r'D:\xampp\mysql\bin\mysqldump.exe'     
 

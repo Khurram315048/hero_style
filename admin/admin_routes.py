@@ -493,3 +493,54 @@ def returns_orders():
 
     returns=cursor.fetchall()
     return render_template('returns_orders.htm',returns=returns,active_tab=active_tab,admin=admin)
+
+
+
+@admin_bp.route('/returns_order_request/<int:order_id>',methods=['POST'])
+@admin_required
+def returns_order_request(order_id):
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''UPDATE order_returns SET status=%s,resolved_at=%s WHERE order_id=%s''',('approved',datetime.now(),order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Request approved successfully!'
+    return redirect(request.referrer)
+
+
+@admin_bp.route('/returns_order_reject/<int:order_id>',methods=['POST'])
+@admin_required
+def returns_order_reject(order_id):
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''UPDATE order_returns SET status=%s,resolved_at=%s WHERE order_id=%s''',('rejected',datetime.now(),order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Request rejected successfully!'
+    return redirect(request.referrer)
+
+
+@admin_bp.route('/returns_items_approved/<int:order_id>',methods=['POST'])
+@admin_required
+def returns_items_approved(order_id):
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''UPDATE order_item_returns SET status=%s,resolved_at=%s WHERE order_id=%s''',('approved',datetime.now(),order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Request approved successfully!'
+    return redirect(request.referrer)
+
+
+
+@admin_bp.route('/returns_items_reject/<int:order_id>',methods=['POST'])
+@admin_required
+def returns_items_reject(order_id):
+    cursor=mysql.connection.cursor()
+
+    cursor.execute('''UPDATE order_item_returns SET status=%s,resolved_at=%s WHERE order_id=%s''',('rejected',datetime.now(),order_id))
+    mysql.connection.commit()
+    session['admin_toast']='Request rejected successfully!'
+    return redirect(request.referrer)
+
+
+
+
+

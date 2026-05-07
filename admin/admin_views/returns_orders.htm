@@ -104,10 +104,10 @@
                                             View Order
                                         </a>
                                         {% if r.status == 'requested' %}
-                                        <form action="#" method="POST">
+                                        <form action="{{url_for('admin.returns_order_request',order_id=r.order_id)}}" method="POST">
                                             <button type="submit" class="btn btn-success btn-sm">Approve</button>
                                         </form>
-                                        <form action="#" method="POST">
+                                        <form action="{{url_for('admin.returns_order_reject',order_id=r.order_id)}}" method="POST">
                                             <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                         </form>
                                         {% endif %}
@@ -185,10 +185,10 @@
                                             View Order
                                         </a>
                                         {% if r.status == 'requested' %}
-                                        <form action="#" method="POST">
+                                        <form action="{{url_for('admin.returns_items_approved',order_id=r.order_id)}}" method="POST">
                                             <button type="submit" class="btn btn-success btn-sm">Approve</button>
                                         </form>
-                                        <form action="#" method="POST">
+                                        <form action="{{url_for('admin.returns_items_reject',order_id=r.order_id)}}" method="POST">
                                             <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                                         </form>
                                         {% endif %}
