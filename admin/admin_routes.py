@@ -412,6 +412,15 @@ def cancel_order_status(order_id):
     cursor.execute("""UPDATE orders SET status='cancelled',is_cancelled=1,cancelled_at=%s 
                       WHERE order_id=%s""",
                    (datetime.now(),order_id))
+
+    cursor.execute("""
+        UPDATE products p
+        JOIN order_details od ON p.product_id=od.product_id
+        SET p.stock_quantity=p.stock_quantity + od.quantity,
+        p.status=CASE WHEN p.status='draft' THEN 'active' ELSE p.status END
+        WHERE od.order_id=%s
+        """,(order_id,))
+
     mysql.connection.commit()
     session['admin_toast']='Order cancelled successfully!'
     return redirect(url_for('admin.all_orders'))

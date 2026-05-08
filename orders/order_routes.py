@@ -93,13 +93,20 @@ def add_to_cart():
     cart_id=get_or_create_cart_id()
 
     
-    cursor.execute("SELECT title,sale_price,base_price FROM products WHERE product_id=%s",(product_id,))
+    cursor.execute("SELECT title,sale_price,base_price,stock_quantity FROM products WHERE product_id=%s",(product_id,))
     product=cursor.fetchone()
     if not product:
         cursor.close()
         return redirect(redirect_to)
+    
+    if product['stock_quantity'] < 1:
+        cursor.close()
+        session['toast']=f"'{product['title']}' is out of stock."
+        return redirect(redirect_to)
 
     price=float(product['sale_price'] or product['base_price'])
+
+    
 
     cursor.execute("""
         INSERT INTO cart_items(cart_id,product_id,quantity,price_at_add)
@@ -181,6 +188,7 @@ def checkout():
 
 @order_bp.route('/place_order',methods=['POST'])
 def place_order():
+    cursor=mysql.connection.cursor(DictCursor)
     cart_items, grand_total=get_cart_items()
     if not cart_items:
         return redirect(url_for('orders.view_cart'))
@@ -205,9 +213,25 @@ def place_order():
         subtotal=grand_total
         shipping_charges=0 if subtotal >= 10000 else 250
         total_amount=subtotal + shipping_charges - discount_amount
+
+
+    for item in cart_items:
+        cursor.execute("""
+        SELECT stock_quantity, title FROM products 
+        WHERE product_id=%s AND status='active'
+    """, (item['product_id'],))
+        stock_row=cursor.fetchone()
+        if not stock_row:
+            cursor.close()
+            session['toast']=f"'{item['title']}' is no longer available."
+            return redirect(url_for('orders.view_cart'))
+        if stock_row['stock_quantity'] < item['quantity']:
+            cursor.close()
+            session['toast']=f"Only {stock_row['stock_quantity']} unit(s) of '{stock_row['title']}' left in stock."
+            return redirect(url_for('orders.view_cart'))     
  
     order_number='HW-' + uuid.uuid4().hex[:8].upper()
-    cursor=mysql.connection.cursor(DictCursor)
+   
     user_id=None
  
     if session.get('user_id'):
@@ -218,12 +242,14 @@ def place_order():
         existing=cursor.fetchone()
         if existing:
             user_id=existing['user_id']
+
+           
  
     if not user_id:
         cursor.execute("""
-            INSERT INTO users(role_id,first_name,last_name,email,password_hash,address,city,country)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-        """, (2,first_name,last_name,email,'guest',shipping_address,city,'Pakistan'))
+            INSERT INTO users(role_id,first_name,last_name,email,password_hash)
+            VALUES (%s,%s,%s,%s,%s)
+        """, (2,first_name,last_name,email,'guest'))
         mysql.connection.commit()
         user_id=cursor.lastrowid
  
@@ -241,10 +267,20 @@ def place_order():
  
     for item in cart_items:
         item_subtotal=round(item['price'] * item['quantity'], 2)
-        cursor.execute("""
-            INSERT INTO order_details(order_id,product_id,product_amount,quantity,discount_per_item,subtotal)
+        cursor.execute("""INSERT INTO order_details(order_id,product_id,product_amount,quantity,discount_per_item,subtotal)
             VALUES (%s,%s,%s,%s,%s,%s)
-        """, (order_id,item['product_id'],item['price'],item['quantity'],0.00,item_subtotal))
+        """,(order_id,item['product_id'],item['price'],item['quantity'],0.00,item_subtotal))
+
+        cursor.execute("""
+        UPDATE products 
+        SET stock_quantity= GREATEST(stock_quantity - %s,0) 
+        WHERE product_id=%s""",(item['quantity'],item['product_id']))
+
+        cursor.execute("""
+        UPDATE products SET status='draft'
+        WHERE product_id=%s AND stock_quantity=0
+        """,(item['product_id'],))
+        mysql.connection.commit()
  
    
     cursor.execute("""
@@ -277,7 +313,7 @@ def buy_now(product_id):
     cursor=mysql.connection.cursor(DictCursor)
 
     cursor.execute("""
-        SELECT p.product_id,p.title,p.sale_price,p.base_price,pi.image_url
+        SELECT p.product_id,p.title,p.sale_price,p.base_price,pi.image_url,p.stock_quantity
         FROM products p
         JOIN product_images pi ON p.product_id=pi.product_id
         WHERE p.product_id=%s AND pi.is_active=1
@@ -287,6 +323,10 @@ def buy_now(product_id):
 
     if not product:
         return redirect(url_for('products.homepage'))
+    
+    if product['stock_quantity'] < quantity:
+        session['toast']=f"Only {product['stock_quantity']} unit(s) available."
+        return redirect(f"/products/{product_id}")
 
     price=float(product['sale_price']
                   if product['sale_price'] and product['sale_price'] < product['base_price']

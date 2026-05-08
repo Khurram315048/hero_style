@@ -61,7 +61,7 @@ def homepage():
         AND pi.is_active=1
         WHERE p.status='active'
         ORDER BY RAND()
-        LIMIT 5
+        LIMIT 5 
     """)
  
     products=cursor.fetchall()

@@ -299,6 +299,13 @@ def cancel_order(order_id):
                       SET status='cancelled',updated_at=%s,is_cancelled=1,cancelled_at=%s 
                       WHERE order_id=%s AND user_id=%s AND is_deleted=0''',
                    (datetime.now(),datetime.now(),order_id,user_id))
+    cursor.execute("""
+        UPDATE products p
+        JOIN order_details od ON p.product_id=od.product_id
+        SET p.stock_quantity=p.stock_quantity + od.quantity,
+        p.status=CASE WHEN p.status='draft' THEN 'active' ELSE p.status END
+        WHERE od.order_id=%s
+    """, (order_id,))
     mysql.connection.commit()
     cursor.close()
     
