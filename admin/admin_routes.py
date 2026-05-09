@@ -576,47 +576,42 @@ def orders_cancels():
     return render_template('orders_cancels.htm',cancelled_orders=cancelled_orders,admin=admin)
 
 
-@admin_bp.route('/mark_refunded/<int:order_id>', methods=['POST'])
+@admin_bp.route('/mark_refunded/<int:order_id>',methods=['POST'])
 @admin_required
 def mark_refunded(order_id):
-    cursor = mysql.connection.cursor()
+    cursor=mysql.connection.cursor()
 
-    cursor.execute("""
-        SELECT o.order_id, op.payment_id
+    cursor.execute("""SELECT o.order_id,op.payment_id
         FROM orders o
-        LEFT JOIN order_payments op ON o.order_id = op.order_id
+        LEFT JOIN order_payments op ON o.order_id=op.order_id
         WHERE o.order_id = %s
           AND (o.is_cancelled = 1 OR o.status = 'cancelled')
-          AND o.is_deleted = 0
-    """, (order_id,))
-    row = cursor.fetchone()
+          AND o.is_deleted=0""",(order_id,))
+    row=cursor.fetchone()
 
     if not row:
         cursor.close()
-        session['admin_toast'] = 'Order not found or not eligible for refund.'
+        session['admin_toast']='Order not found or not eligible for refund.'
         return redirect(url_for('admin.orders_cancels'))
 
-    payment_id = row['payment_id']
+    payment_id=row['payment_id']
 
     if payment_id:
-        # Update the payment status to refunded
-        cursor.execute("""
-            UPDATE order_payments 
-            SET status = 'refunded'
-            WHERE payment_id = %s
-        """, (payment_id,))
+        
+        cursor.execute("""UPDATE order_payments 
+            SET status='refunded'
+            WHERE payment_id=%s""",(payment_id,))
     else:
-        # No payment row exists — insert one
+        
         cursor.execute("""
-            INSERT INTO order_payments (order_id, payment_method, amount, status)
-            SELECT order_id, 'COD', total_amount, 'refunded'
-            FROM orders WHERE order_id = %s
-        """, (order_id,))
+            INSERT INTO order_payments(order_id,payment_method,amount,status)
+            SELECT order_id,'COD',total_amount,'refunded'
+            FROM orders WHERE order_id=%s""",(order_id,))
 
     mysql.connection.commit()
     cursor.close()
 
-    session['admin_toast'] = 'Order marked as refunded successfully.'
+    session['admin_toast']='Order marked as refunded successfully.'
     return redirect(url_for('admin.orders_cancels'))
 
 
@@ -799,3 +794,69 @@ def delete_review(review_id):
     cursor.close()
     session['admin_toast']='Review deleted.'
     return redirect(url_for('admin.all_reviews'))
+
+
+
+@admin_bp.route('/sales')
+@admin_required
+def sales():
+    cursor=mysql.connection.cursor()
+    cursor.execute('SELECT SUM(total_amount) AS total_sales FROM orders WHERE is_cancelled=0 AND is_deleted=0')
+    result_sum=cursor.fetchone()
+    total_sales=result_sum['total_sales']
+
+
+    cursor.execute('SELECT SUM(quantity) AS total_units FROM order_details')
+    result_units=cursor.fetchone()
+    total_units=result_units['total_units']
+
+    cursor.execute('SELECT COUNT(*) AS total_orders FROM orders WHERE is_cancelled=0 AND is_deleted=0')
+    result=cursor.fetchone()
+    total_orders=result['total_orders'] 
+
+    avg_order=int(total_sales / total_units)
+
+    cursor.execute("""SELECT COUNT(order_id) AS total_return FROM order_returns WHERE status='approved' 
+                   AND is_cancelled=0 """)
+    return_result=cursor.fetchone()
+    total_returns=return_result['total_return']
+
+    cursor.execute("""SELECT SUM(p.amount) AS pending_cod 
+                   FROM order_payments  p
+                   JOIN orders o ON p.order_id=o.order_id
+                   WHERE p.status='pending' AND p.payment_method='COD' AND o.is_cancelled=0  """)
+    pending_result=cursor.fetchone()
+    pending_cod=pending_result['pending_cod']
+
+
+    cursor.execute("""
+        SELECT 
+            c.name AS name,
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.quantity ELSE 0 END), 0) AS units_sold,
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.subtotal ELSE 0 END), 0) AS revenue,
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 AND (oir.status = 'approved' OR o.status = 'returned') THEN od.quantity ELSE 0 END), 0) AS returns,
+            (COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.subtotal ELSE 0 END), 0) - 
+             COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 AND (oir.status = 'approved' OR o.status = 'returned') THEN od.subtotal ELSE 0 END), 0)) AS net_revenue
+        FROM categories c
+        LEFT JOIN products p ON c.category_id = p.category_id
+        LEFT JOIN order_details od ON p.product_id = od.product_id
+        LEFT JOIN orders o ON od.order_id = o.order_id AND o.is_deleted = 0
+        LEFT JOIN order_item_returns oir ON od.order_detail_id = oir.order_detail_id AND oir.status = 'approved'
+        GROUP BY c.category_id, c.name
+        ORDER BY net_revenue DESC
+    """)
+    category_sales=cursor.fetchall()
+
+    
+
+    return render_template('sales.htm',total_sales=total_sales,total_returns=total_returns,
+                           pending_cod=pending_cod,total_units=total_units,
+                           total_orders=total_orders,avg_order=avg_order,category_sales=category_sales)
+
+
+
+
+
+
+
+

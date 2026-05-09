@@ -1,0 +1,204 @@
+{% block content %}
+<div class="dashboard-wrapper">
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+       <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                 <a href="/" class="view-site-btn" target="_blank" title="View Public Site">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                         </svg>
+                            <span>User View</span>
+                </a>
+                <span style="font-size: 13px; color: #777;">Welcome back,
+                    <a href="{{url_for('admin.admin_profile')}}" class="view-site-btn"  title="View Admin Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                            <span>{% if admin %}
+                                {{ admin.first_name }} {{ admin.last_name }}  
+                             </span>
+                            {% endif %}
+                    </a>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <h1 style="font-size:22px; font-weight:700; color:#1e1e2d; margin-bottom:24px;">
+                Sales <span style="color:#a89df5;">Overview</span>
+            </h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Sales</span>
+                    {% if total_sales %}
+                    <div class="stat-value">PKR {{total_sales}}</div>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Units Sold</span>
+                    {% if total_units %}
+                    <div class="stat-value">{{total_units}}</div>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    {% if total_orders %}
+                    <span class="stat-label">Total Orders</span>
+                    <div class="stat-value">{{total_orders}}</div>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    {% if avg_order %}
+                    <span class="stat-label">Avg. Order Value</span>
+                    <div class="stat-value">PKR {{avg_order}}</div>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    {% if total_returns %}
+                    <span class="stat-label">Returned Orders</span>
+                    <div class="stat-value" style="color:#ff4f4f;">{{total_returns}}</div>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    {% if pending_cod %}
+                    <span class="stat-label">Pending COD</span>
+                    <div class="stat-value" style="color:#f39c12;">PKR {{pending_cod}}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sales by Category -->
+            <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;">Sales by Category</p>
+            <div class="quick-links" style="margin-bottom:28px; padding:0;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f9fc; border-bottom:1px solid #eef0f7;">
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">#</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Category</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Units Sold</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Revenue</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Returns</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Net Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in category_sales %}
+                        <tr style="border-bottom:1px solid #eef0f7;">
+                            <td style="padding:12px 16px; font-size:13px; color:#888;">{{ loop.index }}</td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#1e1e2d;">{{ cat.name }}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">{{ cat.units_sold }}</td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR {{cat.revenue }}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">{{ cat.returns }}</td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR {{ cat.net_revenue }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Top Selling Products -->
+            <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;">Top Selling Products</p>
+            <div class="quick-links" style="margin-bottom:28px; padding:0;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f9fc; border-bottom:1px solid #eef0f7;">
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Rank</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Product</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">SKU</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Units Sold</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Unit Price</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Total Revenue</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Stock Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- for product in top_products -->
+                        <tr style="border-bottom:1px solid #eef0f7;">
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;"><!-- loop.index --></td>
+                            <td style="padding:12px 16px;">
+                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;"><!-- product.name --></div>
+                                <div style="font-size:11px; color:#888; margin-top:2px;"><!-- product.category --></div>
+                            </td>
+                            <td style="padding:12px 16px; font-size:12px; color:#888;"><!-- product.sku --></td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#55597d;"><!-- product.units_sold --></td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">PKR <!-- product.price --></td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR <!-- product.total_revenue --></td>
+                            <td style="padding:12px 16px; font-size:13px; color:#888;"><!-- product.stock --> left</td>
+                        </tr>
+                        <!-- endfor -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recent Sales Orders -->
+            <p style="font-size:11px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:14px;">Recent Sales Orders</p>
+            <div class="quick-links" style="padding:0;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f8f9fc; border-bottom:1px solid #eef0f7;">
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Order ID</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Date</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Customer</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Amount</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Payment</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Status</th>
+                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- for order in recent_orders -->
+                        <tr style="border-bottom:1px solid #eef0f7;">
+                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#1e1e2d;">#<!-- order.id --></td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;"><!-- order.date --></td>
+                            <td style="padding:12px 16px;">
+                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;"><!-- order.customer_name --></div>
+                                <div style="font-size:11px; color:#888; margin-top:2px;"><!-- order.customer_email --></div>
+                            </td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR <!-- order.amount --></td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;"><!-- order.payment_method --></td>
+                            <td style="padding:12px 16px;">
+                                <!-- if order.status == 'Paid' -->
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(46,204,113,0.12); color:#2ecc71;">Paid</span>
+                                <!-- elif order.status == 'Cancelled' -->
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(255,79,79,0.12); color:#ff4f4f;">Cancelled</span>
+                                <!-- elif order.status == 'Shipped' -->
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(168,157,245,0.12); color:#a89df5;">Shipped</span>
+                                <!-- else -->
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(243,156,18,0.12); color:#f39c12;"><!-- order.status --></span>
+                                <!-- endif -->
+                            </td>
+                            <td style="padding:12px 16px;">
+                                <div style="display:flex; gap:6px;">
+                                    <a href="" style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #ccc; color:#55597d; text-decoration:none;">
+                                        <!-- url_for view_order -->
+                                        View
+                                    </a>
+                                    <a href="" style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #e6a817; color:#996b00; text-decoration:none;">
+                                        <!-- url_for refund_order -->
+                                        Refund
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- endfor -->
+                    </tbody>
+                </table>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-top:1px solid #eef0f7; background:#f8f9fc;">
+                    <span style="font-size:12px; color:#888;"><!-- Showing X orders --></span>
+                    <a href="" style="font-size:12px; color:#a89df5; font-weight:600; text-decoration:none;">
+                        <!-- url_for all_orders -->
+                        View All Orders →
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}
