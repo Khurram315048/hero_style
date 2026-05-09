@@ -172,58 +172,62 @@ ul { list-style: none; }
 }
 
 .search-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 70px;
-  background: var(--navy);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  padding: 0 5%;
-  opacity: 0;
-  pointer-events: none;
-  transition: var(--transition);
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 27, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 2000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  animation: searchFadeIn 0.25s ease;
 }
-.search-overlay.active {
-  opacity: 1;
-  pointer-events: all;
+@keyframes searchFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
+
 .search-box {
   display: flex;
   align-items: center;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(201,168,76,0.3);
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 12px;
+  padding: 14px 20px;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  gap: 12px;
+  max-width: 640px;
+  margin: 0 24px;
+  gap: 14px;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
 }
 .search-box input {
   flex: 1;
   border: none;
   outline: none;
   font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--white);
   background: transparent;
 }
 .search-box input::placeholder {
-   color: rgba(255,255,255,0.4);
-   }
-
+  color: rgba(255,255,255,0.35);
+  font-size: 15px;
+}
 
 .search-close {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-light);
-  font-size: 20px;
+  color: rgba(255,255,255,0.5);
+  font-size: 24px;
   line-height: 1;
   transition: var(--transition);
+  padding: 0 2px;
 }
-.search-close:hover { color: var(--text-dark); }
+.search-close:hover { color: var(--gold); }
 
 /* ─── Hero Banner ────────────────────────────────────────── */
 .hero {
@@ -1090,4 +1094,140 @@ product-card:hover .card-quick-add {
   .order-detail-bottom { grid-template-columns: 1fr; }
   .order-detail-section { padding: 18px; }
   .step-line { display: none; }
+}
+
+
+
+
+/* Sidebar Layout Wrapper */
+.listing-container {
+    display: flex;
+    gap: 40px;
+    padding: 60px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.filter-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+.filter-group {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.filter-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Search Box */
+.filter-search-box {
+    display: flex;
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.filter-search-box input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+}
+
+.filter-search-box button {
+    background: var(--navy);
+    color: var(--gold);
+    border: none;
+    padding: 0 12px;
+    cursor: pointer;
+}
+
+/* Custom Radio/Checkboxes */
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-checkbox:hover { color: var(--gold); }
+
+.filter-checkbox input { accent-color: var(--gold); width: 16px; height: 16px; }
+
+/* Price Inputs */
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-inputs input {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+}
+
+/* Select Box */
+.filter-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.filter-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+}
+
+.reset-link {
+    text-align: center;
+    font-size: 12px;
+    text-decoration: underline;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive Listing */
+@media (max-width: 900px) {
+    .listing-container { flex-direction: column; }
+    .filter-sidebar { width: 100%; position: static; }
 }

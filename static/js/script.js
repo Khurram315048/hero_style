@@ -1,4 +1,4 @@
-// ─── Cart Count ────────────────────────────────────────────
+
 function updateCartCount() {
   const counter = document.getElementById("cart-count");
   const countEl = document.getElementById("server-cart-count");
@@ -8,7 +8,7 @@ function updateCartCount() {
   }
 }
 
-// ─── Cart Toast ────────────────────────────────────────────
+
 function showCartToast(title) {
   let existing = document.getElementById('cart-toast');
   if (existing) existing.remove();
@@ -35,11 +35,12 @@ function showCartToast(title) {
   }, 2500);
 }
 
-// ─── Search Open/Close ─────────────────────────────────────
+
 function openSearch() {
   const overlay = document.getElementById('searchOverlay');
   if (!overlay) return;
   overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   setTimeout(() => {
     const input = document.getElementById('searchInput');
     if (input) {
@@ -54,151 +55,235 @@ function openSearch() {
 function closeSearch() {
   const overlay = document.getElementById('searchOverlay');
   if (overlay) overlay.style.display = 'none';
+  document.body.style.overflow = '';
   removeSearchDropdown();
 }
 
-// ─── Core Search Fetch ─────────────────────────────────────
+
 function triggerSearch(query) {
-  fetch('/search?q=' + encodeURIComponent(query) + '&format=json')
+  fetch('/products/search?q=' + encodeURIComponent(query) + '&format=json')
     .then(res => res.json())
     .then(data => showSearchDropdown(data, query))
     .catch(() => removeSearchDropdown());
 }
 
-// ─── Search Init ───────────────────────────────────────────
+
+function goToSearchResults(query) {
+  if (query && query.trim()) {
+    window.location.href = '/products/all_products?q=' + encodeURIComponent(query.trim());
+  }
+}
+
 function initSearch() {
   const input = document.getElementById('searchInput');
   if (!input) return;
 
   let debounceTimer = null;
 
-  input.addEventListener('keydown', function(e) {
+  input.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       closeSearch();
       return;
     }
     if (e.key === 'Enter') {
-      const firstLink = document.querySelector('#search-dropdown a[href^="/products/"]');
-      if (firstLink) window.location.href = firstLink.href;
+      e.preventDefault();
+      const query = this.value.trim();
+      if (query.length > 0) {
+        closeSearch();
+        goToSearchResults(query);
+      }
     }
   });
 
-  input.addEventListener('input', function() {
+  input.addEventListener('input', function () {
     const query = this.value.trim();
     clearTimeout(debounceTimer);
     if (query.length < 2) {
       removeSearchDropdown();
       return;
     }
-    debounceTimer = setTimeout(() => triggerSearch(query), 300);
+    debounceTimer = setTimeout(() => triggerSearch(query), 250);
   });
+
 
   const overlay = document.getElementById('searchOverlay');
   if (overlay) {
-    overlay.addEventListener('click', function(e) {
+    overlay.addEventListener('click', function (e) {
       if (e.target === this) closeSearch();
     });
   }
 
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('#searchOverlay')) removeSearchDropdown();
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSearch();
   });
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeSearch();
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      openSearch();
+    }
   });
 }
 
-// ─── Dropdown Show ─────────────────────────────────────────
+
 function showSearchDropdown(products, query) {
   removeSearchDropdown();
 
-  const overlay = document.getElementById('searchOverlay');
-  const box = overlay ? overlay.querySelector('.search-box') : null;
+  const box = document.querySelector('.search-box');
   if (!box) return;
 
   const drop = document.createElement('div');
   drop.id = 'search-dropdown';
   drop.style.cssText = `
-    position: absolute; top: 100%; left: 0; right: 0;
-    background: #0d1b2a;
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    background: #0f1f33;
     border: 1px solid rgba(201,168,76,0.2);
-    border-top: none; border-radius: 0 0 8px 8px;
-    max-height: 360px; overflow-y: auto; z-index: 1200;
+    border-radius: 12px;
+    max-height: 420px; overflow-y: auto; z-index: 2100;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201,168,76,0.2) transparent;
   `;
 
-  // Koi result nahi
+
   if (!products || products.length === 0) {
-    drop.style.padding = '16px';
-    drop.style.textAlign = 'center';
-    drop.style.color = 'rgba(255,255,255,0.4)';
-    drop.style.fontSize = '13px';
-    drop.textContent = '"' + query + '" ka koi nateeja nahi mila';
-    box.style.position = 'relative';
+    const empty = document.createElement('div');
+    empty.style.cssText = `
+      padding: 28px 20px; text-align: center;
+      color: rgba(255,255,255,0.4); font-size: 13px;
+    `;
+    empty.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           style="width:32px;height:32px;margin:0 auto 10px;display:block;opacity:0.3">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      No results found for "<span style="color:#c9a84c">${escapeHtml(query)}</span>"
+    `;
+    drop.appendChild(empty);
     box.appendChild(drop);
     return;
   }
 
-  products.slice(0, 7).forEach(p => {
+
+  products.slice(0, 6).forEach((p, i) => {
     const price = p.sale_price || p.base_price;
     const item = document.createElement('a');
     item.href = '/products/' + p.product_id;
     item.style.cssText = `
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px;
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 18px;
       color: rgba(255,255,255,0.85);
       text-decoration: none; font-size: 13px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      transition: background 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s ease;
+      ${i === 0 ? 'border-radius: 12px 12px 0 0;' : ''}
     `;
     item.onmouseover = () => item.style.background = 'rgba(201,168,76,0.08)';
-    item.onmouseout  = () => item.style.background = 'transparent';
+    item.onmouseout = () => item.style.background = 'transparent';
 
-    const img = document.createElement('img');
-    img.src = p.image_url || '';
-    img.style.cssText = 'width:40px;height:40px;object-fit:cover;border-radius:6px;background:#1a2e45;flex-shrink:0;';
-    img.onerror = function() { this.style.display = 'none'; };
+
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = `
+      width: 44px; height: 44px; border-radius: 8px;
+      background: #1a2e45; overflow: hidden; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    if (p.image_url) {
+      const img = document.createElement('img');
+      img.src = p.image_url;
+      img.alt = p.alt_text || p.title;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      img.onerror = function () {
+        this.style.display = 'none';
+        imgWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.5" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/></svg>`;
+      };
+      imgWrap.appendChild(img);
+    } else {
+      imgWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,0.3)" stroke-width="1.5" style="width:18px;height:18px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/></svg>`;
+    }
+
 
     const info = document.createElement('div');
-    info.style.flex = '1';
-    info.innerHTML = `
-      <div style="font-weight:500;color:#fff;">${p.title}</div>
-      <div style="color:rgba(201,168,76,0.8);font-size:11px;margin-top:2px;">
-        PKR ${Number(price).toLocaleString()}
-      </div>
-    `;
+    info.style.cssText = 'flex:1; min-width:0;';
 
-    item.appendChild(img);
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = 'font-weight:500; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;';
+    titleEl.textContent = p.title;
+
+    const meta = document.createElement('div');
+    meta.style.cssText = 'display:flex; align-items:center; gap:8px; margin-top:3px;';
+
+    const priceEl = document.createElement('span');
+    priceEl.style.cssText = 'color:rgba(201,168,76,0.85); font-size:12px; font-weight:500;';
+    priceEl.textContent = 'PKR ' + Number(price).toLocaleString();
+    meta.appendChild(priceEl);
+
+    if (p.category_name) {
+      const cat = document.createElement('span');
+      cat.style.cssText = `
+        font-size:10px; color:rgba(255,255,255,0.35);
+        background:rgba(255,255,255,0.06); padding:2px 7px;
+        border-radius:10px; letter-spacing:0.5px;
+      `;
+      cat.textContent = p.category_name;
+      meta.appendChild(cat);
+    }
+
+    info.appendChild(titleEl);
+    info.appendChild(meta);
+
+    const arrow = document.createElement('div');
+    arrow.style.cssText = 'flex-shrink:0; color:rgba(255,255,255,0.15); transition:color 0.15s;';
+    arrow.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="9 18 15 12 9 6"/></svg>`;
+    item.onmouseover = () => { item.style.background = 'rgba(201,168,76,0.08)'; arrow.style.color = 'rgba(201,168,76,0.6)'; };
+    item.onmouseout = () => { item.style.background = 'transparent'; arrow.style.color = 'rgba(255,255,255,0.15)'; };
+
+    item.appendChild(imgWrap);
     item.appendChild(info);
+    item.appendChild(arrow);
     drop.appendChild(item);
   });
 
-  // Sab results dekhne ka link
-  const seeAll = document.createElement('a');
-  seeAll.href = '/search?q=' + encodeURIComponent(query);
-  seeAll.style.cssText = `
-    display: block; text-align: center; padding: 10px 16px;
-    color: #c9a84c; font-size: 12px; letter-spacing: 1px;
-    text-transform: uppercase; text-decoration: none;
-    border-top: 1px solid rgba(201,168,76,0.15);
+
+  const footer = document.createElement('a');
+  footer.href = '/products/all_products?q=' + encodeURIComponent(query);
+  footer.style.cssText = `
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 13px 18px;
+    color: #c9a84c; font-size: 12px; font-weight: 500;
+    letter-spacing: 1px; text-transform: uppercase;
+    text-decoration: none;
+    border-top: 1px solid rgba(201,168,76,0.12);
+    border-radius: 0 0 12px 12px;
     transition: background 0.15s;
   `;
-  seeAll.textContent = 'Tamam results dekhein →';
-  seeAll.onmouseover = () => seeAll.style.background = 'rgba(201,168,76,0.06)';
-  seeAll.onmouseout  = () => seeAll.style.background = 'transparent';
-  drop.appendChild(seeAll);
+  footer.innerHTML = `
+    See all results for "${escapeHtml(query)}"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  `;
+  footer.onmouseover = () => footer.style.background = 'rgba(201,168,76,0.06)';
+  footer.onmouseout = () => footer.style.background = 'transparent';
+  drop.appendChild(footer);
 
-  box.style.position = 'relative';
   box.appendChild(drop);
 }
 
-// ─── Dropdown Remove ───────────────────────────────────────
+
 function removeSearchDropdown() {
   const d = document.getElementById('search-dropdown');
   if (d) d.remove();
 }
 
-// ─── Product Page Quantity ─────────────────────────────────
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+
 function updateQuantity(delta) {
   const qtyInput = document.getElementById('quantity');
   if (!qtyInput) return;
@@ -206,7 +291,7 @@ function updateQuantity(delta) {
   qtyInput.value = next;
 }
 
-// ─── Tabs ──────────────────────────────────────────────────
+
 function showTab(tab) {
   document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
@@ -214,7 +299,7 @@ function showTab(tab) {
   event.target.classList.add('active');
 }
 
-// ─── Init ──────────────────────────────────────────────────
+
 document.addEventListener("DOMContentLoaded", () => {
   updateCartCount();
   initSearch();

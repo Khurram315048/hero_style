@@ -47,6 +47,8 @@
     <div class="section-line"></div>
   </div>
 
+<div class="products-page-layout">
+    {% include 'layouts/product_filter.htm' %}
   <div class="products-grid">
 
     {% for product in products %}
@@ -136,6 +138,7 @@
     {% endif %}
 
   </div>
+</div>
 
   <div class="view-all-wrap">
     <a href="/products/all_earbuds" class="btn-outline">

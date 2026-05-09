@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,58 +16,86 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/orders.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/user_options.css') }}">
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/order_details.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/order_details.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_filter.css') }}">
 </head>
+
 <body>
-<nav class="navbar">
+  <nav class="navbar">
 
-  <input type="hidden" id="server-cart-count" value="{{ cart_count | default(0) }}">
-  <a href="/" class="navbar-brand">
-    <div class="brand-logo">HS</div>
-    <span class="brand-name">Hero <span>Style</span></span>
-  </a>
+    <input type="hidden" id="server-cart-count" value="{{ cart_count | default(0) }}">
+    <a href="/" class="navbar-brand">
+      <div class="brand-logo">HS</div>
+      <span class="brand-name">Hero <span>Style</span></span>
+    </a>
 
-  <ul class="nav-links">
-    <li><a href="/" class="active">Home</a></li>
-    <li><a href="/products/all_products">Hero Watches</a>
-      <ul class="sub--menu">
-        <li><a href="/products/smart_watches.htm">Smart Watches</a></li>
-        <li><a href="/products/leather_watches.htm">Leather Watches</a></li>
-        <li><a href="/products/metal_watches.htm">Metal Watches</a></li>
-      </ul>
-    </li>
-    <li><a href="/products/all_earbuds">Hero Earbuds</a></li>
-    <li><a href="/support">Support</a></li>
-  </ul>
+    <ul class="nav-links">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/products/all_products">Hero Watches</a>
+        <ul class="sub--menu">
+          <li><a href="/products/smart_watches.htm">Smart Watches</a></li>
+          <li><a href="/products/leather_watches.htm">Leather Watches</a></li>
+          <li><a href="/products/metal_watches.htm">Metal Watches</a></li>
+        </ul>
+      </li>
+      <li><a href="/products/all_earbuds">Hero Earbuds</a></li>
+      <li><a href="/support">Support</a></li>
+    </ul>
 
-  <div class="nav-icons">
-  
+    <div class="nav-icons">
+
+      <button type="button" class="nav-icon-btn" title="Search" onclick="openSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
       <a href="/users/user_profile" class="nav-icon-btn" title="User Profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </a>
-    
-    <a href="/orders/cart" class="nav-icon-btn" title="Cart">
-      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      <span id="cart-count" class="cart-count"></span>
-    </a>
-  </div>
- 
+
+      <a href="/orders/cart" class="nav-icon-btn" title="Cart">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 01-8 0" />
+        </svg>
+        <span id="cart-count" class="cart-count"></span>
+      </a>
+    </div>
 
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
- 
-{% if session.get('toast') %}
-<script>
-  document.addEventListener('DOMContentLoaded',function(){
-    showCartToast("{{ session.pop('toast') }}");
-  });
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    {% if session.get('toast') %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        showCartToast("{{ session.pop('toast') }}");
+      });
 
 
-</script>
-{% endif %}
-</nav>
+    </script>
+    {% endif %}
+
+    <div id="searchOverlay" class="search-overlay">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;color:rgba(201,168,76,0.7)">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search watches, earbuds, categories..." autocomplete="off">
+        <button type="button" class="search-close" onclick="closeSearch()">×</button>
+      </div>
+    </div>
+  </nav>
 </body>
+
 </html>

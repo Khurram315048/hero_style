@@ -1,0 +1,257 @@
+<form method="GET" action="{{ request.path }}" id="filter-form" class="filter-sidebar-form">
+
+  <div class="filter-header">
+    <div class="filter-header-top">
+      <span class="filter-label-eyebrow">Refine</span>
+      <h3 class="filter-heading">Filters</h3>
+    </div>
+    {% set has_filters = request.args.get('q') or request.args.get('category') or request.args.get('min_price') or request.args.get('max_price') or request.args.get('sort') %}
+    {% if has_filters %}
+    <a href="{{ request.path }}" class="filter-clear-all">Clear All ×</a>
+    {% endif %}
+  </div>
+
+  <!-- SEARCH -->
+  <div class="filter-block">
+    <p class="filter-block-title">Search</p>
+    <div class="filter-search-wrap">
+      <svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        name="q"
+        value="{{ request.args.get('q', '') }}"
+        placeholder="Search products..."
+        class="filter-search-input"
+        autocomplete="off"
+      >
+    </div>
+  </div>
+
+  <!-- CATEGORY -->
+  <div class="filter-block">
+    <p class="filter-block-title">Category</p>
+    <div class="filter-radio-group">
+      <label class="filter-radio-label {% if not request.args.get('category') %}active{% endif %}">
+        <input type="radio" name="category" value=""
+               {% if not request.args.get('category') %}checked{% endif %}
+               onchange="submitFilter()">
+        <span class="filter-radio-custom"></span>
+        <span class="filter-radio-text">All Categories</span>
+        <span class="filter-radio-count">{{ products|length if products else '' }}</span>
+      </label>
+      {% for cat in categories %}
+      <label class="filter-radio-label {% if request.args.get('category') == cat.category_id|string %}active{% endif %}">
+        <input type="radio" name="category" value="{{ cat.category_id }}"
+               {% if request.args.get('category') == cat.category_id|string %}checked{% endif %}
+               onchange="submitFilter()">
+        <span class="filter-radio-custom"></span>
+        <span class="filter-radio-text">{{ cat.name | title }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- PRICE RANGE -->
+  <div class="filter-block">
+    <p class="filter-block-title">Price Range <span class="filter-currency">(PKR)</span></p>
+
+    <!-- Quick Preset Buttons -->
+    <div class="filter-price-presets">
+      <button type="button" class="filter-preset-btn {% if request.args.get('min_price') == '0' and request.args.get('max_price') == '5000' %}active{% endif %}"
+              onclick="setPrice(0, 5000)">Under 5K</button>
+      <button type="button" class="filter-preset-btn {% if request.args.get('min_price') == '5000' and request.args.get('max_price') == '15000' %}active{% endif %}"
+              onclick="setPrice(5000, 15000)">5K–15K</button>
+      <button type="button" class="filter-preset-btn {% if request.args.get('min_price') == '15000' and request.args.get('max_price') == '40000' %}active{% endif %}"
+              onclick="setPrice(15000, 40000)">15K–40K</button>
+      <button type="button" class="filter-preset-btn {% if request.args.get('min_price') == '40000' %}active{% endif %}"
+              onclick="setPrice(40000, '')">40K+</button>
+    </div>
+
+    <!-- Range Slider -->
+    <div class="filter-range-wrap">
+      <input type="range" id="range-min" min="0" max="60000" step="500"
+             value="{{ request.args.get('min_price', 0) }}"
+             class="filter-range-input" oninput="updateRangeDisplay()">
+      <input type="range" id="range-max" min="0" max="60000" step="500"
+             value="{{ request.args.get('max_price', 60000) }}"
+             class="filter-range-input" oninput="updateRangeDisplay()">
+      <div class="filter-range-track">
+        <div class="filter-range-fill" id="range-fill"></div>
+      </div>
+    </div>
+
+    <!-- Manual Inputs -->
+    <div class="filter-price-inputs">
+      <div class="filter-price-field">
+        <span class="filter-price-prefix">PKR</span>
+        <input type="number" name="min_price" id="min-price-input"
+               value="{{ request.args.get('min_price', '') }}"
+               placeholder="0" min="0" class="filter-price-input">
+      </div>
+      <span class="filter-price-dash">—</span>
+      <div class="filter-price-field">
+        <span class="filter-price-prefix">PKR</span>
+        <input type="number" name="max_price" id="max-price-input"
+               value="{{ request.args.get('max_price', '') }}"
+               placeholder="Any" min="0" class="filter-price-input">
+      </div>
+    </div>
+  </div>
+
+  <!-- AVAILABILITY -->
+  <div class="filter-block">
+    <p class="filter-block-title">Availability</p>
+    <div class="filter-check-group">
+      <label class="filter-check-label">
+        <input type="checkbox" name="in_stock" value="1"
+               {% if request.args.get('in_stock') %}checked{% endif %}
+               onchange="submitFilter()" class="filter-checkbox">
+        <span class="filter-check-custom">
+          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="10" height="8">
+            <polyline points="1 4 4 7 9 1"/>
+          </svg>
+        </span>
+        <span class="filter-check-text">In Stock Only</span>
+      </label>
+      <label class="filter-check-label">
+        <input type="checkbox" name="on_sale" value="1"
+               {% if request.args.get('on_sale') %}checked{% endif %}
+               onchange="submitFilter()" class="filter-checkbox">
+        <span class="filter-check-custom">
+          <svg viewBox="0 0 10 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="10" height="8">
+            <polyline points="1 4 4 7 9 1"/>
+          </svg>
+        </span>
+        <span class="filter-check-text">On Sale</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- SORT -->
+  <div class="filter-block">
+    <p class="filter-block-title">Sort By</p>
+    <div class="filter-sort-group">
+      {% set sort_options = [
+        ('newest', 'Newest First'),
+        ('price_asc', 'Price: Low → High'),
+        ('price_desc', 'Price: High → Low'),
+        ('popular', 'Most Popular'),
+        ('name_asc', 'Name: A → Z')
+      ] %}
+      {% for value, label in sort_options %}
+      <label class="filter-sort-label {% if request.args.get('sort', 'newest') == value %}active{% endif %}">
+        <input type="radio" name="sort" value="{{ value }}"
+               {% if request.args.get('sort', 'newest') == value %}checked{% endif %}
+               onchange="submitFilter()">
+        <span class="filter-sort-icon">
+          {% if value == 'newest' %}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><circle cx="8" cy="8" r="6"/><polyline points="8 5 8 8 10 10"/></svg>
+          {% elif value == 'price_asc' %}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><line x1="8" y1="2" x2="8" y2="14"/><polyline points="4 10 8 14 12 10"/></svg>
+          {% elif value == 'price_desc' %}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><line x1="8" y1="2" x2="8" y2="14"/><polyline points="4 6 8 2 12 6"/></svg>
+          {% elif value == 'popular' %}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><polygon points="8 2 10 6 14 6.5 11 9.5 11.5 14 8 12 4.5 14 5 9.5 2 6.5 6 6"/></svg>
+          {% else %}
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><line x1="2" y1="5" x2="14" y2="5"/><line x1="2" y1="8" x2="11" y2="8"/><line x1="2" y1="11" x2="8" y2="11"/></svg>
+          {% endif %}
+        </span>
+        {{ label }}
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- APPLY BUTTON -->
+  <button type="submit" class="filter-apply-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+    </svg>
+    Apply Filters
+  </button>
+
+  <!-- MOBILE TOGGLE (floating button, shown on small screens) -->
+  <button type="button" class="filter-mobile-toggle" id="filterToggleBtn" onclick="toggleMobileFilter()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+      <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/>
+    </svg>
+    Filters
+    {% if has_filters %}<span class="filter-active-dot"></span>{% endif %}
+  </button>
+
+</form>
+
+<script>
+function submitFilter() {
+  document.getElementById('filter-form').submit();
+}
+
+function setPrice(min, max) {
+  document.getElementById('min-price-input').value = min || '';
+  document.getElementById('max-price-input').value = max || '';
+  if (min !== '') document.getElementById('range-min').value = min;
+  if (max !== '') document.getElementById('range-max').value = max;
+  updateRangeDisplay();
+  setTimeout(() => submitFilter(), 100);
+}
+
+function updateRangeDisplay() {
+  const minSlider = document.getElementById('range-min');
+  const maxSlider = document.getElementById('range-max');
+  const minInput  = document.getElementById('min-price-input');
+  const maxInput  = document.getElementById('max-price-input');
+  const fill      = document.getElementById('range-fill');
+
+  if (!minSlider || !maxSlider || !fill) return;
+
+  let minVal = parseInt(minSlider.value);
+  let maxVal = parseInt(maxSlider.value);
+
+  if (minVal > maxVal) {
+    [minVal, maxVal] = [maxVal, minVal];
+    minSlider.value = minVal;
+    maxSlider.value = maxVal;
+  }
+
+  const total = parseInt(minSlider.max);
+  const leftPct  = (minVal / total) * 100;
+  const rightPct = (maxVal / total) * 100;
+
+  fill.style.left  = leftPct  + '%';
+  fill.style.width = (rightPct - leftPct) + '%';
+
+  if (minInput) minInput.value = minVal > 0 ? minVal : '';
+  if (maxInput) maxInput.value = maxVal < total ? maxVal : '';
+}
+
+function toggleMobileFilter() {
+  const sidebar = document.querySelector('.filter-sidebar-form');
+  sidebar.classList.toggle('mobile-open');
+  document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+// Sync manual price inputs → sliders
+document.addEventListener('DOMContentLoaded', function () {
+  updateRangeDisplay();
+
+  const minInput = document.getElementById('min-price-input');
+  const maxInput = document.getElementById('max-price-input');
+
+  if (minInput) {
+    minInput.addEventListener('input', function () {
+      const slider = document.getElementById('range-min');
+      if (slider) slider.value = this.value || 0;
+      updateRangeDisplay();
+    });
+  }
+  if (maxInput) {
+    maxInput.addEventListener('input', function () {
+      const slider = document.getElementById('range-max');
+      if (slider) slider.value = this.value || 60000;
+      updateRangeDisplay();
+    });
+  }
+});
+</script>

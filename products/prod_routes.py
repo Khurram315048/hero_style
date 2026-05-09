@@ -1,6 +1,7 @@
 from flask import render_template,request,jsonify
 from products import prod_bp
 from utils.db import mysql
+from utils.product_filter import build_product_filter
 import MySQLdb.cursors
 
 
@@ -129,7 +130,10 @@ def product_page(id):
 @prod_bp.route('/all_products',methods=['GET'])
 def all_products():
     cursor=mysql.connection.cursor()
-    cursor.execute("""
+
+    filters = build_product_filter(request, exclude_category=4)
+
+    cursor.execute(f"""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
             pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
@@ -140,16 +144,20 @@ def all_products():
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
         LEFT JOIN product_images pi ON p.product_id=pi.product_id
         AND pi.is_active=1
-        WHERE p.status='active' AND p.category_id != 4
-        ORDER BY RAND()
-    """)
+        WHERE {filters['where_str']}
+        GROUP BY p.product_id
+        ORDER BY {filters['order_clause']}
+    """, filters['params'])
     products=cursor.fetchall()
+    cursor.execute("SELECT category_id, name FROM categories WHERE is_active=1 AND category_id != 4")
+    categories=cursor.fetchall()
+
     cursor.close()
     
     if not products:
         return render_template('404.htm'), 404
     
-    return render_template('all_products.htm',products=products)
+    return render_template('all_products.htm',products=products,categories=categories)
 
 
 @prod_bp.route('/all_earbuds',methods=['GET'])
@@ -204,38 +212,52 @@ def mix_products():
 
 
 
+
+
+
 @prod_bp.route('/search')
 def search():
-    q = request.args.get('q', '').strip()
-    fmt = request.args.get('format', 'html')
+    q=request.args.get('q', '').strip()
+    fmt=request.args.get('format', 'html')
 
     if not q:
         if fmt == 'json':
             return jsonify([])
-        return render_template('all_products.htm', products=[])
+        return render_template('all_products.htm',products=[],categories=[])
 
-    # ↓ DictCursor use karo
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor=mysql.connection.cursor()
     cursor.execute("""
-    SELECT p.product_id, p.title, p.base_price, p.sale_price,
-           pi.image_url, pi.alt_text,
+    SELECT p.product_id,p.title,p.base_price,p.sale_price,
+           pi.image_url,pi.alt_text,
            c.name AS category_name,
-           p.short_description
+           pd.short_description
     FROM products p
     LEFT JOIN product_images pi 
-        ON p.product_id = pi.product_id AND pi.is_active = 1
+        ON p.product_id=pi.product_id AND pi.is_active=1
     LEFT JOIN categories c 
-        ON p.category_id = c.category_id
-    WHERE p.status = 'active'
+        ON p.category_id=c.category_id
+    LEFT JOIN product_details pd
+        ON p.product_id=pd.product_id
+    WHERE p.status='active'
     AND (p.title LIKE %s OR p.product_no LIKE %s)
     GROUP BY p.product_id
     LIMIT 20
     """, (f'%{q}%', f'%{q}%'))
     
-    products = cursor.fetchall()  # ab yeh list of dicts hogi
+    products=cursor.fetchall()
     cursor.close()
 
     if fmt == 'json':
-        return jsonify(products)  # ← dict(p) ki zaroorat nahi
+        
+        safe=[]
+        for p in products:
+            row = dict(p)
+            if row.get('base_price') is not None:
+                row['base_price'] = float(row['base_price'])
+            if row.get('sale_price') is not None:
+                row['sale_price'] = float(row['sale_price'])
+            safe.append(row)
+        return jsonify(safe)
 
-    return render_template('all_products.htm', products=products)
+    return render_template('all_products.htm',products=products,categories=[])
+
