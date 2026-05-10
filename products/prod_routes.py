@@ -1,6 +1,8 @@
 from flask import render_template,request,jsonify
 from products import prod_bp
 from utils.db import mysql
+from utils.path_link import make_links
+
 from utils.product_filter import build_product_filter
 import MySQLdb.cursors
 
@@ -80,6 +82,7 @@ def metal_watches():
 @prod_bp.route('/<int:id>',methods=['GET'])
 def product_page(id):
     cursor=mysql.connection.cursor()
+    
     cursor.execute("""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
                p.base_price,p.sale_price,p.status,c.name AS category_name,
@@ -98,6 +101,9 @@ def product_page(id):
 
     if not product:
         return render_template('404.htm'), 404
+
+
+    rel_links=make_links(product)  
 
     cursor.execute("""
         SELECT p.product_id,p.title,p.base_price,p.sale_price,p.category_id,
@@ -122,7 +128,8 @@ def product_page(id):
 
     cursor.close()
 
-    return render_template('product_page.htm',product=product,relateds=relateds,reviews=reviews)
+    return render_template('product_page.htm',product=product,
+                           relateds=relateds,reviews=reviews,rel_links=rel_links)
        
     
    

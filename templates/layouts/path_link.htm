@@ -1,0 +1,14 @@
+
+
+<nav style="padding: 12px 0 20px 0;">
+    {% for crumb in rel_links %}
+        {% if not loop.last %}
+            <a href="{{ crumb.url }}" style="color:#00aacc; font-size:13px; text-decoration:none; font-weight:500;">
+                {{ crumb.label }}
+            </a>
+            <span style="color:#aaa; font-size:13px; margin: 0 6px;">›</span>
+        {% else %}
+            <span style="color:#555; font-size:13px;">{{ crumb.label }}</span>
+        {% endif %}
+    {% endfor %}
+</nav>

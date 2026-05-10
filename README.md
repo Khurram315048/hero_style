@@ -7,9 +7,20 @@ hero_watches
 │  ├─ admin_views
 │  │  ├─ admin_dashboard.htm
 │  │  ├─ admin_login.htm
+│  │  ├─ admin_profile.htm
 │  │  ├─ admin_reset.htm
 │  │  ├─ admin_signup.htm
-│  │  └─ main_products.htm
+│  │  ├─ all_orders.htm
+│  │  ├─ all_reviews.htm
+│  │  ├─ customers.htm
+│  │  ├─ customer_detail.htm
+│  │  ├─ main_products.htm
+│  │  ├─ orders_cancels.htm
+│  │  ├─ order_detail.htm
+│  │  ├─ payments.htm
+│  │  ├─ returns_orders.htm
+│  │  ├─ sales.htm
+│  │  └─ support_forms.htm
 │  ├─ __init__.py
 │  └─ __pycache__
 │     ├─ admin_routes.cpython-312.pyc
@@ -19,7 +30,12 @@ hero_watches
 │  ├─ categ_models.py
 │  ├─ categ_routes.py
 │  ├─ views
-│  └─ __init__.py
+│  │  ├─ all_categories.htm
+│  │  └─ category_product.htm
+│  ├─ __init__.py
+│  └─ __pycache__
+│     ├─ categ_routes.cpython-312.pyc
+│     └─ __init__.cpython-312.pyc
 ├─ config.py
 ├─ main.py
 ├─ orders
@@ -65,6 +81,7 @@ hero_watches
 │  │  ├─ homepage.css
 │  │  ├─ orders.css
 │  │  ├─ order_details.css
+│  │  ├─ product_filter.css
 │  │  ├─ product_page.css
 │  │  ├─ support.css
 │  │  ├─ user_options.css
@@ -79,11 +96,13 @@ hero_watches
 │     │  ├─ img4.PNG
 │     │  └─ img5.PNG
 │     ├─ leather_watches
+│     │  ├─ home.PNG
 │     │  ├─ img1l.PNG
 │     │  ├─ img2l.PNG
 │     │  ├─ img3l.PNG
 │     │  ├─ img4l.PNG
-│     │  └─ img5l.PNG
+│     │  ├─ img5l.PNG
+│     │  └─ img6.PNG
 │     ├─ metal_watches
 │     │  ├─ img1m.PNG
 │     │  ├─ img2m.PNG
@@ -105,9 +124,11 @@ hero_watches
 │  │  ├─ admin_options.htm
 │  │  ├─ footer.htm
 │  │  ├─ header.htm
+│  │  ├─ path_link.htm
+│  │  ├─ product_filter.htm
 │  │  └─ user_options.htm
 │  └─ support.htm
-├─ updated_lms.sql
+├─ updated_db.sql
 ├─ users
 │  ├─ users_view
 │  │  ├─ my_cancellations.htm
@@ -130,9 +151,13 @@ hero_watches
 ├─ utils
 │  ├─ auth.py
 │  ├─ db.py
+│  ├─ path_link.py
+│  ├─ product_filter.py
 │  └─ __pycache__
 │     ├─ auth.cpython-312.pyc
-│     └─ db.cpython-312.pyc
+│     ├─ db.cpython-312.pyc
+│     ├─ path_link.cpython-312.pyc
+│     └─ product_filter.cpython-312.pyc
 └─ __pycache__
    └─ config.cpython-312.pyc
 
