@@ -563,7 +563,7 @@ def orders_cancels():
     LEFT JOIN users u ON o.user_id=u.user_id
     LEFT JOIN order_payments op ON o.order_id=op.order_id
     WHERE(o.is_cancelled=1 OR o.status='cancelled')
-      AND o.is_deleted=0
+    AND o.is_deleted=0
     ORDER BY o.cancelled_at DESC""")
     cancelled_orders=cursor.fetchall()
 
@@ -584,15 +584,15 @@ def mark_refunded(order_id):
     cursor.execute("""SELECT o.order_id,op.payment_id
         FROM orders o
         LEFT JOIN order_payments op ON o.order_id=op.order_id
-        WHERE o.order_id = %s
-          AND (o.is_cancelled = 1 OR o.status = 'cancelled')
-          AND o.is_deleted=0""",(order_id,))
+        WHERE o.order_id=%s
+        AND (o.is_cancelled=1 OR o.status='cancelled')
+        AND o.is_deleted=0""",(order_id,))
     row=cursor.fetchone()
 
     if not row:
         cursor.close()
         session['admin_toast']='Order not found or not eligible for refund.'
-        return redirect(url_for('admin.orders_cancels'))
+        return redirect(request.referrer)
 
     payment_id=row['payment_id']
 
@@ -612,7 +612,7 @@ def mark_refunded(order_id):
     cursor.close()
 
     session['admin_toast']='Order marked as refunded successfully.'
-    return redirect(url_for('admin.orders_cancels'))
+    return redirect(request.referrer)
 
 
 
@@ -832,25 +832,56 @@ def sales():
     cursor.execute("""
         SELECT 
             c.name AS name,
-            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.quantity ELSE 0 END), 0) AS units_sold,
-            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.subtotal ELSE 0 END), 0) AS revenue,
-            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 AND (oir.status = 'approved' OR o.status = 'returned') THEN od.quantity ELSE 0 END), 0) AS returns,
-            (COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 THEN od.subtotal ELSE 0 END), 0) - 
-             COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled = 0 AND o.is_deleted = 0 AND (oir.status = 'approved' OR o.status = 'returned') THEN od.subtotal ELSE 0 END), 0)) AS net_revenue
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled=0 AND o.is_deleted=0 THEN od.quantity ELSE 0 END), 0) AS units_sold,
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled=0 AND o.is_deleted=0 THEN od.subtotal ELSE 0 END), 0) AS revenue,
+            COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled=0 AND o.is_deleted=0 AND (oir.status='approved' OR o.status='returned') THEN od.quantity ELSE 0 END), 0) AS returns,
+            (COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled=0 AND o.is_deleted=0 THEN od.subtotal ELSE 0 END), 0) - 
+             COALESCE(SUM(CASE WHEN o.order_id IS NOT NULL AND o.is_cancelled=0 AND o.is_deleted=0 AND (oir.status='approved' OR o.status='returned') THEN od.subtotal ELSE 0 END), 0)) AS net_revenue
         FROM categories c
-        LEFT JOIN products p ON c.category_id = p.category_id
-        LEFT JOIN order_details od ON p.product_id = od.product_id
-        LEFT JOIN orders o ON od.order_id = o.order_id AND o.is_deleted = 0
-        LEFT JOIN order_item_returns oir ON od.order_detail_id = oir.order_detail_id AND oir.status = 'approved'
-        GROUP BY c.category_id, c.name
+        LEFT JOIN products p ON c.category_id=p.category_id
+        LEFT JOIN order_details od ON p.product_id=od.product_id
+        LEFT JOIN orders o ON od.order_id=o.order_id AND o.is_deleted=0
+        LEFT JOIN order_item_returns oir ON od.order_detail_id=oir.order_detail_id AND oir.status='approved'
+        GROUP BY c.category_id,c.name
         ORDER BY net_revenue DESC
     """)
     category_sales=cursor.fetchall()
 
+    cursor.execute("""
+                   SELECT p.title,p.base_price,p.stock_quantity,
+           c.name AS category_name,
+           SUM(od.quantity) AS units_sold,
+           SUM(od.subtotal) AS total_revenue
+    FROM order_details od
+    JOIN products p ON od.product_id=p.product_id
+    JOIN categories c ON p.category_id=c.category_id
+    JOIN orders o ON od.order_id=o.order_id
+    WHERE o.is_cancelled=0 AND o.is_deleted=0 AND o.status='delivered' AND p.status='active'
+    GROUP BY p.product_id,p.title,p.base_price,p.stock_quantity,c.name
+    ORDER BY units_sold DESC
+    LIMIT 5 
+    """)
+    top_products=cursor.fetchall()
+
+    cursor.execute("""
+    SELECT o.order_number,o.ordered_at,o.total_amount,o.status,o.order_id,
+        CONCAT(u.first_name,' ',u.last_name) AS customer_name,u.email,
+                   p.payment_method,p.status AS pay_status
+                   FROM orders o 
+                   JOIN users u ON o.user_id=u.user_id
+                   JOIN order_payments p ON o.order_id=p.order_id
+                   WHERE o.is_cancelled=0 AND o.is_deleted=0
+                   LIMIT 4
+     """)
+    recent_orders=cursor.fetchall()
+    
+    
+
     
 
     return render_template('sales.htm',total_sales=total_sales,total_returns=total_returns,
-                           pending_cod=pending_cod,total_units=total_units,
+                           recent_orders=recent_orders,
+                           pending_cod=pending_cod,total_units=total_units,top_products=top_products,
                            total_orders=total_orders,avg_order=avg_order,category_sales=category_sales)
 
 

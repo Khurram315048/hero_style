@@ -109,7 +109,6 @@
                         <tr style="background:#f8f9fc; border-bottom:1px solid #eef0f7;">
                             <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Rank</th>
                             <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Product</th>
-                            <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">SKU</th>
                             <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Units Sold</th>
                             <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Unit Price</th>
                             <th style="padding:12px 16px; text-align:left; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:1px;">Total Revenue</th>
@@ -117,20 +116,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- for product in top_products -->
+                        {% for product in top_products %}
                         <tr style="border-bottom:1px solid #eef0f7;">
-                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;"><!-- loop.index --></td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">{{loop.index}}</td>
                             <td style="padding:12px 16px;">
-                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;"><!-- product.name --></div>
-                                <div style="font-size:11px; color:#888; margin-top:2px;"><!-- product.category --></div>
+                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;">{{product.title}}</div>
+                                <div style="font-size:11px; color:#888; margin-top:2px;">{{product.category_name}}</div>
                             </td>
-                            <td style="padding:12px 16px; font-size:12px; color:#888;"><!-- product.sku --></td>
-                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#55597d;"><!-- product.units_sold --></td>
-                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">PKR <!-- product.price --></td>
-                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR <!-- product.total_revenue --></td>
-                            <td style="padding:12px 16px; font-size:13px; color:#888;"><!-- product.stock --> left</td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#55597d;">{{product.units_sold}}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">PKR {{product.base_price}}</td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR {{product.total_revenue}}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#888;">{{product.stock_quantity}} left</td>
                         </tr>
-                        <!-- endfor -->
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -151,48 +149,56 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- for order in recent_orders -->
+                        {% for order in recent_orders %}
                         <tr style="border-bottom:1px solid #eef0f7;">
-                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#1e1e2d;">#<!-- order.id --></td>
-                            <td style="padding:12px 16px; font-size:13px; color:#55597d;"><!-- order.date --></td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:600; color:#1e1e2d;">#{{order.order_number}}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">{{order.ordered_at}}</td>
                             <td style="padding:12px 16px;">
-                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;"><!-- order.customer_name --></div>
-                                <div style="font-size:11px; color:#888; margin-top:2px;"><!-- order.customer_email --></div>
+                                <div style="font-size:13px; font-weight:600; color:#1e1e2d;">{{order.customer_name}}</div>
+                                <div style="font-size:11px; color:#888; margin-top:2px;">{{order.email}}</div>
                             </td>
-                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR <!-- order.amount --></td>
-                            <td style="padding:12px 16px; font-size:13px; color:#55597d;"><!-- order.payment_method --></td>
+                            <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#1e1e2d;">PKR {{order.total_amount}}</td>
+                            <td style="padding:12px 16px; font-size:13px; color:#55597d;">{{order.payment_method}}</td>
                             <td style="padding:12px 16px;">
-                                <!-- if order.status == 'Paid' -->
-                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(46,204,113,0.12); color:#2ecc71;">Paid</span>
-                                <!-- elif order.status == 'Cancelled' -->
+                                {% if order.status == 'delivered'%}
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(46,204,113,0.12); color:#2ecc71;">Delivered</span>
+                                {% elif order.status == 'cancelled' %}
                                 <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(255,79,79,0.12); color:#ff4f4f;">Cancelled</span>
-                                <!-- elif order.status == 'Shipped' -->
+                                {% elif order.status == 'shipped' %}
                                 <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(168,157,245,0.12); color:#a89df5;">Shipped</span>
-                                <!-- else -->
-                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(243,156,18,0.12); color:#f39c12;"><!-- order.status --></span>
-                                <!-- endif -->
+                                {% else %}
+                                <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(243,156,18,0.12); color:#f39c12;">{{order.status}}</span>
+                                {% endif %}
                             </td>
                             <td style="padding:12px 16px;">
                                 <div style="display:flex; gap:6px;">
-                                    <a href="" style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #ccc; color:#55597d; text-decoration:none;">
-                                        <!-- url_for view_order -->
+                                    <a href="{{url_for('admin.order_detail',order_id=order.order_id)}}" style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #ccc; color:#55597d; text-decoration:none;">
+                                       
                                         View
                                     </a>
-                                    <a href="" style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #e6a817; color:#996b00; text-decoration:none;">
-                                        <!-- url_for refund_order -->
-                                        Refund
-                                    </a>
+                                    {% if order.pay_status != 'refunded' %}
+                                    <form action="{{ url_for('admin.mark_refunded',order_id=order.order_id) }}" method="POST"
+                                                onsubmit="return confirm('Mark order {{ order.order_number }} as refunded?')">
+                                                <button type="submit" class="btn btn-sm"
+                                                        style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #e6a817; color:#996b00; text-decoration:none;">
+                                                    Mark Refunded
+                                                </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; background:rgba(168,157,245,0.12); color:#a89df5;">{{order.pay_status}}</span>
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>
-                        <!-- endfor -->
+                        {% endfor %}
                     </tbody>
                 </table>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-top:1px solid #eef0f7; background:#f8f9fc;">
-                    <span style="font-size:12px; color:#888;"><!-- Showing X orders --></span>
-                    <a href="" style="font-size:12px; color:#a89df5; font-weight:600; text-decoration:none;">
-                        <!-- url_for all_orders -->
+                    {% if total_orders %}
+                    <span style="font-size:12px; color:#888;">{{total_orders}}</span>
+                    {% endif %}
+                    <a href="{{url_for('admin.all_orders')}}" style="font-size:12px; color:#a89df5; font-weight:600; text-decoration:none;">
                         View All Orders →
                     </a>
                 </div>
