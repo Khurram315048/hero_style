@@ -1,0 +1,29 @@
+{% include 'layouts/header.htm' %}
+<section class="auth-page">
+    <div class="auth-card">
+        <div class="auth-visual">
+            <div class="brand-logo">HS</div>
+            <h2>OTP Verification</h2>
+        </div>
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h1>Enter OTP</h1>
+                <p>We sent a 6-digit code to <strong>{{ email }}</strong>.<br>Expires in 10 minutes.</p>
+            </div>
+            <form method="POST" action="{{ url_for('users.verify_otp') }}">
+                <input type="hidden" name="step" value="verify">
+                <div class="auth-group">
+                    <label class="auth-label">6-Digit OTP</label>
+                    <input type="text" name="otp" class="auth-input" required
+                           maxlength="6" placeholder="000000"
+                           style="letter-spacing: 8px; font-size: 24px; text-align:center;">
+                </div>
+                <button type="submit" class="btn-auth">Verify Code</button>
+            </form>
+            <p class="auth-footer">
+                Wrong email? <a href="{{ url_for('users.reset_password') }}" class="auth-link">Go back</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% include 'layouts/footer.htm' %}

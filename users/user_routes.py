@@ -1,8 +1,10 @@
 from flask import render_template,request,flash,redirect,url_for,session
+import random, string
+from flask_mail import Message
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import login_required
 import datetime 
-from datetime import datetime
+from datetime import datetime,timedelta
 from users import user_bp
 from utils.db import mysql
 
@@ -87,7 +89,7 @@ def user_options():
     return render_template('user_options.htm',user=user)
 
 
-@user_bp.route('/reset_password',methods=['GET','POST'])
+'''@user_bp.route('/reset_password',methods=['GET','POST'])
 def reset_password():
     cursor=mysql.connection.cursor()
     if request.method=='POST':
@@ -112,8 +114,125 @@ def reset_password():
         session['toast']='Password Updated Successfully!'
         return redirect(url_for('users.user_login'))
 
+    return render_template('reset_password.htm')'''
+
+
+
+@user_bp.route('/reset_password',methods=['GET','POST'])
+def reset_password():
+    from main import mail 
+    cursor=mysql.connection.cursor()
+
+    if request.method=='POST':
+        step=request.form.get('step')
+
+        if step=='send_otp':
+            email=request.form.get('email', '').strip()
+            cursor.execute('SELECT email FROM users WHERE email=%s AND is_active=1',(email,))
+            user=cursor.fetchone()
+
+            if not user:
+                cursor.close()
+                session['toast']='Email not found!'
+                return redirect(url_for('users.user_signup'))
+
+            otp=''.join(random.choices(string.digits,k=6))
+            expires=datetime.now() + timedelta(minutes=10)
+
+            cursor.execute('DELETE FROM password_reset_otps WHERE email=%s',(email,))
+            cursor.execute(
+                'INSERT INTO password_reset_otps(email,otp,expires_at) VALUES(%s,%s,%s)',
+                (email,otp,expires))
+            mysql.connection.commit()
+
+            msg=Message(
+                subject='Hero Style — Password Reset OTP',
+                recipients=[email],
+                body=f"""Your OTP for password reset is: {otp}
+                            This code expires in 10 minutes.
+                            If you did not request this, ignore this email.
+                            — Hero Style Team Developed By Muhammad Khurram""",)
+            mail.send(msg)
+            cursor.close()
+            session['reset_email']=email
+            session['toast']='OTP sent to your email!'
+            return redirect(url_for('users.verify_otp'))
+
     return render_template('reset_password.htm')
 
+
+
+@user_bp.route('/verify_otp',methods=['GET','POST'])
+def verify_otp():
+    from main import mail
+    cursor=mysql.connection.cursor()
+    email=session.get('reset_email')
+
+    if not email:
+        return redirect(url_for('users.reset_password'))
+
+    if request.method=='POST':
+        step=request.form.get('step')
+
+        if step=='verify':
+            otp_entered=request.form.get('otp','').strip()
+            cursor.execute(
+                '''SELECT id FROM password_reset_otps 
+                   WHERE email=%s AND otp=%s AND is_used=0 
+                   AND expires_at > NOW()''',
+                (email,otp_entered)
+            )
+            record=cursor.fetchone()
+
+            if not record:
+                cursor.close()
+                session['toast']='Invalid or expired OTP!'
+                return redirect(url_for('users.verify_otp'))
+
+            
+            session['otp_verified']=True
+            cursor.execute('UPDATE password_reset_otps SET is_used=1 WHERE email=%s',(email,))
+            mysql.connection.commit()
+            cursor.close()
+            return redirect(url_for('users.set_new_password'))
+
+    return render_template('verify_otp.htm',email=email)
+
+
+@user_bp.route('/set_new_password',methods=['GET','POST'])
+def set_new_password():
+    cursor=mysql.connection.cursor()
+    email=session.get('reset_email')
+    verified=session.get('otp_verified')
+
+    if not email or not verified:
+        return redirect(url_for('users.reset_password'))
+
+    
+    if request.method=='POST':
+        new_password=request.form.get('new_password','').strip()
+        confirm=request.form.get('confirm_password','').strip()
+
+        if new_password != confirm:
+            session['toast']='Passwords do not match!'
+            return redirect(url_for('users.set_new_password'))
+
+        if len(new_password) < 8:
+            session['toast']='Password must be at least 8 characters!'
+            return redirect(url_for('users.set_new_password'))
+
+        hashed=generate_password_hash(new_password)
+        cursor.execute('UPDATE users SET password_hash=%s WHERE email=%s AND is_active=1',(hashed,email))
+        mysql.connection.commit()
+        cursor.close()
+
+        session.pop('reset_email',None)
+        session.pop('otp_verified',None)
+        session['toast']='Password updated successfully!'
+        return redirect(url_for('users.user_login'))
+
+    cursor.close()
+    return render_template('set_new_password.htm')
 
 
 @user_bp.route('/user_dashboard',methods=['GET','POST'])

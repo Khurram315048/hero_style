@@ -11,6 +11,7 @@ from users import user_bp
 from admin import admin_bp
 from categories import cat_bp
 from orders.order_routes import get_cart_count
+from flask_mail import Mail, Message
 
 app=Flask(__name__,static_folder='static',template_folder='templates')
 
@@ -41,6 +42,13 @@ app.config['MYSQL_CURSORCLASS']='DictCursor'
 
 mysql.init_app(app)
 
+app.config['MAIL_SERVER']=MAIL_SERVER
+app.config['MAIL_PORT']=MAIL_PORT
+app.config['MAIL_USE_TLS']=MAIL_USE_TLS
+app.config['MAIL_USERNAME']=MAIL_USERNAME
+app.config['MAIL_PASSWORD']=MAIL_PASSWORD
+app.config['MAIL_DEFAULT_SENDER']=MAIL_DEFAULT_SENDER
+mail= Mail(app)
 
 
 
