@@ -136,12 +136,14 @@ hero_watches
 │  │  ├─ my_reviews.htm
 │  │  ├─ order_details.htm
 │  │  ├─ reset_password.htm
+│  │  ├─ set_new_password.htm
 │  │  ├─ user_dashboard.htm
 │  │  ├─ user_login.htm
 │  │  ├─ user_orders.htm
 │  │  ├─ user_profile.htm
 │  │  ├─ user_signup.htm
-│  │  └─ user_wishlist.htm
+│  │  ├─ user_wishlist.htm
+│  │  └─ verify_otp.htm
 │  ├─ user_models.py
 │  ├─ user_routes.py
 │  ├─ __init__.py
@@ -159,6 +161,7 @@ hero_watches
 │     ├─ path_link.cpython-312.pyc
 │     └─ product_filter.cpython-312.pyc
 └─ __pycache__
-   └─ config.cpython-312.pyc
+   ├─ config.cpython-312.pyc
+   └─ main.cpython-312.pyc
 
 ```

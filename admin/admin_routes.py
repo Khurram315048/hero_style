@@ -1,7 +1,8 @@
-from flask import render_template,request,flash,redirect,url_for,session,g
+from flask import render_template,request,flash,redirect,url_for,session,g,request
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import admin_required
 import uuid
+import math
 from datetime import datetime
 from admin import admin_bp
 from utils.db import mysql
@@ -151,17 +152,30 @@ def admin_dashboard():
 @admin_required
 def main_products():
     cursor=mysql.connection.cursor()
+    page =request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
     cursor.execute('''SELECT pr.* , pi.* , cat.*, pd.*
                    FROM products pr
                    JOIN product_images pi ON pr.product_id=pi.product_id
                    JOIN categories cat ON pr.category_id=cat.category_id
                    JOIN product_details pd ON pr.product_id=pd.product_id
-                ''')
+                    LIMIT %s OFFSET %s
+                ''',(per_page,offset))
     products=cursor.fetchall()
     cursor.execute('SELECT * FROM categories WHERE is_active=1')
     categories=cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM products")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
     cursor.close()
-    return render_template('main_products.htm',products=products,categories=categories)
+    return render_template('main_products.htm',products=products,page=page,
+                           categories=categories,total_pages=total_pages)
 
 
 @admin_bp.route('/admin_profile',methods=['GET','POST'])
@@ -370,6 +384,12 @@ def active_product(product_id):
 @admin_required
 def all_orders():
     cursor=mysql.connection.cursor()
+    page =request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
 
     cursor.execute('''SELECT o.order_id,o.order_number,o.user_id,o.subtotal,o.status AS order_status,
                    o.discount_amount,o.shipping_charges,o.total_amount,o.ordered_at, 
@@ -383,10 +403,16 @@ def all_orders():
                    WHERE o.is_deleted=0 
                    GROUP BY o.order_id,o.order_number,o.user_id,customer_name,o.subtotal,
                     o.discount_amount,o.shipping_charges,o.total_amount,
-                    p.payment_method,p.status,o.status,o.ordered_at''')
+                    p.payment_method,p.status,o.status,o.ordered_at
+                   LIMIT %s  OFFSET %s''',(per_page,offset))
     
     orders=cursor.fetchall()
-    return render_template('all_orders.htm',orders=orders)
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM orders")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
+    return render_template('all_orders.htm',orders=orders,page=page,total_pages=total_pages)
 
 
 
