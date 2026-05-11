@@ -124,7 +124,8 @@
                   <h3>Customer Reviews</h3>
                   <div class="rating-summary">
                     <span class="stars">★★★★☆</span>
-                    <span class="text-muted">(4 out of 5 based on 12 reviews)</span>
+                    <span class="text-muted">({{product.total_rating}} out of 5)</span>
+                 
                   </div>
                 </div>
                 <button class="btn btn-primary" onclick="toggleReviewForm()">Write a Review</button>
@@ -132,7 +133,7 @@
 
               <div id="review-form-container" style="display: none;" class="review-form-card">
                 <h4>Submit Your Review</h4>
-                <form action="{{ url_for('users.submit_review', product_id=product.product_id) }}" method="POST">
+                <form action="{{url_for('users.submit_review',product_id=product.product_id)}}" method="POST">
                   <div class="star-rating">
                     <input type="radio" id="star5" name="rating" value="5" /><label for="star5">★</label>
                     <input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label>

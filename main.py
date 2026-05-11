@@ -59,17 +59,22 @@ mail= Mail(app)
 def homepage():
     cursor=mysql.connection.cursor()
  
-    cursor.execute(""" SELECT p.product_id,p.product_no,p.title,
-            p.base_price,p.sale_price,p.status,c.name  AS category_name,
+    cursor.execute(""" 
+    SELECT p.product_id,p.product_no,p.title,
+           p.base_price,p.sale_price,p.status,c.name AS category_name,
+           pd.short_description,pi.image_url,pi.alt_text,
+           COUNT(r.review_id) AS rating
+    FROM products p
+    LEFT JOIN categories c ON p.category_id=c.category_id
+    LEFT JOIN product_details pd ON p.product_id=pd.product_id
+    LEFT JOIN product_images pi ON p.product_id=pi.product_id 
+    LEFT JOIN product_reviews r ON p.product_id=r.product_id
+    WHERE p.status='active' AND pi.is_active=1 
+    GROUP BY p.product_id,p.product_no,p.title,
+            p.base_price,p.sale_price,p.status,c.name,
             pd.short_description,pi.image_url,pi.alt_text
-        FROM products p
-        LEFT JOIN categories c  ON p.category_id =c.category_id
-        LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi  ON p.product_id=pi.product_id
-        AND pi.is_active=1
-        WHERE p.status='active'
-        ORDER BY RAND()
-        LIMIT 5 
+    ORDER BY RAND()
+    LIMIT 5
     """)
  
     products=cursor.fetchall()

@@ -58,7 +58,7 @@
 
     {% for product in products %}
     
-    <div class="product-card" onclick="window.location='/products/{{ product.product_id }}'">
+    <div class="product-card" onclick="window.location='/products/{{product.product_id }}'">
 
     
       <div class="card-image-wrap">
@@ -104,7 +104,15 @@
 
       <div class="card-body">
         <p class="card-category">{{ product.category_name or 'Watch' }}</p>
-        <p class="card-category">4 reviews</p>
+        <p class="card-reviews">
+            {% set count=product.rating %}
+            {% if count > 0 %}
+              <span class="stars">★★★★★</span>
+              <span class="review-count">({{ count }} review{{ 's' if count != 1 else '' }})</span>
+            {% else %}
+              <span class="no-reviews">No reviews yet</span>
+            {% endif %}
+          </p> 
         <h3 class="card-title">{{ product.title }}</h3>
         <p class="card-subtitle">{{ product.short_description or 'Premium timepiece' }}</p>
         <div class="card-pricing">

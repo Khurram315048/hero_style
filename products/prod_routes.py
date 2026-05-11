@@ -85,18 +85,23 @@ def product_page(id):
     
     cursor.execute("""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-               p.base_price,p.sale_price,p.status,c.name AS category_name,
+               p.base_price,p.sale_price,p.status,c.name AS category_name,r.rating,r.comment, COUNT(r.review_id) AS total_rating,
                pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
                pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-               pd.strap_material, pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
+               pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
         FROM products p
         LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
         LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
         LEFT JOIN product_reviews r ON p.product_id=r.product_id
-        WHERE p.status='active' AND p.product_id=%s
-        GROUP BY p.product_id
-    """, (id,))
+        WHERE p.status='active' AND p.product_id=%s 
+        GROUP BY p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
+            p.base_price,p.sale_price,p.status,c.name,
+            r.rating,r.comment,
+            pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
+            pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,
+            pd.connectivity,pd.strap_material,pd.case_material,
+            pd.water_resistance,pd.warranty_months,pd.weight""",(id,))
     product=cursor.fetchone()
 
     if not product:
