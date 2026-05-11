@@ -887,7 +887,35 @@ def sales():
 
 
 
+@admin_bp.route('/bulk_delete',methods=['POST'])
+def bulk_delete():
+    cursor=mysql.connection.cursor()
+    ids=request.form.getlist('bulk_ids')
+    table=request.form.get('table')   
+    column=request.form.get('column')  
+     
+    ALLOWED={
+    'orders':('order_id','is_deleted', 1),
+    'product_reviews':('review_id','is_deleted',1),
+    'forms':('form_id','is_deleted',1),
+    'products':('product_id','is_deleted',1),
+    'users':('user_id','is_active',0), 
+    }
 
+    if not ids or table not in ALLOWED or ALLOWED[table][0] != column:
+        session['admin_toast']='Invalid request.'
+        return redirect(request.referrer)
+
+    col_id, col_flag, flag_val=ALLOWED[table]
+    cursor.executemany(
+        f"UPDATE {table} SET {col_flag}=%s WHERE {col_id}=%s",
+        [(flag_val, i) for i in ids]
+    )
+    mysql.connection.commit()
+    cursor.close()
+
+    session['admin_toast']=f'{len(ids)} item(s) deleted.'
+    return redirect(request.referrer)
 
 
 

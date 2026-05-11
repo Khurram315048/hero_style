@@ -46,15 +46,15 @@
         </div>
 
         <div class="nav-item-group">
-            <a href="#" class="profile-nav-item">
-                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                Users
-            </a>
-            <div class="submenu">
-                <a href="{{url_for('admin.customers')}}" class="submenu-item">Customers</a>
-                <a href="{{url_for('admin.all_reviews')}}" class="submenu-item">Reviews</a>
+                <a href="#" class="profile-nav-item {% if request.endpoint in ['admin.customers', 'admin.all_reviews', 'admin.customer_detail'] %}active{% endif %}">
+                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Users
+                </a>
+                <div class="submenu">
+                    <a href="{{ url_for('admin.customers') }}" class="submenu-item {% if request.endpoint in ['admin.customers','admin.customer_detail'] %}active{% endif %}">Customers</a>
+                    <a href="{{ url_for('admin.all_reviews') }}" class="submenu-item {% if request.endpoint == 'admin.all_reviews' %}active{% endif %}">Reviews</a>
+                </div>
             </div>
-        </div>
 
         <a href="{{ url_for('admin.support_forms') }}" class="profile-nav-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,7 +72,7 @@
 
     </nav>
 </aside>
-
+<script src="{{ url_for('static',filename='js/script.js') }}"></script>
 {% if session.get('admin_toast') %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {

@@ -304,3 +304,26 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartCount();
   initSearch();
 });
+
+
+
+function initSelectAll(selectAllId, checkboxName, tableBodyId) {
+    const selectAll = document.getElementById(selectAllId);
+    if (!selectAll) return;
+
+    const tableBody = document.getElementById(tableBodyId);
+
+    // header checkbox clicked → tick/untick all rows
+    selectAll.addEventListener('change', function () {
+        tableBody.querySelectorAll(`input[name="${checkboxName}"]`)
+                 .forEach(cb => cb.checked = this.checked);
+    });
+
+    // any row checkbox clicked → update header checkbox state
+    tableBody.addEventListener('change', function (e) {
+        if (e.target.name !== checkboxName) return;
+        const all     = tableBody.querySelectorAll(`input[name="${checkboxName}"]`);
+        const checked = tableBody.querySelectorAll(`input[name="${checkboxName}"]:checked`);
+        selectAll.checked = all.length === checked.length;
+    });
+}
