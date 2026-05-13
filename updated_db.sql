@@ -44,7 +44,7 @@ CREATE TABLE `admins` (
 
 LOCK TABLES `admins` WRITE;
 /*!40000 ALTER TABLE `admins` DISABLE KEYS */;
-INSERT INTO `admins` VALUES (1,1,'Muhammad','Khurram','admin123','saleemkhurram420@gmail.com','scrypt:32768:8:1$5gXs6V5LkbPSIrBq$7a6f64ab24e2665e22bf5b73805a14ec38eb4e377b5e1092eb9cc6f351e7400fe8fd0997b9b49f011a89665cd35a6b0c9e3d96acdac9c18afaf782e83dfe03db',0),(2,1,'Adil','Bashir','adilasim','adilcentral123@gmail.com','scrypt:32768:8:1$652ie3QOzPn2L3dT$da58b4e25ccefb0db3016a758fc42954397880ded71c5f34ec8b68cb7d20b0f1f9',0);
+INSERT INTO `admins` VALUES (1,1,'Muhammad','Khurram','admin123','saleemkhurram420@gmail.com','scrypt:32768:8:1$zgXXBEd2NIkJwsGX$1ab8804bd869ec01ae6ad87aa88936a8f94929bb2d62537865c93a8f6f9ebcedca21db8daf8cfb9c8c74cdadc19e029aaa1425ab34196d6d9a605614c519a790',0),(2,1,'Adil','Bashir','adilasim','adilcentral123@gmail.com','scrypt:32768:8:1$652ie3QOzPn2L3dT$da58b4e25ccefb0db3016a758fc42954397880ded71c5f34ec8b68cb7d20b0f1f9',0);
 /*!40000 ALTER TABLE `admins` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -356,7 +356,7 @@ CREATE TABLE `password_reset_otps` (
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_used` tinyint(4) DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -365,7 +365,7 @@ CREATE TABLE `password_reset_otps` (
 
 LOCK TABLES `password_reset_otps` WRITE;
 /*!40000 ALTER TABLE `password_reset_otps` DISABLE KEYS */;
-INSERT INTO `password_reset_otps` VALUES (1,'saleemkhurram420@gmail.com','849611','2026-05-11 14:24:37','2026-05-11 14:34:37',1),(2,'asadiqball877@gmail.com','986312','2026-05-11 14:29:58','2026-05-11 14:39:58',1);
+INSERT INTO `password_reset_otps` VALUES (2,'asadiqball877@gmail.com','986312','2026-05-11 14:29:58','2026-05-11 14:39:58',1),(5,'saleemkhurram420@gmail.com','716906','2026-05-13 05:17:51','2026-05-13 05:27:51',1);
 /*!40000 ALTER TABLE `password_reset_otps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -647,4 +647,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-11 19:38:07
+-- Dump completed on 2026-05-13 10:20:40

@@ -20,7 +20,9 @@ hero_watches
 │  │  ├─ payments.htm
 │  │  ├─ returns_orders.htm
 │  │  ├─ sales.htm
-│  │  └─ support_forms.htm
+│  │  ├─ set_new_pass_admin.htm
+│  │  ├─ support_forms.htm
+│  │  └─ verify_admin_otp.htm
 │  ├─ __init__.py
 │  └─ __pycache__
 │     ├─ admin_routes.cpython-312.pyc

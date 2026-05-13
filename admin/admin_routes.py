@@ -2,8 +2,10 @@ from flask import render_template,request,flash,redirect,url_for,session,g,reque
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import admin_required
 import uuid
+import random, string
+from flask_mail import Message
 import math
-from datetime import datetime
+from datetime import datetime,timedelta
 from admin import admin_bp
 from utils.db import mysql
 import os
@@ -83,30 +85,118 @@ def admin_signup():
 
 @admin_bp.route('/admin_reset',methods=['GET','POST'])
 def admin_reset():
+    from main import mail 
     cursor=mysql.connection.cursor()
+
     if request.method=='POST':
-        email=request.form.get('email')
-        new_password=request.form.get('new_password')
+        step=request.form.get('step')
 
-        cursor.execute('SELECT email FROM admins WHERE email=%s',(email,))
-        admin=cursor.fetchone()  
+        if step=='send_otp':
+            email=request.form.get('email', '').strip()
+            cursor.execute('SELECT email FROM admins WHERE email=%s AND is_deleted=0',(email,))
+            admin=cursor.fetchone()
 
-        if not admin:
+            if not admin:
+                cursor.close()
+                session['admin_toast']='Email not found!'
+                return redirect(url_for('admin.admin_signup'))
+
+            otp=''.join(random.choices(string.digits,k=6))
+            expires=datetime.now() + timedelta(minutes=10)
+
+            cursor.execute('DELETE FROM password_reset_otps WHERE email=%s',(email,))
+            cursor.execute(
+                'INSERT INTO password_reset_otps(email,otp,expires_at) VALUES(%s,%s,%s)',
+                (email,otp,expires))
+            mysql.connection.commit()
+
+            msg=Message(
+                subject='Hero Style — Password Reset OTP',
+                recipients=[email],
+                body=f"""Your OTP for password reset is: {otp}
+                            This code expires in 10 minutes.
+                            If you did not request this, ignore this email.
+                            — Hero Style Team Developed By Muhammad Khurram""",)
+            mail.send(msg)
             cursor.close()
-            session['admin_toast']='Email Does Not Exist!'
-            return redirect(url_for('admin.admin_signup'))
-
-        password_hash=generate_password_hash(new_password)
-        cursor.execute(
-            'UPDATE admins SET password_hash=%s WHERE email=%s AND is_deleted=%s',
-            (password_hash,email,0)  
-        )
-        mysql.connection.commit()
-        cursor.close()
-        session['admin_toast']='Password Updated Successfully!'
-        return redirect(url_for('admin.admin_login'))
+            session['reset_email']=email
+            session['admin_toast']='OTP sent to your email!'
+            return redirect(url_for('admin.verify_admin_otp'))
 
     return render_template('admin_reset.htm')
+
+
+
+
+@admin_bp.route('/verify_admin_otp',methods=['GET','POST'])
+def verify_admin_otp():
+    from main import mail
+    cursor=mysql.connection.cursor()
+    email=session.get('reset_email')
+
+    if not email:
+        return redirect(url_for('admin.admin_reset'))
+
+    if request.method=='POST':
+        step=request.form.get('step')
+
+        if step=='verify':
+            otp_entered=request.form.get('otp','').strip()
+            cursor.execute(
+                '''SELECT id FROM password_reset_otps 
+                   WHERE email=%s AND otp=%s AND is_used=0 
+                   AND expires_at > NOW()''',
+                (email,otp_entered)
+            )
+            record=cursor.fetchone()
+
+            if not record:
+                cursor.close()
+                session['toast']='Invalid or expired OTP!'
+                return redirect(url_for('admin.verify_admin_otp'))
+
+            
+            session['otp_verified']=True
+            cursor.execute('UPDATE password_reset_otps SET is_used=1 WHERE email=%s',(email,))
+            mysql.connection.commit()
+            cursor.close()
+            return redirect(url_for('admin.set_new_pass_admin'))
+
+    return render_template('verify_admin_otp.htm',email=email)  
+
+
+
+@admin_bp.route('/set_new_pass_admin',methods=['GET','POST'])
+def set_new_pass_admin():
+    cursor=mysql.connection.cursor()
+    email=session.get('reset_email')
+    verified=session.get('otp_verified')
+
+    if not email or not verified:
+        return redirect(url_for('admin.admin_reset'))
+
+    
+    if request.method=='POST':
+        new_password=request.form.get('new_password','').strip()
+        confirm=request.form.get('confirm_password','').strip()
+
+        if new_password != confirm:
+            session['admin_toast']='Passwords do not match!'
+            return redirect(url_for('admin.set_new_pass_admin'))
+
+        
+        hashed=generate_password_hash(new_password)
+        cursor.execute('UPDATE admins SET password_hash=%s WHERE email=%s AND is_deleted=0',(hashed,email))
+        mysql.connection.commit()
+        cursor.close()
+
+        session.pop('reset_email',None)
+        session.pop('otp_verified',None)
+        session['admin_toast']='Password updated successfully!'
+        return redirect(url_for('admin.admin_login'))
+
+    cursor.close()
+    return render_template('set_new_pass_admin.htm')      
 
 
 @admin_bp.route('/logout')

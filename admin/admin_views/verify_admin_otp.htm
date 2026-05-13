@@ -15,8 +15,7 @@
         <div class="auth-visual">
             <div class="visual-content">
                 <div class="brand-logo">HS</div>
-                <h2>Admin Control</h2>
-                <p>Management & Excellence</p>
+                <h2>OTP Verification</h2>
             </div>
             <div class="visual-footer">
                 &copy; 2026 Developed by <a href="#" target="_blank" class="profile-nav-item">Muhammad Khurram</a>
@@ -28,15 +27,17 @@
                 <h1>Reset Password</h1>
                 <p>Enter your credentials to access the dashboard</p>
             </div>
-
-            <form method="POST" action="{{ url_for('admin.admin_reset') }}">
-                <input type="hidden" name="step" value="send_otp">
+            <p>We sent a 6-digit code to <strong>{{ email }}</strong>.<br>Expires in 10 minutes.</p>
+            <form method="POST" action="{{ url_for('admin.verify_admin_otp') }}">
+                <input type="hidden" name="step" value="verify">
                 <div class="auth-group">
-                    <label class="auth-label">Email Address</label>
-                    <input type="email" name="email" class="auth-input" required placeholder="admin@herostyle.com">
+                    <label class="auth-label">6-Digit OTP</label>
+                    <input type="text" name="otp" class="auth-input" required
+                           maxlength="6" placeholder="000000"
+                           style="letter-spacing: 8px; font-size: 24px; text-align:center;">
                 </div>
 
-                <button type="submit" class="btn-admin-auth">Send OTP</button>
+                <button type="submit" class="btn-admin-auth">Verify Code</button>
             </form>
 
             <div class="auth-footer">

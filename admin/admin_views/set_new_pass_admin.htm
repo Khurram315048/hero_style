@@ -16,7 +16,7 @@
             <div class="visual-content">
                 <div class="brand-logo">HS</div>
                 <h2>Admin Control</h2>
-                <p>Management & Excellence</p>
+                <p>New Password</p>
             </div>
             <div class="visual-footer">
                 &copy; 2026 Developed by <a href="#" target="_blank" class="profile-nav-item">Muhammad Khurram</a>
@@ -29,14 +29,16 @@
                 <p>Enter your credentials to access the dashboard</p>
             </div>
 
-            <form method="POST" action="{{ url_for('admin.admin_reset') }}">
-                <input type="hidden" name="step" value="send_otp">
+            <form method="POST" action="{{ url_for('admin.set_new_pass_admin') }}">
                 <div class="auth-group">
-                    <label class="auth-label">Email Address</label>
-                    <input type="email" name="email" class="auth-input" required placeholder="admin@herostyle.com">
+                    <label class="auth-label">New Password</label>
+                    <input type="password" name="new_password" class="auth-input" required placeholder="At least 8 characters long">
                 </div>
-
-                <button type="submit" class="btn-admin-auth">Send OTP</button>
+                <div class="auth-group">
+                    <label class="auth-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="auth-input" required placeholder="Repeat password">
+                </div>
+                <button type="submit" class="btn-admin-auth">Update Password</button>
             </form>
 
             <div class="auth-footer">
