@@ -60,6 +60,8 @@
                 <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
             </div>
 
+
+
             <div class="table-wrapper">
                 <table class="data-table" id="productsTable">
                     <thead>
@@ -74,6 +76,7 @@
                             <th>Stock Quantity</th>
                             <th>Status</th>
                             <th>Actions</th>
+                           
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
@@ -84,6 +87,7 @@
                                 data-product_no="{{ product.product_no | lower }}"
                                 data-title="{{ product.title | lower if product.title else '' }}"
                                 data-category="{{ product.name | lower if product.name else '' }}">
+                                
                                 <td style="color: var(--text-muted); font-size:12px;">{{ loop.index }}</td>
                                 <td>
                                     {% if product.image_url %}
@@ -255,6 +259,7 @@
                 </div>
                 {% endif %}
             </div>
+            
 
         </div>
     </main>
@@ -862,6 +867,8 @@ function previewEditImage(input){
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+ 
 </script>
 
 {% endblock %}

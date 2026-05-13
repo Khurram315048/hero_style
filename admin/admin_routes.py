@@ -507,6 +507,13 @@ def returns_orders():
 
     active_tab=request.args.get('tab','order')  
 
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
     if active_tab == 'order':
         cursor.execute('''SELECT r.*, o.order_number,
                    CONCAT(u.first_name,' ',u.last_name) AS customer_name
@@ -514,7 +521,7 @@ def returns_orders():
             JOIN orders o ON r.order_id=o.order_id
             JOIN users u ON o.user_id=u.user_id
             WHERE r.is_cancelled=0
-            ORDER BY r.requested_at DESC''')
+            ORDER BY r.requested_at DESC LIMIT %s OFFSET %s''',(per_page,offset))
     else:
         cursor.execute('''SELECT ir.*, o.order_number,
                    CONCAT(u.first_name,' ',u.last_name) AS customer_name,
@@ -524,10 +531,15 @@ def returns_orders():
             JOIN users u ON o.user_id=u.user_id
             JOIN order_details od ON ir.order_detail_id=od.order_detail_id
             JOIN products p ON od.product_id=p.product_id
-            ORDER BY ir.requested_at DESC''')
+            ORDER BY ir.requested_at DESC LIMIT %s OFFSET %s''',(per_page,offset))
 
     returns=cursor.fetchall()
-    return render_template('returns_orders.htm',returns=returns,active_tab=active_tab,admin=admin)
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM order_returns")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
+    return render_template('returns_orders.htm',returns=returns,active_tab=active_tab,admin=admin,page=page,total_pages=total_pages)
 
 
 
@@ -581,6 +593,15 @@ def returns_items_reject(order_id):
 @admin_required
 def orders_cancels():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
+
     cursor.execute("""SELECT o.order_id,o.order_number,o.total_amount,o.cancelled_at,o.is_cancelled,
         CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
         COALESCE(op.payment_method, 'N/A')  AS payment_method,
@@ -590,16 +611,23 @@ def orders_cancels():
     LEFT JOIN order_payments op ON o.order_id=op.order_id
     WHERE(o.is_cancelled=1 OR o.status='cancelled')
     AND o.is_deleted=0
-    ORDER BY o.cancelled_at DESC""")
+    ORDER BY o.cancelled_at DESC
+                   LIMIT %s OFFSET %s""",(per_page,offset))
     cancelled_orders=cursor.fetchall()
 
     admin_id=session.get('admin_id')
     cursor.execute(
         'SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM orders WHERE is_cancelled=1")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+    
     cursor.close()
 
-    return render_template('orders_cancels.htm',cancelled_orders=cancelled_orders,admin=admin)
+    return render_template('orders_cancels.htm',cancelled_orders=cancelled_orders,
+                           admin=admin,page=page,total_pages=total_pages)
 
 
 @admin_bp.route('/mark_refunded/<int:order_id>',methods=['POST'])
@@ -646,6 +674,14 @@ def mark_refunded(order_id):
 @admin_required
 def customers():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
     cursor.execute("""SELECT u.user_id,u.first_name,u.last_name,u.email,
                u.is_active,u.created_at,u.last_login_at,
                COUNT(DISTINCT o.order_id) AS total_orders,
@@ -654,13 +690,18 @@ def customers():
         LEFT JOIN orders o ON u.user_id=o.user_id AND o.is_deleted=0
         WHERE u.role_id=2
         GROUP BY u.user_id
-        ORDER BY u.created_at DESC""")
+        ORDER BY u.created_at DESC LIMIT %s OFFSET %s""",(per_page,offset))
     customers=cursor.fetchall()
     admin_id=session.get('admin_id')
     cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM users")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
     cursor.close()
-    return render_template('customers.htm',customers=customers,admin=admin)
+    return render_template('customers.htm',customers=customers,admin=admin,page=page,total_pages=total_pages)
 
 
 @admin_bp.route('/customers/<int:user_id>/toggle',methods=['POST'])
@@ -725,6 +766,15 @@ def customer_detail(user_id):
 @admin_required
 def all_payments():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+    
+
     cursor.execute("""SELECT op.payment_id,op.order_id,op.payment_method,
                op.amount, op.status,op.paid_at,op.created_at,o.order_number,o.is_cancelled,
                CONCAT(u.first_name,' ',u.last_name) AS customer_name
@@ -732,13 +782,19 @@ def all_payments():
         JOIN orders o ON op.order_id=o.order_id
         LEFT JOIN users u ON o.user_id=u.user_id
         WHERE o.is_deleted=0
-        ORDER BY op.created_at DESC""")
+        ORDER BY op.created_at DESC LIMIT %s OFFSET %s""",(per_page,offset))
     payments=cursor.fetchall()
     admin_id=session.get('admin_id')
     cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM order_payments")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
+
     cursor.close()
-    return render_template('payments.htm',payments=payments,admin=admin)
+    return render_template('payments.htm',payments=payments,admin=admin,page=page,total_pages=total_pages)
 
 
 
@@ -746,18 +802,32 @@ def all_payments():
 @admin_required
 def support_forms():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
+
     cursor.execute("""SELECT form_id,full_name,email,phone_number,
                category,subject,message,overall_rating,
                order_id,is_deleted
         FROM forms
         WHERE is_deleted=0
-        ORDER BY form_id DESC""")
+        ORDER BY form_id DESC LIMIT %s OFFSET %s""",(per_page,offset))
     forms=cursor.fetchall()
     admin_id=session.get('admin_id')
     cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM forms")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
     cursor.close()
-    return render_template('support_forms.htm',forms=forms,admin=admin)
+    return render_template('support_forms.htm',forms=forms,admin=admin,page=page,total_pages=total_pages)
 
 
 @admin_bp.route('/support_forms/<int:form_id>/delete', methods=['POST'])
@@ -776,6 +846,13 @@ def delete_form(form_id):
 @admin_required
 def all_reviews():
     cursor=mysql.connection.cursor()
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
     cursor.execute("""SELECT pr.review_id,pr.rating,pr.comment,pr.status,
                pr.created_at,pr.is_deleted,
                p.title AS product_title,p.product_id,
@@ -785,13 +862,18 @@ def all_reviews():
         JOIN products p ON pr.product_id=p.product_id
         JOIN users u ON pr.user_id=u.user_id
         WHERE pr.is_deleted=0
-        ORDER BY pr.created_at DESC""")
+        ORDER BY pr.created_at DESC LIMIT %s OFFSET %s""",(per_page,offset))
     reviews=cursor.fetchall()
     admin_id=session.get('admin_id')
     cursor.execute('SELECT email,username,first_name,last_name FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM product_reviews")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
     cursor.close()
-    return render_template('all_reviews.htm',reviews=reviews,admin=admin)
+    return render_template('all_reviews.htm',reviews=reviews,admin=admin,page=page,total_pages=total_pages)
 
 
 @admin_bp.route('/reviews/<int:review_id>/status',methods=['POST'])
@@ -913,35 +995,7 @@ def sales():
 
 
 
-@admin_bp.route('/bulk_delete',methods=['POST'])
-def bulk_delete():
-    cursor=mysql.connection.cursor()
-    ids=request.form.getlist('bulk_ids')
-    table=request.form.get('table')   
-    column=request.form.get('column')  
-     
-    ALLOWED={
-    'orders':('order_id','is_deleted', 1),
-    'product_reviews':('review_id','is_deleted',1),
-    'forms':('form_id','is_deleted',1),
-    'products':('product_id','is_deleted',1),
-    'users':('user_id','is_active',0), 
-    }
 
-    if not ids or table not in ALLOWED or ALLOWED[table][0] != column:
-        session['admin_toast']='Invalid request.'
-        return redirect(request.referrer)
-
-    col_id, col_flag, flag_val=ALLOWED[table]
-    cursor.executemany(
-        f"UPDATE {table} SET {col_flag}=%s WHERE {col_id}=%s",
-        [(flag_val, i) for i in ids]
-    )
-    mysql.connection.commit()
-    cursor.close()
-
-    session['admin_toast']=f'{len(ids)} item(s) deleted.'
-    return redirect(request.referrer)
 
 
 

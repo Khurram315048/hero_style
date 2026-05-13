@@ -48,6 +48,9 @@
                 <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
             </div>
 
+             
+        
+
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
@@ -60,6 +63,7 @@
                             <th>Payment Status</th>
                             <th>Cancelled At</th>
                             <th>Actions</th>
+                            
                         </tr>
                     </thead>
                     <tbody id="cancelTableBody">
@@ -68,6 +72,7 @@
                             <tr data-id="{{ o.order_id }}"
                                 data-order-no="{{ o.order_number }}"
                                 data-pay-status="{{ o.pay_status }}">
+                                
                                 <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
                                 <td style="font-size:12px; color:var(--text-muted);">{{ o.order_number or '—' }}</td>
                                 <td><div class="pname">{{ o.customer_name }}</div></td>
@@ -126,7 +131,23 @@
                     </tbody>
                 </table>
             </div>
+        
+        
+             <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('admin.orders_cancels',page=page - 1) }}">« Previous</a>
+                    {% else %}
+                        <span class="disabled">« Previous</span>
+                    {% endif %}
 
+                    <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('admin.orders_cancels',page=page +1) }}">Next »</a>
+                    {% else %}
+                        <span class="disabled">Next »</span>
+                    {% endif %}
+
+                </div>
             <div id="noResults" style="display:none;">
                 <div class="empty-state">
                     <div class="empty-icon">🔍</div>
@@ -176,5 +197,7 @@ function filterTable(){
 
 searchInput.addEventListener('input', filterTable);
 payFilter.addEventListener('change', filterTable);
+
+initSelectAll('selectAllOrders', 'bulk_ids', 'cancelTableBody');
 </script>
 {% endblock %}

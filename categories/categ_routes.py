@@ -2,6 +2,7 @@ from flask import render_template,request,flash,redirect,url_for,session,g
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import admin_required
 import uuid
+import math
 from datetime import datetime
 from categories import cat_bp
 from utils.db import mysql
@@ -17,6 +18,13 @@ def all_categories():
     admin_id=session.get('admin_id')
     cursor.execute('SELECT first_name,last_name,username FROM admins WHERE admin_id=%s',(admin_id,))
     admin=cursor.fetchone()
+    page =request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
 
     cursor.execute("""SELECT c.category_id,c.name,c.description,c.is_active,c.created_at,
         COUNT(DISTINCT p.product_id) AS total_products,
@@ -27,7 +35,8 @@ def all_categories():
     LEFT JOIN order_details od ON p.product_id=od.product_id
     GROUP BY c.category_id
     ORDER BY total_revenue DESC
-    """)
+                   LIMIT %s OFFSET %s
+    """,(per_page,offset))
     rows=cursor.fetchall()
     categories=[dict(row) for row in rows]
 
@@ -36,9 +45,13 @@ def all_categories():
     for cat in categories:
         cat['is_top']=(cat['total_revenue']==max_revenue and max_revenue>0)  
 
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM categories")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
     cursor.close()
     
-    return render_template('all_categories.htm',admin=admin,categories=categories)
+    return render_template('all_categories.htm',admin=admin,categories=categories,page=page,total_pages=total_pages)
 
 
 @cat_bp.route('/category_product/<int:category_id>')

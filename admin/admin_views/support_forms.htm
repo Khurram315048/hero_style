@@ -125,6 +125,24 @@
                 </table>
             </div>
 
+            <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('admin.support_forms',page=page - 1) }}">« Previous</a>
+                    {% else %}
+                        <span class="disabled">« Previous</span>
+                    {% endif %}
+
+                    <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('admin.support_forms',page=page +1) }}">Next »</a>
+                    {% else %}
+                        <span class="disabled">Next »</span>
+                    {% endif %}
+
+                </div> 
+
+
+
             <div id="noResults" style="display:none;">
                 <div class="empty-state">
                     <div class="empty-icon">🔍</div>

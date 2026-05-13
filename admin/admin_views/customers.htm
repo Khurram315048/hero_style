@@ -45,16 +45,7 @@
                 </select>
                 <span class="table-info" id="searchCount" style="margin-left:4px;"></span>
             </div>
-            <form id="bulkForm" method="POST" action="{{url_for('admin.bulk_delete')}}">
-             <input type="hidden" name="table"  value="users">
-            <input type="hidden" name="column" value="user_id">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                <span id="bulkCountBadge" style="font-size:12px; color:#888;">0 selected</span>
-                <button id="bulkDeleteBtn" type="submit" onclick="alert('Are you sure to delete?')" 
-                    class="btn btn-danger btn-sm">
-                    🗑 Delete Selected
-                </button>
-            </div>
+       
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
@@ -67,18 +58,14 @@
                             <th>Last Login</th>
                             <th>Status</th>
                             <th>Actions</th>
-                            <th>
-                            <input type="checkbox" id="selectAllcust">
-                            </th>
+                            
                         </tr>
                     </thead>
                     <tbody id="custTableBody">
                         {% if customers %}
                             {% for c in customers %}
                             <tr data-id="{{ c.user_id }}" data-status="{{ c.is_active }}">
-                                <td>
-                                <input type="checkbox" name="bulk_ids" value="{{ c.user_id }}">
-                                </td>
+                               
                                 <td style="color:var(--text-muted); font-size:12px;">{{ loop.index }}</td>
                                 <td>
                                     <div class="pname">{{ c.first_name }} {{ c.last_name }}</div>
@@ -129,8 +116,22 @@
                         {% endif %}
                     </tbody>
                 </table>
-            </div>
-        </form>
+            
+                <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('admin.customers',page=page - 1) }}">« Previous</a>
+                    {% else %}
+                        <span class="disabled">« Previous</span>
+                    {% endif %}
+
+                    <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('admin.customers',page=page +1) }}">Next »</a>
+                    {% else %}
+                        <span class="disabled">Next »</span>
+                    {% endif %}
+
+                </div>  
 
             <div id="noResults" style="display:none;">
                 <div class="empty-state">
@@ -178,6 +179,5 @@ function filterTable() {
 searchInput.addEventListener('input', filterTable);
 statusFilter.addEventListener('change', filterTable);
 
-initSelectAll('selectAllcust', 'bulk_ids', 'custTableBody');
 </script>
 {% endblock %}
