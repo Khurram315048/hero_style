@@ -31,7 +31,7 @@ app.register_blueprint(cat_bp)
 app.config['UPLOAD_FOLDER']=UPLOAD_FOLDER
 app.config['TEMPLATES_AUTO_RELOAD']=TEMPLATES_AUTO_RELOAD
 app.config['SECRET_KEY']=SECRET_KEY
-app.permanent_session_lifetime=timedelta(minutes=7)
+app.permanent_session_lifetime=timedelta(days=7)
 
 app.config['MYSQL_HOST']=MYSQL_HOST
 app.config['MYSQL_USER']=MYSQL_USER

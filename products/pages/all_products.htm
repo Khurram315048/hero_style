@@ -79,7 +79,7 @@
         {% endif %}
 
         
-        {% if   product.sale_price < product.base_price %}
+        {% if  product.sale_price and product.sale_price < product.base_price  %}
           <span class="card-badge badge-sale">Sale</span>
         {% else %}
           <span class="card-badge badge-new">New</span>

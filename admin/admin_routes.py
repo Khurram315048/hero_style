@@ -416,7 +416,6 @@ def edit_product(product_id):
         stock_quantity=%s,status=%s,updated_at=%s WHERE product_id=%s''', 
         (product_no,category_id,title,base_price,sale_price,stock,status,datetime.now(),product_id))
     mysql.connection.commit()
-    product_id=cursor.lastrowid
 
     cursor.execute('''
         UPDATE  product_details SET product_id=%s,short_description=%s,long_description=%s,
@@ -839,7 +838,7 @@ def customer_detail(user_id):
     
     cursor.execute("""SELECT p.title,pi.image_url,p.sale_price,w.added_at
         FROM wishlist w
-        JOIN products p ON w.product_i =p.product_id
+        JOIN products p ON w.product_id=p.product_id
         LEFT JOIN product_images pi ON p.product_id=pi.product_id
         WHERE w.user_id=%s""",(user_id,))
     wishlist=cursor.fetchall()

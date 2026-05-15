@@ -281,7 +281,7 @@ def user_profile():
         cursor.execute('''UPDATE users SET first_name=%s,last_name=%s,email=%s
                        WHERE user_id=%s AND is_active=%s''',(first_name,last_name,email,user_id,1))
         mysql.connection.commit()
-        cursor.close
+        cursor.close()
         session['toast']='Profile Updated Successfully!'
         return redirect(url_for('users.user_profile'))
 
@@ -534,8 +534,8 @@ def return_order(order_id):
 
     reason=request.form.get('reason')
     
-    cursor.execute('''INSERT INTO order_returns(order_id,reason,status,requested_at,resolved_at)
-                   VALUES(%s,%s,%s,%s,%s)''',(order_id,reason,'requested',datetime.now(),datetime.now()))
+    cursor.execute('''INSERT INTO order_returns(order_id,reason,status,requested_at)
+                   VALUES(%s,%s,%s,%s)''',(order_id,reason,'requested',datetime.now()))
     mysql.connection.commit()
     cursor.close()
     session['toast']='Thank You! For sharing the sharing the experience with us'
@@ -599,8 +599,8 @@ def return_cancel(order_id):
     cursor=mysql.connection.cursor()
     reason=request.form.get('reason')
 
-    cursor.execute('''UPDATE order_returns SET reason=%s,is_cancelled=1,requested_at=%s WHERE
-                       order_id=%s''',(reason,datetime.now(),order_id))
+    cursor.execute('''UPDATE order_returns SET is_cancelled=1,requested_at=%s WHERE
+                       order_id=%s''',(datetime.now(),order_id))
     mysql.connection.commit()
     session['toast']='Request Send Successfully!'
     return redirect(request.referrer)

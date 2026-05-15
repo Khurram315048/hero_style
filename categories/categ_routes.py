@@ -84,7 +84,7 @@ def category_product(category_id):
 def delete_category(category_id):
     cursor=mysql.connection.cursor()
 
-    cursor.execute('DELETE categories  WHERE category_id=%s',(category_id))
+    cursor.execute('DELETE FROM categories  WHERE category_id=%s',(category_id))
     mysql.connection.commit()
     cursor.close()
     session['admin_toast']='Category Deleted Successfully!'
