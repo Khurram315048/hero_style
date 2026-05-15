@@ -251,10 +251,23 @@ def search():
     LEFT JOIN product_details pd
         ON p.product_id=pd.product_id
     WHERE p.status='active'
-    AND (p.title LIKE %s OR p.product_no LIKE %s)
+    AND(
+        p.title LIKE %s OR 
+        p.product_no LIKE %s OR
+        c.name  LIKE %s OR
+        pd.short_description LIKE %s
+        )
     GROUP BY p.product_id
+    ORDER BY
+        CASE
+            WHEN p.title      LIKE %s THEN 1
+            WHEN c.name       LIKE %s THEN 2
+            WHEN p.product_no LIKE %s THEN 3
+            ELSE 4
+        END
     LIMIT 20
-    """, (f'%{q}%', f'%{q}%'))
+    """,(f'%{q}%',f'%{q}%',f'%{q}%',f'%{q}%',
+    f'%{q}%',f'%{q}%',f'%{q}%'))
     
     products=cursor.fetchall()
     cursor.close()

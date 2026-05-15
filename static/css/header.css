@@ -7,7 +7,10 @@
 .nav-links li {
   position: relative;
 }
-
+.sub--menu .sub--menu {
+  top: 0;
+  left: 100%;
+}
 /* Submenu base — hidden by default */
 .sub--menu {
   position: absolute;

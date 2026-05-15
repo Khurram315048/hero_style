@@ -191,14 +191,14 @@
                 <div class="pagination">
 
                     {% if page > 1 %}
-                        <a href="{{ url_for('admin.all_categories',page=page - 1) }}">« Previous</a>
+                        <a href="{{ url_for('categories.all_categories',page=page - 1) }}">« Previous</a>
                     {% else %}
                         <span class="disabled">« Previous</span>
                     {% endif %}
 
                     <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
                     {% if page < total_pages %}
-                        <a href="{{ url_for('admin.all_categories',page=page +1) }}">Next »</a>
+                        <a href="{{ url_for('categories.all_categories',page=page +1) }}">Next »</a>
                     {% else %}
                         <span class="disabled">Next »</span>
                     {% endif %}
