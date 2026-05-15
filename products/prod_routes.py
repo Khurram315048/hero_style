@@ -2,7 +2,7 @@ from flask import render_template,request,jsonify
 from products import prod_bp
 from utils.db import mysql
 from utils.path_link import make_links
-
+import math
 from utils.product_filter import build_product_filter
 import MySQLdb.cursors
 
@@ -12,6 +12,13 @@ import MySQLdb.cursors
 @prod_bp.route('/smart_watches.htm')
 def smart_watches():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
  
     cursor.execute(""" SELECT p.product_id,p.product_no,p.title,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name  AS category_name,
@@ -24,18 +31,34 @@ def smart_watches():
         WHERE p.status='active' AND p.category_id=1         
         GROUP BY p.product_id
         ORDER BY p.product_id ASC
-        LIMIT 5
-    """)
+        LIMIT %s OFFSET %s
+    """,(per_page,offset))
  
     products=cursor.fetchall()
+
+    cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
+                   FROM products p
+                   JOIN categories c ON p.category_id=p.category_id
+                   WHERE c.category_id=1""")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
     cursor.close()
-    return render_template('smart_watches.htm',products=products)
+    return render_template('smart_watches.htm',products=products,page=page,total_pages=total_pages)
 
 
 
 @prod_bp.route('/leather_watches.htm')
 def leather_watches():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
+    
  
     cursor.execute(""" SELECT p.product_id,p.product_no,p.title,
             p.base_price,p.sale_price,p.status,c.name  AS category_name,
@@ -48,17 +71,31 @@ def leather_watches():
         WHERE p.status='active' AND p.category_id=3         
         GROUP BY p.product_id
         ORDER BY p.product_id ASC
-        LIMIT 5
-    """)
+        LIMIT %s OFFSET %s
+    """,(per_page,offset))
  
     products=cursor.fetchall()
+
+    cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
+                   FROM products p
+                   JOIN categories c ON p.category_id=p.category_id
+                   WHERE c.category_id=3""")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
     cursor.close()
-    return render_template('leather_watches.htm',products=products)    
+    return render_template('leather_watches.htm',products=products,page=page,total_pages=total_pages)    
 
 
 @prod_bp.route('/metal_watches.htm')
 def metal_watches():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
  
     cursor.execute(""" SELECT p.product_id,p.product_no,p.title,
             p.base_price,p.sale_price,p.status,c.name  AS category_name,
@@ -71,12 +108,19 @@ def metal_watches():
         WHERE p.status='active' AND p.category_id=2         
         GROUP BY p.product_id
         ORDER BY p.product_id ASC
-        LIMIT 5
-    """)
+        LIMIT %s OFFSET %s
+    """,(per_page,offset))
  
     products=cursor.fetchall()
+    cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
+                   FROM products p
+                   JOIN categories c ON p.category_id=p.category_id
+                   WHERE c.category_id=2""")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
     cursor.close()
-    return render_template('metal_watches.htm',products=products)    
+    return render_template('metal_watches.htm',products=products,page=page,total_pages=total_pages)    
 
 
 @prod_bp.route('/<int:id>',methods=['GET'])
@@ -143,7 +187,9 @@ def product_page(id):
 def all_products():
     cursor=mysql.connection.cursor()
 
-    filters = build_product_filter(request, exclude_category=4)
+
+    filters=build_product_filter(request, exclude_category=4)
+   
 
     cursor.execute(f"""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
@@ -158,7 +204,7 @@ def all_products():
         AND pi.is_active=1
         WHERE {filters['where_str']}
         GROUP BY p.product_id
-        ORDER BY {filters['order_clause']}
+        ORDER BY {filters['order_clause']} 
     """, filters['params'])
     products=cursor.fetchall()
     cursor.execute("SELECT category_id, name FROM categories WHERE is_active=1 AND category_id != 4")
@@ -175,6 +221,15 @@ def all_products():
 @prod_bp.route('/all_earbuds',methods=['GET'])
 def all_earbuds():
     cursor=mysql.connection.cursor()
+
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
+
     cursor.execute("""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
@@ -188,19 +243,35 @@ def all_earbuds():
         AND pi.is_active=1
         WHERE p.status='active' AND p.category_id=4
         ORDER BY RAND()
-    """)
+        LIMIT %s OFFSET %s
+    """,(per_page,offset))
     products=cursor.fetchall()
+     
+    cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
+                   FROM products p
+                   JOIN categories c ON p.category_id=p.category_id""")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
     cursor.close()
     
     if not products:
         return render_template('404.htm'), 404
     
-    return render_template('all_earbuds.htm',products=products)
+    return render_template('all_earbuds.htm',products=products,page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/mix_products',methods=['GET'])
 def mix_products():
     cursor=mysql.connection.cursor()
+    page=request.args.get('page', 1, type=int)
+    if page<1:
+        page=1
+
+    per_page=10
+    offset=(page - 1) * per_page
+
+
     cursor.execute("""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
@@ -214,13 +285,20 @@ def mix_products():
         AND pi.is_active=1
         WHERE p.status='active'
         ORDER BY RAND()
-    """)
+        LIMIT %s OFFSET %s
+    """,(per_page,offset))
     products=cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(*) AS total_count FROM products")
+    total_rows=cursor.fetchone()['total_count']
+    total_pages=math.ceil(total_rows / per_page)
+
+
     cursor.close()
     if not products:
         return render_template('404.htm'), 404
     
-    return render_template('mix_products.htm',products=products)
+    return render_template('mix_products.htm',products=products,page=page,total_pages=total_pages)
 
 
 

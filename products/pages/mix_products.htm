@@ -10,7 +10,7 @@
         <p class="hero-subtitle">Discover our curated collection of premium timepieces — where cutting-edge technology meets timeless elegance.</p>
         <a href="/products/all_products" class="hero-cta">
           Explore Collection
-         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
     
@@ -121,6 +121,22 @@
 
     </div>
     {% endfor %}
+    
+     <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('products.mix_products',page=page - 1) }}">« Previous</a>
+                    {% else %}
+                        <span class="disabled">« Previous</span>
+                    {% endif %}
+
+                    <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('products.mix_products',page=page +1) }}">Next »</a>
+                    {% else %}
+                        <span class="disabled">Next »</span>
+                    {% endif %}
+
+                </div>
 
 
   </div>

@@ -1231,3 +1231,40 @@ product-card:hover .card-quick-add {
     .listing-container { flex-direction: column; }
     .filter-sidebar { width: 100%; position: static; }
 }
+
+
+
+/* This is the key fix */
+.products-column {
+    display: flex;
+    flex-direction: column; /* Forces grid and pagination to stay one above the other */
+    flex: 1;                /* Takes up the remaining width next to the filter */
+    width: 100%;
+}
+
+.products-grid {
+    width: 100%;            /* Ensure grid takes full width of the column */
+}
+
+.pagination { 
+    margin-top: 40px;       /* Added more space */
+    margin-bottom: 20px;
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+    justify-content: center; /* This centers the buttons horizontally */
+    width: 100%;            /* Ensures it stays on its own line */
+}
+
+/* Keep your existing link styles */
+.pagination a { 
+    padding: 8px 16px; 
+    border: 1px solid #ccc; 
+    text-decoration: none; 
+    color: black; 
+}
+.pagination .disabled { 
+    color: #ccc; 
+    padding: 8px 16px; 
+    border: 1px solid #eee;  
+}
