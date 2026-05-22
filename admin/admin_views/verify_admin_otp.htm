@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Hero Style</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_css/admin_auth.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<section class="admin-auth-wrapper">
+    <div class="auth-card">
+
+        <div class="auth-visual">
+            <div class="visual-content">
+                <div class="brand-logo">HS</div>
+                <h2>OTP Verification</h2>
+            </div>
+            <div class="visual-footer">
+                &copy; 2026 Developed by <a href="#" target="_blank" class="profile-nav-item">Muhammad Khurram</a>
+            </div>
+        </div>
+
+        <div class="auth-form-side">
+            <div class="form-header">
+                <h1>Reset Password</h1>
+                <p>Enter your credentials to access the dashboard</p>
+            </div>
+            <p>We sent a 6-digit code to <strong>{{ email }}</strong>.<br>Expires in 10 minutes.</p>
+            <form method="POST" action="{{ url_for('admin.verify_admin_otp') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="step" value="verify">
+                <div class="auth-group">
+                    <label class="auth-label">6-Digit OTP</label>
+                    <input type="text" name="otp" class="auth-input" required
+                           maxlength="6" placeholder="000000"
+                           style="letter-spacing: 8px; font-size: 24px; text-align:center;">
+                </div>
+
+                <button type="submit" class="btn-admin-auth">Verify Code</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Remember credentials?.</p>
+                <a href="{{ url_for('admin.admin_login') }}" class="auth-link">Back to Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

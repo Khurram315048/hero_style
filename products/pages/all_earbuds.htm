@@ -1,0 +1,183 @@
+{% include 'layouts/header.htm' %}
+
+
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-content">
+      <p class="hero-eyebrow">New Collection 2026</p>
+      <h1 class="hero-title">Listening is your most<br><em>precious luxury</em></h1>
+      <p class="hero-subtitle">Discover our curated collection of premium earbuds — where cutting-edge technology meets timeless elegance.</p>
+      <a href="/products/all_earbuds" class="hero-cta">
+        Explore Collection
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hv-glow"></div>
+      <div class="hv-ring hv-ring-1"><div class="hv-dot"></div></div>
+      <div class="hv-ring hv-ring-2"></div>
+      <div class="hv-ring hv-ring-3"></div>
+      <div class="hv-center">
+        <div class="hv-icon">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="38" stroke="rgba(201,168,76,0.3)" stroke-width="1.5"/>
+            <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+              font-family="Cormorant Garamond, serif" font-size="28" font-weight="600"
+              fill="#c9a84c" letter-spacing="2">H</text>
+          </svg>
+        </div>
+      </div>
+      <div class="hv-labels">
+        <div class="hv-label l1">{{ hero_label_1 if hero_label_1 else 'Premium Sound' }}</div>
+        <div class="hv-label l2">{{ hero_label_2 if hero_label_2 else 'Active Noise Cancel' }}</div>
+        <div class="hv-label l3">{{ hero_label_3 if hero_label_3 else '30hr Battery' }}</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<section class="products-section">
+  <div class="section-header">
+    <p class="section-eyebrow">Handpicked For You</p>
+    <h2 class="section-title">Featured Earbuds</h2>
+    <div class="section-line"></div>
+  </div>
+
+<div class="products-page-layout">
+    {% include 'layouts/product_filter.htm' %}
+  <div class="products-grid">
+
+    {% for product in products %}
+    <!-- <div class="product-card" onclick="window.location='/products/{{ product.product_id }}'">-->
+      <div class="product-card" onclick="window.location='/products/{{ product.title | slugify }}-{{ product.product_id }}'">
+
+      <div class="card-image-wrap">
+        {% if product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.alt_text or product.title }}"/>
+        {% else %}
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
+            <svg viewBox="0 0 80 80" style="width:60px;height:60px;opacity:0.2">
+              <circle cx="40" cy="40" r="32" stroke="#0d1b2a" stroke-width="2" fill="none"/>
+              <circle cx="40" cy="40" r="4" fill="#0d1b2a"/>
+              <line x1="40" y1="15" x2="40" y2="40" stroke="#0d1b2a" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="40" x2="55" y2="48" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        {% endif %}
+
+        {% if product.sale_price and product.sale_price < product.base_price %}
+          <span class="card-badge badge-sale">Sale</span>
+        {% else %}
+          <span class="card-badge badge-new">New</span>
+        {% endif %}
+        <form method="POST" action="/orders/wishlist/add">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        <input type="hidden" name="redirect_to" value="{{ request.path }}">
+        <button class="card-wishlist" title="Add to Wishlist" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </button>
+      </form>
+      <form method="POST" action="/orders/cart/add" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="product_id" value="{{ product.product_id }}">
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="redirect_to" value="{{ request.path }}">
+        <button type="submit" class="card-quick-add">+ Add to Cart</button>
+      </form>
+      </div>
+
+      <div class="card-body">
+        <p class="card-category">{{ product.category_name or 'Earbuds' }}</p>
+        <p class="card-reviews">
+            {% set count=product.rating or 0 %}
+            {% if count > 0 %}
+              <span class="stars">★★★★★</span>
+              <span class="review-count">({{ count }} review{{ 's' if count != 1 else '' }})</span>
+            {% else %}
+              <span class="no-reviews">No reviews yet</span>
+            {% endif %}
+          </p> 
+        <h3 class="card-title">{{ product.title }}</h3>
+        <p class="card-subtitle">{{ product.short_description or 'Premium audio experience' }}</p>
+        <div class="card-pricing">
+          <span class="price-current">
+            PKR {{ "{:,.0f}".format(product.sale_price if product.sale_price else product.base_price) }}
+          </span>
+          {% if product.sale_price and product.sale_price < product.base_price %}
+            <span class="price-original">PKR {{ "{:,.0f}".format(product.base_price) }}</span>
+            {% set discount = ((product.base_price - product.sale_price) / product.base_price * 100)|int %}
+            <span class="price-discount">{{ discount }}% off</span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+
+    {% if not products %}
+      {% for i in range(5) %}
+      <div class="product-card">
+        <div class="card-image-wrap">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
+            <svg viewBox="0 0 80 80" style="width:60px;height:60px;opacity:0.2">
+              <circle cx="40" cy="40" r="32" stroke="#0d1b2a" stroke-width="2" fill="none"/>
+              <circle cx="40" cy="40" r="4" fill="#0d1b2a"/>
+              <line x1="40" y1="15" x2="40" y2="40" stroke="#0d1b2a" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="40" x2="55" y2="48" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="card-badge badge-new">New</span>
+        </div>
+        <div class="card-body">
+          <p class="card-category">Earbuds</p>
+          <h3 class="card-title">Hero Audio</h3>
+          <p class="card-subtitle">Premium wireless earbuds</p>
+          <div class="card-pricing">
+            <span class="price-current">PKR 11,999</span>
+            <span class="price-original">PKR 29,999</span>
+            <span class="price-discount">60% off</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+        
+    {% endif %}
+    <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('products.all_earbuds',page=page - 1) }}">« Previous</a>
+                    {% else %}
+                        <span class="disabled">« Previous</span>
+                    {% endif %}
+
+                    <span>Page {{ page }} of {{ total_pages if total_pages >0 else 1 }}</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('products.all_earbuds',page=page +1) }}">Next »</a>
+                    {% else %}
+                        <span class="disabled">Next »</span>
+                    {% endif %}
+
+                </div>
+
+  </div>
+  
+</div>
+
+
+
+  <div class="view-all-wrap">
+    <a href="/products/all_earbuds" class="btn-outline">
+      View All Collection
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+
+</section>
+
+{% include 'layouts/footer.htm' %}

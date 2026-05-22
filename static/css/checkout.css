@@ -1,0 +1,537 @@
+/* ─── Checkout Page CSS ──────────────────────────────────────
+   Inherits variables from homepage.css.
+   Load order in <head>:
+     1. homepage.css
+     2. product_page.css
+     3. checkout.css
+──────────────────────────────────────────────────────────── */
+
+/* ─── Page Shell ─────────────────────────────────────────── */
+.checkout-page {
+  max-width: 1140px;
+  margin: 56px auto 80px;
+  padding: 0 5%;
+}
+
+.checkout-page h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.checkout-page h1::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: var(--gold);
+  margin-top: 12px;
+  margin-bottom: 40px;
+}
+
+/* ─── Two-Column Layout ──────────────────────────────────── */
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ─── Shared Panel ───────────────────────────────────────── */
+.checkout-panel {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.panel-header {
+  background: var(--navy);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+
+.panel-header .panel-icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(201, 168, 76, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.panel-header .panel-icon i {
+  color: var(--gold);
+  font-size: 12px;
+}
+
+.panel-body {
+  padding: 28px 24px;
+}
+
+/* ─── Form Fields ────────────────────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row.full {
+  grid-template-columns: 1fr;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: var(--white);
+  outline: none;
+  transition: var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-light);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.6;
+}
+
+/* Select arrow */
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--text-light);
+  pointer-events: none;
+}
+
+.select-wrap select {
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ─── Payment Method Cards ───────────────────────────────── */
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.payment-option:hover {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.04);
+}
+
+.payment-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gold);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.payment-option input[type="radio"]:checked + .payment-label {
+  color: var(--navy);
+}
+
+.payment-option:has(input:checked) {
+  border-color: var(--gold);
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.payment-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-mid);
+  transition: var(--transition);
+}
+
+.payment-label i {
+  font-size: 16px;
+  color: var(--gold);
+  width: 20px;
+  text-align: center;
+}
+
+.payment-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: var(--navy);
+  color: var(--gold);
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+/* ─── Order Summary (RIGHT COLUMN) ──────────────────────── */
+.order-summary-panel {
+  position: sticky;
+  top: 90px;
+}
+
+.summary-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-item-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--off-white);
+  flex-shrink: 0;
+}
+
+.summary-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-item-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.summary-item-qty {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.summary-item-price {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* ─── Price Breakdown ────────────────────────────────────── */
+.price-breakdown {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+.price-row.total {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.price-row.total span:last-child {
+  color: var(--navy);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.price-row .free-tag {
+  color: #2d8a4e;
+  font-weight: 500;
+}
+
+/* ─── Promo Code ─────────────────────────────────────────── */
+.promo-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.promo-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-dark);
+  outline: none;
+  transition: var(--transition);
+}
+
+.promo-row input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+.promo-row button {
+  padding: 10px 18px;
+  background: var(--navy);
+  color: var(--gold);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.promo-row button:hover {
+  background: var(--navy-mid);
+}
+
+/* ─── Place Order Button ─────────────────────────────────── */
+.place-order-btn {
+  width: 100%;
+  padding: 15px 28px;
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.place-order-btn:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 168, 76, 0.3);
+}
+
+.place-order-btn i {
+  font-size: 14px;
+}
+
+/* ─── Trust Badges ───────────────────────────────────────── */
+.checkout-trust {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.checkout-trust span {
+  font-size: 11px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.checkout-trust i {
+  color: var(--gold);
+  font-size: 12px;
+}
+
+/* ─── Order Confirmed Page ───────────────────────────────── */
+.confirmed-page {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 0 5%;
+  text-align: center;
+}
+
+.confirmed-icon {
+  width: 80px;
+  height: 80px;
+  background: #eaf7ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 28px;
+}
+
+.confirmed-icon i {
+  font-size: 36px;
+  color: #2d8a4e;
+}
+
+.confirmed-page h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.confirmed-page p {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.order-ref {
+  display: inline-block;
+  margin: 20px 0 32px;
+  background: var(--off-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 28px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--navy);
+  letter-spacing: 1px;
+}
+
+.order-ref span {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.confirmed-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .checkout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary-panel {
+    position: static;
+    order: -1; /* show summary above form on mobile */
+  }
+}
+
+@media (max-width: 540px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-body {
+    padding: 20px 16px;
+  }
+
+  .checkout-trust {
+    gap: 12px;
+  }
+}

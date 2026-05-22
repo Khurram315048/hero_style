@@ -1,0 +1,86 @@
+{% block content %}
+<div class="dashboard-wrapper">
+    <title>Admin Portal | Hero Style</title>
+    {% include 'layouts/admin_options.htm' %}
+
+    <main class="main-content">
+        
+        <header class="top-header">
+            <h2>Admin Control Panel</h2>
+            <div class="header-right">
+                 <a href="/" class="view-site-btn" target="_blank" title="View Public Site">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                         </svg>
+                            <span>User View</span>
+                </a>
+                <span style="font-size: 13px; color: #777;">Welcome back,
+                    <a href="{{url_for('admin.admin_profile')}}" class="view-site-btn"  title="View Admin Profile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                            <span>{% if admin %}
+                                {{ admin.first_name }} {{ admin.last_name }}{% endif %}  
+                             </span>
+                           
+                    </a>
+            </div>
+        </header>
+
+        <div class="content-body">
+            
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label">Total Orders</span>
+                    {% if total_orders %}
+                    <p class="stat-value">{{ total_orders }}</p>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Revenue</span>
+                     {% if total_revenue %}
+                    <p class="stat-value">PKR{{ total_revenue }}</p>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Customers</span>
+                    {% if total_customers %}
+                    <p class="stat-value">{{ total_customers }}</p>
+                    {% endif %}
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Support Messages</span>
+                    {% if total_forms %}
+                    <p class="stat-value">{{ total_forms }}</p>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="quick-links">
+                <h3 class="section-heading">Quick Management</h3>
+                <div class="quick-grid">
+                    <a href="{{url_for('admin.main_products')}}" class="quick-card">
+                        <span class="quick-icon">📦</span>
+                        <span>Add Product</span>
+                    </a>
+                    <a href="{{url_for('categories.all_categories')}}" class="quick-card">
+                        <span class="quick-icon">📁</span>
+                        <span>Categories</span>
+                    </a>
+                    <a href="{{url_for('admin.all_orders')}}" class="quick-card">
+                        <span class="quick-icon">📜</span>
+                        <span>Orders</span>
+                    </a>
+                    <a href="{{url_for('admin.support_forms')}}" class="quick-card">
+                        <span class="quick-icon">💬</span>
+                        <span>Support</span>
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

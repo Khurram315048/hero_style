@@ -1,0 +1,65 @@
+
+.hero-visual {
+  flex-shrink: 0;
+  width: 320px; height: 320px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeUp 0.9s ease 0.2s both;
+}
+.hv-glow {
+  position: absolute;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%);
+  animation: pulse 3s ease-in-out infinite;
+}
+.hv-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(201,168,76,0.2);
+}
+.hv-ring-1 { width: 290px; height: 290px; animation: spin-slow 18s linear infinite; }
+.hv-ring-2 { width: 220px; height: 220px; animation: spin-slow 12s linear infinite reverse; border-style: solid; border-color: rgba(201,168,76,0.08); }
+.hv-ring-3 { width: 150px; height: 150px; animation: spin-slow 8s linear infinite; border-color: rgba(201,168,76,0.15); }
+.hv-dot {
+  position: absolute;
+  top: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(201,168,76,0.8);
+}
+.hv-center {
+  position: absolute;
+  width: 90px; height: 90px;
+  background: linear-gradient(145deg, #1a2e45, #0d1b2a);
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 30px rgba(201,168,76,0.2), inset 0 1px 0 rgba(201,168,76,0.3);
+  z-index: 2;
+}
+.hv-icon svg { width: 70px; height: 70px; }
+.hv-labels { position: absolute; inset: 0; pointer-events: none; }
+.hv-label {
+  position: absolute;
+  background: rgba(13,27,42,0.85);
+  border: 1px solid rgba(201,168,76,0.35);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  animation: float 3s ease-in-out infinite;
+}
+.hv-label.l1 { top: 8%;    right: 0;   animation-delay: 0s;   }
+.hv-label.l2 { top: 38%;   right: -5%; animation-delay: 0.8s; }
+.hv-label.l3 { bottom: 18%; right: 0;  animation-delay: 1.6s; }
+@media (max-width: 768px) {
+  .hero-visual { display: none; }
+}

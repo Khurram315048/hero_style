@@ -1,0 +1,133 @@
+/* ─── Profile Card Styling ──────────────────────────────── */
+.profile-card {
+    background: var(--white);
+    padding: 35px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-card-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--off-white);
+    padding-bottom: 15px;
+}
+
+.section-hint {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 5px;
+}
+
+/* ─── Form Layout ───────────────────────────────────────── */
+.edit-profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group .auth-label {
+    margin-bottom: 10px;
+    color: var(--navy);
+}
+
+.form-group textarea.auth-input {
+    resize: none;
+    line-height: 1.5;
+}
+
+.form-hint {
+    font-size: 11px;
+    color: var(--text-light);
+    display: block;
+    margin-top: 5px;
+}
+
+.profile-form-footer {
+    margin-top: 15px;
+    border-top: 1px solid var(--off-white);
+    padding-top: 25px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.profile-form-footer .btn-auth {
+    width: auto;
+    padding: 12px 40px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 540px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-card {
+        padding: 20px;
+    }
+}
+
+/* ─── Wishlist Specific Adjustments ────────────────────── */
+.profile-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.item-count {
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.card-wishlist.active svg {
+    fill: #e85d24; /* Red/Orange for active wishlist */
+    stroke: #e85d24;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-light);
+}
+
+/* Ensure grid fits inside profile main area */
+.profile-content .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 100%;
+}
+
+.recent-order-box {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    margin-top: 20px;
+}
+
+.dashboard-stepper {
+    margin: 40px 0;
+    padding: 0;
+}
+
+.dashboard-stepper::before {
+    left: 5%; right: 5%;
+}
+
+.order-table-wrap {
+    margin-top: 20px;
+    background: var(--white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}

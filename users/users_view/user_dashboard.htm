@@ -1,0 +1,57 @@
+{% include 'layouts/header.htm' %}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        {% include 'layouts/user_options.htm' %}
+
+        <main class="profile-content">
+            {% if user_exist %}
+            <div class="profile-header">
+                <h1 class="section-title">Welcome, {{user_exist.first_name}} {{user_exist.last_name}} </h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Orders</span>
+                        <span class="stat-value">{{user_exist.total_orders}}</span>
+                    </div>
+                </div>
+            </div>
+                    <section class="recent-order-box">
+                        <h2 class="section-subtitle">
+                            Latest Order: 
+                            {% if latest_order %}
+                                {{ latest_order['order_number'] }}
+                            {% else %}
+                                No orders yet
+                            {% endif %}
+                        </h2>
+
+                    {% if latest_order %}
+                    <div class="order-stepper dashboard-stepper">
+                        <div class="step {% if latest_order['status'] in ['pending','confirmed','shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Placed</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] in ['confirmed','shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Confirmed</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] in ['shipped','delivered'] %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Shipped</span>
+                        </div>
+                        <div class="step {% if latest_order['status'] == 'delivered' %}completed{% endif %}">
+                            <div class="step-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <span>Delivered</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('users.user_orders') }}" class="auth-link">View Details →</a>
+                    {% endif %}
+                </section>
+            {% else %}
+                <p>No recent orders found.</p>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+{% include 'layouts/footer.htm' %}
