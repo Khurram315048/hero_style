@@ -66,7 +66,8 @@ def slugify_filter(text):
 @app.route('/')
 def homepage():
     cursor=mysql.connection.cursor()
- 
+    
+
     cursor.execute(""" 
     SELECT p.product_id,p.product_no,p.title,
            p.base_price,p.sale_price,p.status,c.name AS category_name,
