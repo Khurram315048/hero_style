@@ -1,5 +1,71 @@
 {% include 'layouts/header.htm' %}
+<style>
+.card-image-wrap {
+  position: relative;
+  overflow: hidden;
+  height: 220px;
+  background: #f0ede8;
+}
 
+.card-slider {
+  width: 100%;
+  height: 100%;
+}
+
+.card-slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-slide.active {
+  display: block;
+}
+
+.slide-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(13,27,42,0.6);
+  color: #c9a84c;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.card-image-wrap:hover .slide-arrow { opacity: 1; }
+.slide-prev { left: 6px; }
+.slide-next { right: 6px; }
+
+.slide-dots {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.slide-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+}
+
+.slide-dot.active { background: #c9a84c; }
+</style>
   {% if product %}
 
   {% include 'layouts/path_link.htm' %}
@@ -7,9 +73,25 @@
     <main class="product-page">
       <section class="product-top">
         <div class="product-left">
-          <img src="{{ product.image_url or url_for('static', filename='uploads/default.jpg') }}"
-               alt="{{ product.alt_text or product.title }}" class="main-product-image" />
-        </div>
+          {% if product_images|length > 1 %}
+    <div class="thumb-strip">
+      {% for img in product_images %}
+      <img src="{{ img.image_url }}"
+           alt="{{ img.alt_text or product.title }}"
+           class="thumb-img {% if loop.first %}active{% endif %}"
+           onclick="setMainImage(this)"
+      />
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="main-img-wrap">
+      <img id="main-product-img"
+           src="{{ product_images[0].image_url if product_images else product.image_url or url_for('static', filename='uploads/default.jpg') }}"
+           alt="{{ product.alt_text or product.title }}"
+           class="main-product-image" />
+    </div>
+
+  </div>
 
         <div class="product-right">
           <p class="product-category">{{ product.category_name or 'Watch' }}</p>
@@ -183,16 +265,32 @@
 
       <div class="products-grid">
         {% for related in relateds %}
+        
           <!--<div class="product-card" onclick="window.location='/products/{{ related.product_id }}'">-->
-          <div class="product-card" onclick="window.location='/products/{{product.title | slugify }}-{{related.product_id }}'">
+          <div class="product-card" onclick="window.location='/products/{{related.title | slugify }}-{{related.product_id }}'">
+            {% set imgs=product.all_images.split('|||') if related.all_images else [related.image_url] %}
             <div class="card-image-wrap">
-              {% if related.image_url %}
-                <img src="{{ related.image_url }}" alt="{{ related.alt_text or related.title }}"/>
-              {% else %}
-                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f0ede8;">
-                  ...svg placeholder...
-                </div>
-              {% endif %}
+              <div class="card-slider" data-index="0">
+      {% for img_url in imgs %}
+      <img src="{{ img_url }}"
+           alt="{{ product.alt_text or product.title }}"
+            class="card-slide {% if loop.first %}active{% endif %}"
+     
+      />
+      {% endfor %}
+    </div>
+
+          {% if imgs|length > 1 %}
+    <button class="slide-arrow slide-prev"
+            onclick="event.stopPropagation(); slideCard(this, -1)">&#8249;</button>
+    <button class="slide-arrow slide-next"
+            onclick="event.stopPropagation(); slideCard(this, 1)">&#8250;</button>
+    <div class="slide-dots">
+      {% for img_url in imgs %}
+      <span class="slide-dot {% if loop.first %}active{% endif %}"></span>
+      {% endfor %}
+    </div>
+    {% endif %}
 
               {% if related.sale_price and related.sale_price < related.base_price %}
                 <span class="card-badge badge-sale">Sale</span>
@@ -216,7 +314,7 @@
             <div class="card-body">
               <p class="card-category">{{ related.category_name or 'Watch' }}</p>
               <p class="card-reviews">
-                {% set count=related.rating or 0 %}
+                {% set count=related['rating'] or 0 %}
                 {% if count > 0 %}
                   <span class="stars">★★★★★</span>
                   <span class="review-count">({{ count }} review{{ 's' if count != 1 else '' }})</span>
@@ -277,6 +375,73 @@
     const form=document.getElementById('review-form-container');
     form.style.display=form.style.display === 'none' ? 'block' : 'none';
   }
+</script>
+
+<style>
+.product-left {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.thumb-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.thumb-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  opacity: 0.7;
+}
+
+.thumb-img.active,
+.thumb-img:hover {
+  border-color: var(--gold);
+  opacity: 1;
+}
+
+.main-img-wrap {
+  flex: 1;
+}
+
+.main-product-image {
+  width: 100%;
+  border-radius: 12px;
+}
+</style>
+
+<script>
+function setMainImage(thumb) {
+  document.getElementById('main-product-img').src = thumb.src;
+  document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+  thumb.classList.add('active');
+}
+
+
+function slideCard(btn,direction){
+  const wrap=btn.closest('.card-image-wrap');
+  const slider=wrap.querySelector('.card-slider');
+  const slides=slider.querySelectorAll('.card-slide');
+  const dots=wrap.querySelectorAll('.slide-dot');
+  
+  let current=parseInt(slider.dataset.index) || 0;
+  slides[current].classList.remove('active');
+  if(dots[current]) dots[current].classList.remove('active');
+  
+  current=(current + direction + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  if(dots[current]) dots[current].classList.add('active');
+  slider.dataset.index=current;
+}
 </script>
 
 {% include 'layouts/footer.htm' %}

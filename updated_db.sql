@@ -64,10 +64,10 @@ CREATE TABLE `cart_items` (
   `added_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`item_id`),
   UNIQUE KEY `cart_id` (`cart_id`,`product_id`),
-  KEY `product_id` (`product_id`),
+  KEY `idx_product` (`product_id`),
   CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`cart_id`) ON DELETE CASCADE,
   CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +76,7 @@ CREATE TABLE `cart_items` (
 
 LOCK TABLES `cart_items` WRITE;
 /*!40000 ALTER TABLE `cart_items` DISABLE KEYS */;
-INSERT INTO `cart_items` VALUES (1,1,14,1,1099.00,'2026-04-17 15:17:05'),(3,3,13,1,11999.00,'2026-04-18 03:57:06'),(11,8,13,1,11999.00,'2026-05-01 16:24:01'),(12,10,14,1,1099.00,'2026-05-08 05:50:14'),(13,11,13,2,11999.00,'2026-05-08 05:52:38');
+INSERT INTO `cart_items` VALUES (1,1,14,1,1099.00,'2026-04-17 15:17:05'),(3,3,13,1,11999.00,'2026-04-18 03:57:06'),(11,8,13,1,11999.00,'2026-05-01 16:24:01'),(12,10,14,1,1099.00,'2026-05-08 05:50:14'),(13,11,13,2,11999.00,'2026-05-08 05:52:38'),(17,15,17,1,5999.00,'2026-05-15 05:42:44'),(18,16,24,1,124.00,'2026-05-15 06:36:53'),(19,17,11,1,2599.00,'2026-05-15 06:47:41'),(20,18,4,1,1149.00,'2026-05-18 15:41:54'),(21,19,16,1,7999.00,'2026-05-18 15:51:35');
 /*!40000 ALTER TABLE `cart_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -95,8 +95,9 @@ CREATE TABLE `carts` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`cart_id`),
   KEY `user_id` (`user_id`),
+  KEY `idx_session` (`session_id`),
   CONSTRAINT `carts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -105,7 +106,7 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06'),(7,NULL,'dcc87f27-e703-404a-b4fb-22272dc7ea9b','2026-04-25 06:17:47','2026-04-25 06:17:47'),(8,NULL,'5b96d78f-8af7-492b-8b96-4326028229ec','2026-05-01 16:24:01','2026-05-01 16:24:01'),(9,NULL,'6e6a5cbf-aa2c-46f1-959c-f4d2e5e63720','2026-05-08 05:48:24','2026-05-08 05:48:24'),(10,NULL,'c0423906-0588-428b-9b7a-5132a40c5aa9','2026-05-08 05:50:13','2026-05-08 05:50:13'),(11,NULL,'6fdcb2ad-948e-4d4d-8ef9-bebd0cef69c3','2026-05-08 05:52:38','2026-05-08 05:52:38');
+INSERT INTO `carts` VALUES (1,NULL,'95992d67-40c8-433f-a1fa-87e1e42aed7c','2026-04-17 15:17:04','2026-04-17 15:17:04'),(3,NULL,'249c8293-3b47-4179-9dfb-340a1aec0dfd','2026-04-18 03:57:06','2026-04-18 03:57:06'),(7,NULL,'dcc87f27-e703-404a-b4fb-22272dc7ea9b','2026-04-25 06:17:47','2026-04-25 06:17:47'),(8,NULL,'5b96d78f-8af7-492b-8b96-4326028229ec','2026-05-01 16:24:01','2026-05-01 16:24:01'),(9,NULL,'6e6a5cbf-aa2c-46f1-959c-f4d2e5e63720','2026-05-08 05:48:24','2026-05-08 05:48:24'),(10,NULL,'c0423906-0588-428b-9b7a-5132a40c5aa9','2026-05-08 05:50:13','2026-05-08 05:50:13'),(11,NULL,'6fdcb2ad-948e-4d4d-8ef9-bebd0cef69c3','2026-05-08 05:52:38','2026-05-08 05:52:38'),(15,NULL,'43e90229-f3be-49b2-aaab-c2d8d843e4b6','2026-05-15 05:42:43','2026-05-15 05:42:43'),(16,NULL,'8057f1be-8491-4da0-9ff8-e34989e7b694','2026-05-15 06:36:52','2026-05-15 06:36:52'),(17,NULL,'d8adeb15-4567-4c20-baaa-124dd87e787a','2026-05-15 06:47:41','2026-05-15 06:47:41'),(18,NULL,'b29b5a70-45de-4801-bf41-82082a48b3e8','2026-05-18 15:41:54','2026-05-18 15:41:54'),(19,NULL,'4b1dc131-eb4b-4df4-a75f-590d24807955','2026-05-18 15:51:35','2026-05-18 15:51:35');
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -190,10 +191,10 @@ CREATE TABLE `order_details` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`order_detail_id`),
   KEY `order_id` (`order_id`),
-  KEY `product_id` (`product_id`),
+  KEY `idx_product` (`product_id`),
   CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -202,7 +203,7 @@ CREATE TABLE `order_details` (
 
 LOCK TABLES `order_details` WRITE;
 /*!40000 ALTER TABLE `order_details` DISABLE KEYS */;
-INSERT INTO `order_details` VALUES (1,1,2,1199.00,1,50.00,1199.00,'2026-04-17 15:24:29'),(2,2,17,5999.00,1,50.00,5999.00,'2026-04-18 04:25:20'),(3,3,1,11999.00,1,50.00,11999.00,'2026-04-18 04:45:31'),(4,4,3,1299.00,1,0.00,1299.00,'2026-04-18 07:44:08'),(5,4,20,2999.00,1,0.00,2999.00,'2026-04-18 07:44:08'),(6,4,15,53999.00,1,0.00,53999.00,'2026-04-18 07:44:08'),(7,5,14,1099.00,5,0.00,5495.00,'2026-05-08 05:56:49'),(8,6,10,33999.00,1,0.00,33999.00,'2026-05-09 06:44:54');
+INSERT INTO `order_details` VALUES (1,1,2,1199.00,1,50.00,1199.00,'2026-04-17 15:24:29'),(2,2,17,5999.00,1,50.00,5999.00,'2026-04-18 04:25:20'),(3,3,1,11999.00,1,50.00,11999.00,'2026-04-18 04:45:31'),(4,4,3,1299.00,1,0.00,1299.00,'2026-04-18 07:44:08'),(5,4,20,2999.00,1,0.00,2999.00,'2026-04-18 07:44:08'),(6,4,15,53999.00,1,0.00,53999.00,'2026-04-18 07:44:08'),(7,5,14,1099.00,5,0.00,5495.00,'2026-05-08 05:56:49'),(8,6,10,33999.00,1,0.00,33999.00,'2026-05-09 06:44:54'),(9,7,4,1149.00,1,0.00,1149.00,'2026-05-20 15:22:22'),(10,8,19,8499.00,1,0.00,8499.00,'2026-05-20 15:23:36'),(11,9,19,8499.00,1,0.00,8499.00,'2026-05-20 15:24:19');
 /*!40000 ALTER TABLE `order_details` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -256,7 +257,7 @@ CREATE TABLE `order_payments` (
   PRIMARY KEY (`payment_id`),
   KEY `order_id` (`order_id`),
   CONSTRAINT `order_payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -265,7 +266,7 @@ CREATE TABLE `order_payments` (
 
 LOCK TABLES `order_payments` WRITE;
 /*!40000 ALTER TABLE `order_payments` DISABLE KEYS */;
-INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'pending',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'refunded',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'failed',NULL,'2026-04-18 04:45:31'),(4,4,'bank_transfer',NULL,58297.00,'refunded',NULL,'2026-04-18 07:44:08'),(5,5,'COD',NULL,5195.00,'pending',NULL,'2026-05-08 05:56:49'),(6,6,'COD',NULL,33999.00,'pending',NULL,'2026-05-09 06:44:54');
+INSERT INTO `order_payments` VALUES (1,1,'JazzCash',NULL,1449.00,'pending',NULL,'2026-04-17 15:24:29'),(2,2,'JazzCash',NULL,6249.00,'refunded',NULL,'2026-04-18 04:25:20'),(3,3,'JazzCash',NULL,10799.00,'failed',NULL,'2026-04-18 04:45:31'),(4,4,'bank_transfer',NULL,58297.00,'refunded',NULL,'2026-04-18 07:44:08'),(5,5,'COD',NULL,5195.00,'pending',NULL,'2026-05-08 05:56:49'),(6,6,'COD',NULL,33999.00,'pending',NULL,'2026-05-09 06:44:54'),(7,7,'EasyPaisa',NULL,1399.00,'pending',NULL,'2026-05-20 15:22:22'),(8,8,'JazzCash',NULL,8749.00,'pending',NULL,'2026-05-20 15:23:37'),(9,9,'EasyPaisa',NULL,8749.00,'pending',NULL,'2026-05-20 15:24:19');
 /*!40000 ALTER TABLE `order_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -328,7 +329,7 @@ CREATE TABLE `orders` (
   UNIQUE KEY `order_number` (`order_number`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -337,7 +338,7 @@ CREATE TABLE `orders` (
 
 LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','delivered',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-05-09 15:23:09',0,'2026-05-06 07:45:22',0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-05-09 15:23:23',0,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-05-10 11:54:10',0,'2026-04-23 14:22:21',1),(4,2,'HW-EBED1858','cancelled',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-05-09 15:23:28',0,'2026-05-07 08:57:44',0),(5,6,'HW-E5194E04','delivered',5495.00,550.00,'HERO10',250.00,5195.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-05-08 05:56:48','2026-05-10 11:55:28',0,NULL,1),(6,6,'HW-4A6FA0C4','delivered',33999.00,0.00,NULL,0.00,33999.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-05-09 06:44:54','2026-05-09 13:07:57',0,NULL,0);
+INSERT INTO `orders` VALUES (1,3,'HW-77A784B3','delivered',1199.00,0.00,NULL,250.00,1449.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-17 15:24:29','2026-05-09 15:23:09',0,'2026-05-06 07:45:22',0),(2,2,'HW-EB002F12','cancelled',5999.00,0.00,NULL,250.00,6249.00,'Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','Western Fort Colony, Near Army wall Dhmaka Chowk Qasim Bela Multan,Multan 6500','2026-04-18 04:25:20','2026-05-09 15:23:23',0,'2026-04-18 07:06:43',0),(3,2,'HW-28D13CFD','delivered',11999.00,1200.00,'HERO10',0.00,10799.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-04-18 04:45:31','2026-05-10 11:54:10',0,'2026-04-23 14:22:21',1),(4,2,'HW-EBED1858','cancelled',58297.00,0.00,NULL,0.00,58297.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-04-18 07:44:08','2026-05-09 15:23:28',0,'2026-05-07 08:57:44',0),(5,6,'HW-E5194E04','delivered',5495.00,550.00,'HERO10',250.00,5195.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-05-08 05:56:48','2026-05-10 11:55:28',0,NULL,1),(6,6,'HW-4A6FA0C4','delivered',33999.00,0.00,NULL,0.00,33999.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-05-09 06:44:54','2026-05-09 13:07:57',0,NULL,0),(7,6,'HW-7CA97D13','pending',1149.00,0.00,NULL,250.00,1399.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-05-20 15:22:21','2026-05-20 15:22:21',0,NULL,0),(8,6,'HW-DF42C417','confirmed',8499.00,0.00,NULL,250.00,8749.00,'Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','Gulshan Iqbal Colony Qasim Bela Multan,Multan 6500','2026-05-20 15:23:36','2026-05-20 15:52:38',0,NULL,0),(9,6,'HW-5BAAEB66','confirmed',8499.00,0.00,NULL,250.00,8749.00,'Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','Main Street Dhamaka Chowk Near Army Wall Qasim Bela Multan Cantt,Multan 6500','2026-05-20 15:24:19','2026-05-20 15:47:28',0,NULL,0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -355,8 +356,9 @@ CREATE TABLE `password_reset_otps` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `expires_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_used` tinyint(4) DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  PRIMARY KEY (`id`),
+  KEY `idx_email` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -365,7 +367,7 @@ CREATE TABLE `password_reset_otps` (
 
 LOCK TABLES `password_reset_otps` WRITE;
 /*!40000 ALTER TABLE `password_reset_otps` DISABLE KEYS */;
-INSERT INTO `password_reset_otps` VALUES (2,'asadiqball877@gmail.com','986312','2026-05-11 14:29:58','2026-05-11 14:39:58',1),(5,'saleemkhurram420@gmail.com','716906','2026-05-13 05:17:51','2026-05-13 05:27:51',1);
+INSERT INTO `password_reset_otps` VALUES (2,'asadiqball877@gmail.com','986312','2026-05-11 14:29:58','2026-05-11 14:39:58',1),(6,'saleemkhurram420@gmail.com','582309','2026-05-22 07:45:29','2026-05-22 07:55:29',1);
 /*!40000 ALTER TABLE `password_reset_otps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -427,9 +429,9 @@ CREATE TABLE `product_images` (
   `height` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`image_id`),
-  KEY `product_id` (`product_id`),
+  KEY `idx_product` (`product_id`),
   CONSTRAINT `product_images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -438,7 +440,7 @@ CREATE TABLE `product_images` (
 
 LOCK TABLES `product_images` WRITE;
 /*!40000 ALTER TABLE `product_images` DISABLE KEYS */;
-INSERT INTO `product_images` VALUES (1,1,'/static/uploads/smart_watches/img1a.png','Smart Watch',1,800,800,'2026-03-28 06:14:48'),(2,2,'/static/uploads/smart_watches/img2a.png','smart black watch',0,800,700,'2026-03-28 06:18:49'),(3,3,'/static/uploads/smart_watches/img3a.png','smart blue watch',1,800,800,'2026-03-28 06:49:31'),(4,4,'/static/uploads/smart_watches/img4a.png','smart purple watch',1,800,800,'2026-03-28 06:50:35'),(5,5,'/static/uploads/smart_watches/img5a.png','smart silver watch',1,800,800,'2026-03-28 06:51:08'),(6,6,'/static/uploads/metal_watches/img1m.png','Silver Metal Watch',1,800,800,'2026-03-28 09:08:23'),(7,7,'/static/uploads/metal_watches/img2m.png','Silver Blue Metal Watch',1,800,800,'2026-03-28 09:15:55'),(8,8,'/static/uploads/metal_watches/img3m.png','Silver Black Metal Watch',1,800,800,'2026-03-28 09:15:55'),(9,9,'/static/uploads/metal_watches/img4m.png','Silver Vintage Metal Watch',1,800,800,'2026-03-28 09:15:55'),(10,10,'/static/uploads/metal_watches/img5m.png','Black Bold Metal Watch',1,700,700,'2026-03-28 09:19:37'),(11,11,'/static/uploads/leather_watches/img1l.png','Brown Leather Watch',1,800,800,'2026-03-28 09:15:55'),(12,12,'/static/uploads/leather_watches/img2l.png','Black Leather Watch',1,800,800,'2026-03-28 09:15:55'),(13,13,'/static/uploads/leather_watches/img3l.png','Gold Leather Watch',1,800,800,'2026-03-28 09:15:55'),(14,14,'/static/uploads/leather_watches/img4l.png','Brown Lean Watch',1,800,800,'2026-03-28 09:15:55'),(15,15,'/static/uploads/leather_watches/img5l.png','Bold Black Watch',1,800,800,'2026-03-28 09:15:55'),(16,16,'/static/uploads/ear_buds/img1.png','Hero Elite Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(17,17,'/static/uploads/ear_buds/img2.png','Hero Sound Max Earbuds',1,800,800,'2026-04-06 15:58:00'),(18,18,'/static/uploads/ear_buds/img3.png','Hero Fit Sport Earbuds',1,800,800,'2026-04-06 15:58:00'),(19,19,'/static/uploads/ear_buds/img4.png','Hero Studio Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(20,20,'/static/uploads/ear_buds/img5.png','Hero Lite Compact Earbuds',1,800,800,'2026-04-06 15:58:00'),(21,24,'/static/uploads/leather_watches/home.PNG','asg',1,12,12,'2026-05-01 11:04:27');
+INSERT INTO `product_images` VALUES (1,1,'/static/uploads/smart_watches/img1a.png','Smart Watch',1,800,800,'2026-03-28 06:14:48'),(2,2,'/static/uploads/smart_watches/img2a.png','smart black watch',1,800,700,'2026-03-28 06:18:49'),(3,3,'/static/uploads/smart_watches/img3a.png','smart blue watch',1,800,800,'2026-03-28 06:49:31'),(4,4,'/static/uploads/smart_watches/img4a.png','smart purple watch',1,800,800,'2026-03-28 06:50:35'),(5,5,'/static/uploads/smart_watches/img5a.png','smart silver watch',1,800,800,'2026-03-28 06:51:08'),(6,6,'/static/uploads/metal_watches/img1m.png','Silver Metal Watch',1,800,800,'2026-03-28 09:08:23'),(7,7,'/static/uploads/metal_watches/img2m.png','Silver Blue Metal Watch',1,800,800,'2026-03-28 09:15:55'),(8,8,'/static/uploads/metal_watches/img3m.png','Silver Black Metal Watch',1,800,800,'2026-03-28 09:15:55'),(9,9,'/static/uploads/metal_watches/img4m.png','Silver Vintage Metal Watch',1,800,800,'2026-03-28 09:15:55'),(10,10,'/static/uploads/metal_watches/img5m.png','Black Bold Metal Watch',1,700,700,'2026-03-28 09:19:37'),(11,11,'/static/uploads/leather_watches/img1l.png','Brown Leather Watch',1,800,800,'2026-03-28 09:15:55'),(12,12,'/static/uploads/leather_watches/img2l.png','Black Leather Watch',1,800,800,'2026-03-28 09:15:55'),(13,13,'/static/uploads/leather_watches/img3l.png','Gold Leather Watch',1,800,800,'2026-03-28 09:15:55'),(14,14,'/static/uploads/leather_watches/img4l.png','Brown Lean Watch',1,800,800,'2026-03-28 09:15:55'),(15,15,'/static/uploads/leather_watches/img5l.png','Bold Black Watch',1,800,800,'2026-03-28 09:15:55'),(16,16,'/static/uploads/ear_buds/img1.png','Hero Elite Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(17,17,'/static/uploads/ear_buds/img2.png','Hero Sound Max Earbuds',1,800,800,'2026-04-06 15:58:00'),(18,18,'/static/uploads/ear_buds/img3.png','Hero Fit Sport Earbuds',1,800,800,'2026-04-06 15:58:00'),(19,19,'/static/uploads/ear_buds/img4.png','Hero Studio Pro Earbuds',1,800,800,'2026-04-06 15:58:00'),(20,20,'/static/uploads/ear_buds/img5.png','Hero Lite Compact Earbuds',1,800,800,'2026-04-06 15:58:00'),(21,24,'/static/uploads/leather_watches/home.PNG','asg',1,12,12,'2026-05-01 11:04:27'),(22,1,'/static/uploads/smart_watches/img1a_i.png','Smart Watch Side View',1,800,800,'2026-05-24 08:43:42'),(23,1,'/static/uploads/smart_watches/img1a_ii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(24,1,'/static/uploads/smart_watches/img1a_iii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(25,2,'/static/uploads/smart_watches/img2a_i.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(26,2,'/static/uploads/smart_watches/img2a_ii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(27,2,'/static/uploads/smart_watches/img2a_iii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(28,3,'/static/uploads/smart_watches/img3a_i.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(29,3,'/static/uploads/smart_watches/img3a_ii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(30,3,'/static/uploads/smart_watches/img3a_iii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(31,4,'/static/uploads/smart_watches/img4a_i.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(32,4,'/static/uploads/smart_watches/img4a_ii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(33,4,'/static/uploads/smart_watches/img4a_iii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(34,5,'/static/uploads/smart_watches/img5a_i.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(35,5,'/static/uploads/smart_watches/img5a_ii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42'),(36,5,'/static/uploads/smart_watches/img5a_iii.png','Smart Watch Back View',1,800,800,'2026-05-24 08:43:42');
 /*!40000 ALTER TABLE `product_images` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -459,8 +461,8 @@ CREATE TABLE `product_reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_deleted` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`review_id`),
-  KEY `fk_review_product` (`product_id`),
   KEY `fk_review_user` (`user_id`),
+  KEY `idx_product_user` (`product_id`,`user_id`),
   CONSTRAINT `fk_review_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -507,7 +509,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'SW-001',1,'SKIH',12999.00,11999.00,4,'draft','2026-03-27 08:04:40','2026-05-03 14:04:17'),(2,'SW-002',1,'SNIX',12999.00,1199.00,5,'active','2026-03-28 05:23:29','2026-05-03 14:03:41'),(3,'SW-003',1,'SNIQ',14999.00,1299.00,5,'active','2026-03-28 05:24:52','2026-03-28 05:24:52'),(4,'SW-004',1,'SNIM',14999.00,1149.00,5,'active','2026-03-28 05:24:52','2026-03-28 05:24:52'),(5,'SW-005',1,'SNIN',11999.00,1099.00,5,'active','2026-03-28 05:24:52','2026-03-28 05:24:52'),(6,'MW-001',2,'MURREN',34000.00,32999.00,5,'active','2026-03-28 05:55:39','2026-03-28 05:55:39'),(7,'MW-002',2,'MURRAM',35000.00,31999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(8,'MW-003',2,'MULEN',36000.00,33999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(9,'MW-004',2,'MUAREN',24000.00,22999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(10,'MW-005',2,'MURGEN',34999.00,33999.00,4,'active','2026-03-28 05:58:36','2026-05-09 06:44:54'),(11,'LW-001',3,'LIXES',3000.00,2599.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(12,'LW-002',3,'LIUNEN',2000.00,1699.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(13,'LW-003',3,'LEAN',14000.00,11999.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(14,'LW-004',3,'LEATH',1500.00,1099.00,5,'active','2026-03-28 06:02:02','2026-05-10 10:40:15'),(15,'LW-005',3,'LEAD',54000.00,53999.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(16,'EB-001',4,'Hero Elite Pro',8999.00,7999.00,15,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(17,'EB-002',4,'Hero Sound Max',6999.00,5999.00,20,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(18,'EB-003',4,'Hero Fit Sport',4999.00,3999.00,25,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(19,'EB-004',4,'Hero Studio Pro',9999.00,8499.00,12,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(20,'EB-005',4,'Hero Lite Compact',3999.00,2999.00,30,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(21,'LK-090',3,'LKKL',23000.00,22999.00,0,'active','2026-05-01 10:54:05','2026-05-08 05:59:05'),(22,'tlt-02',3,'title',3200.00,1300.00,4,'active','2026-05-01 10:56:04','2026-05-01 10:56:04'),(24,'LK-091',3,'asg',342.00,124.00,4,'active','2026-05-01 11:04:27','2026-05-01 11:04:27');
+INSERT INTO `products` VALUES (1,'SW-001',1,'SKIH',12999.00,11999.00,4,'draft','2026-03-27 08:04:40','2026-05-03 14:04:17'),(2,'SW-002',1,'SNIX',12999.00,1199.00,5,'active','2026-03-28 05:23:29','2026-05-03 14:03:41'),(3,'SW-003',1,'SNIQ',14999.00,1299.00,5,'active','2026-03-28 05:24:52','2026-03-28 05:24:52'),(4,'SW-004',1,'SNIM',14999.00,1149.00,4,'active','2026-03-28 05:24:52','2026-05-20 15:22:22'),(5,'SW-005',1,'SNIN',11999.00,1099.00,5,'active','2026-03-28 05:24:52','2026-03-28 05:24:52'),(6,'MW-001',2,'MURREN',34000.00,32999.00,5,'active','2026-03-28 05:55:39','2026-03-28 05:55:39'),(7,'MW-002',2,'MURRAM',35000.00,31999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(8,'MW-003',2,'MULEN',36000.00,33999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(9,'MW-004',2,'MUAREN',24000.00,22999.00,5,'active','2026-03-28 05:58:36','2026-03-28 05:58:36'),(10,'MW-005',2,'MURGEN',34999.00,33999.00,4,'active','2026-03-28 05:58:36','2026-05-09 06:44:54'),(11,'LW-001',3,'LIXES',3000.00,2599.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(12,'LW-002',3,'LIUNEN',2000.00,1699.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(13,'LW-003',3,'LEAN',14000.00,11999.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(14,'LW-004',3,'LEATH',1500.00,1099.00,5,'active','2026-03-28 06:02:02','2026-05-10 10:40:15'),(15,'LW-005',3,'LEAD',54000.00,53999.00,5,'active','2026-03-28 06:02:02','2026-03-28 06:02:02'),(16,'EB-001',4,'Hero Elite Pro',8999.00,7999.00,15,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(17,'EB-002',4,'Hero Sound Max',6999.00,5999.00,20,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(18,'EB-003',4,'Hero Fit Sport',4999.00,3999.00,25,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(19,'EB-004',4,'Hero Studio Pro',9999.00,8499.00,10,'active','2026-04-06 15:51:55','2026-05-20 15:24:19'),(20,'EB-005',4,'Hero Lite Compact',3999.00,2999.00,30,'active','2026-04-06 15:51:55','2026-04-06 15:51:55'),(21,'LK-090',3,'LKKL',23000.00,22999.00,0,'active','2026-05-01 10:54:05','2026-05-08 05:59:05'),(22,'tlt-02',3,'title',3200.00,1300.00,4,'active','2026-05-01 10:56:04','2026-05-01 10:56:04'),(24,'LK-091',3,'asg',342.00,124.00,4,'active','2026-05-01 11:04:27','2026-05-01 11:04:27');
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -569,7 +571,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (2,2,'Umair','Ullah','umaircentral123@gmail.com','scrypt:32768:8:1$0tw3QYmh0Utrfbab$73159ca26635ead311b2902aaedd280f4b1460f931052a40c6aa99c77a66a6914cd769dfd19c0c4646b26d38533a2de6ed1a8a12eb5961a5933e2c3190b6614f',1,'2026-04-17 11:24:52','2026-04-17 11:24:52','2026-04-18 05:14:09'),(3,2,'Testing','user','testinguser123@gmail.com','guest',1,NULL,'2026-04-17 15:24:29','2026-05-10 11:30:44'),(5,2,'Rizwan','saleem','rizwancentral@gmail.com','scrypt:32768:8:1$0C8yu7ktzmBgFDVv$9fa80e4481129548a617aa8c0019e6f0bb48f9ceeca8544809603118dc8640fd8802f1a6b9682b972de2a3dd61789e512bb9a15124e9018452fb56b1f926e294',1,'2026-04-28 15:16:02','2026-04-28 15:16:02','2026-04-28 15:16:02'),(6,2,'Muhammad','Khurram','saleemkhurram420@gmail.com','scrypt:32768:8:1$iPuY3R10og7qxvV3$e3d9684b5a68c8cef13200e8c9d7cd730c7d4c5579beb957874b6aaf878e59099ce3f511e4bcc454a89bb8d1acec0b5e4b7d76b66e307b47984d48dc5261d042',1,NULL,'2026-05-08 05:56:48','2026-05-11 14:26:06'),(7,2,'Asad','Iqbal','asadiqball877@gmail.com','scrypt:32768:8:1$lKkLb6GbMHDa0KWe$c3be46f0f87830f4ab38eda12699430f844170aef1bdfeb1f777a03655b373cf8e863bf01d4704eb9686d8213f1b65478295c666e04e8bd596d9de965c3601e9',1,'2026-05-11 14:29:21','2026-05-11 14:29:21','2026-05-11 14:29:21');
+INSERT INTO `users` VALUES (2,2,'Umair','Ullah','umaircentral123@gmail.com','scrypt:32768:8:1$0tw3QYmh0Utrfbab$73159ca26635ead311b2902aaedd280f4b1460f931052a40c6aa99c77a66a6914cd769dfd19c0c4646b26d38533a2de6ed1a8a12eb5961a5933e2c3190b6614f',1,'2026-04-17 11:24:52','2026-04-17 11:24:52','2026-04-18 05:14:09'),(3,2,'Testing','user','testinguser123@gmail.com','guest',1,NULL,'2026-04-17 15:24:29','2026-05-10 11:30:44'),(5,2,'Rizwan','saleem','rizwancentral@gmail.com','scrypt:32768:8:1$0C8yu7ktzmBgFDVv$9fa80e4481129548a617aa8c0019e6f0bb48f9ceeca8544809603118dc8640fd8802f1a6b9682b972de2a3dd61789e512bb9a15124e9018452fb56b1f926e294',1,'2026-04-28 15:16:02','2026-04-28 15:16:02','2026-04-28 15:16:02'),(6,2,'Muhammad','Khurram','saleemkhurram420@gmail.com','scrypt:32768:8:1$cYlMFbd1UkE3tBUL$4dd3b729fb631cc1eb5462707aa10266360423c0bdc5afc78ae9746a4c910ff00a0356bd0516f765a300d9eba09f696a5ac84f814c7513374e21126cd634a647',1,NULL,'2026-05-08 05:56:48','2026-05-22 07:46:20'),(7,2,'Asad','Iqbal','asadiqball877@gmail.com','scrypt:32768:8:1$lKkLb6GbMHDa0KWe$c3be46f0f87830f4ab38eda12699430f844170aef1bdfeb1f777a03655b373cf8e863bf01d4704eb9686d8213f1b65478295c666e04e8bd596d9de965c3601e9',1,'2026-05-11 14:29:21','2026-05-11 14:29:21','2026-05-11 14:29:21');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -591,7 +593,7 @@ CREATE TABLE `visitors` (
   `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`visitor_id`),
   UNIQUE KEY `session_id` (`session_id`),
-  KEY `user_id` (`user_id`),
+  KEY `idx_user` (`user_id`),
   CONSTRAINT `visitors_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -620,8 +622,9 @@ CREATE TABLE `wishlist` (
   PRIMARY KEY (`wishlist_id`),
   UNIQUE KEY `unique_wish` (`user_id`,`product_id`),
   KEY `product_id` (`product_id`),
+  KEY `idx_user` (`user_id`),
   CONSTRAINT `wishlist_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -647,4 +650,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-13 10:20:40
+-- Dump completed on 2026-05-24 14:13:39

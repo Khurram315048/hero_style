@@ -9,10 +9,9 @@ import MySQLdb.cursors
 
 
 
-
 @prod_bp.route('/smart_watches')
 def smart_watches():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     page=request.args.get('page',1,type=int)
     if page<1:
@@ -20,24 +19,32 @@ def smart_watches():
 
     per_page=10
     offset=(page - 1) * per_page
- 
-    cursor.execute(""" SELECT p.product_id,p.product_no,p.title,p.stock_quantity,
-            p.base_price,p.sale_price,p.status,c.name  AS category_name,
-            pd.short_description,pi.image_url,pi.alt_text,
-            COUNT(r.review_id) AS rating
+
+    cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
+        c.name AS category_name,
+        pd.short_description,
+        COUNT(DISTINCT r.review_id) AS rating,
+        (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+            FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+        ) AS all_images,
+        (SELECT image_url FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS image_url,
+        (SELECT alt_text FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS alt_text
         FROM products p
-        LEFT JOIN categories c  ON p.category_id=c.category_id
+        LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi  ON p.product_id=pi.product_id
         LEFT JOIN product_reviews r ON p.product_id=r.product_id
-        AND pi.is_active=1
-        WHERE p.status='active' AND p.category_id=1         
-        GROUP BY p.product_id,p.product_no,p.title,p.stock_quantity,
-                 p.base_price,p.sale_price,p.status,c.name,
-                 pd.short_description,pi.image_url,pi.alt_text
-        ORDER BY p.product_id ASC
-        LIMIT %s OFFSET %s
-    """,(per_page,offset))
+        WHERE p.status='active' AND p.category_id=1
+        GROUP BY p.product_id
+        ORDER BY RAND()
+        LIMIT %s OFFSET %s """,(per_page,offset))
+    
  
     products=cursor.fetchall()
 
@@ -53,7 +60,7 @@ def smart_watches():
 
 @prod_bp.route('/leather_watches')
 def leather_watches():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     page=request.args.get('page', 1, type=int)
     if page<1:
@@ -64,23 +71,30 @@ def leather_watches():
 
     
 
-    cursor.execute(""" SELECT p.product_id,p.product_no,p.title,
-            p.base_price,p.sale_price,p.status,c.name  AS category_name,
-            pd.short_description,pi.image_url,pi.alt_text,
-            COUNT(r.review_id) AS rating
+    cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
+        c.name AS category_name,
+        pd.short_description,
+        COUNT(DISTINCT r.review_id) AS rating,
+        (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+            FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+        ) AS all_images,
+        (SELECT image_url FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS image_url,
+        (SELECT alt_text FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS alt_text
         FROM products p
-        LEFT JOIN categories c  ON p.category_id=c.category_id
+        LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi  ON p.product_id=pi.product_id
         LEFT JOIN product_reviews r ON p.product_id=r.product_id
-        AND pi.is_active=1
-        WHERE p.status='active' AND p.category_id=3         
-        GROUP BY p.product_id,p.product_no,p.title,
-                 p.base_price,p.sale_price,p.status,c.name,
-                 pd.short_description,pi.image_url,pi.alt_text
-        ORDER BY p.product_id ASC
-        LIMIT %s OFFSET %s
-    """,(per_page,offset))
+        WHERE p.status='active' AND p.category_id=3
+        GROUP BY p.product_id
+        ORDER BY RAND()
+        LIMIT %s OFFSET %s """,(per_page,offset))
  
     products=cursor.fetchall()
 
@@ -95,7 +109,7 @@ def leather_watches():
 
 @prod_bp.route('/metal_watches')
 def metal_watches():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     page=request.args.get('page', 1, type=int)
     if page<1:
@@ -104,23 +118,30 @@ def metal_watches():
     per_page=10
     offset=(page - 1) * per_page
  
-    cursor.execute(""" SELECT p.product_id,p.product_no,p.title,
-            p.base_price,p.sale_price,p.status,c.name  AS category_name,
-            pd.short_description,pi.image_url,pi.alt_text,
-            COUNT(r.review_id) AS rating
+    cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
+        c.name AS category_name,
+        pd.short_description,
+        COUNT(DISTINCT r.review_id) AS rating,
+        (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+            FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+        ) AS all_images,
+        (SELECT image_url FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS image_url,
+        (SELECT alt_text FROM product_images
+            WHERE product_id=p.product_id AND is_active=1
+            ORDER BY image_id ASC LIMIT 1
+        ) AS alt_text
         FROM products p
-        LEFT JOIN categories c  ON p.category_id=c.category_id
+        LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi  ON p.product_id=pi.product_id
         LEFT JOIN product_reviews r ON p.product_id=r.product_id
-        AND pi.is_active=1
-        WHERE p.status='active' AND p.category_id=2         
-        GROUP BY p.product_id,p.product_no,p.title,
-                 p.base_price,p.sale_price,p.status,c.name,
-                 pd.short_description,pi.image_url,pi.alt_text
-        ORDER BY p.product_id ASC
-        LIMIT %s OFFSET %s
-    """,(per_page,offset))
+        WHERE p.status='active' AND p.category_id=2
+        GROUP BY p.product_id
+        ORDER BY RAND()
+        LIMIT %s OFFSET %s """,(per_page,offset))
  
     products=cursor.fetchall()
     cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
@@ -137,7 +158,7 @@ def metal_watches():
 
 @prod_bp.route('/all_products',methods=['GET'])
 def all_products():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
 
     filters=build_product_filter(request, exclude_category=4)
@@ -153,14 +174,25 @@ def all_products():
         f"""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
-            pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
+            pd.short_description,pd.long_description,
+            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+                FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+            ) AS all_images,
+            (SELECT image_url FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS image_url,
+            (SELECT alt_text FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS alt_text,
             pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
             pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
             COUNT(r.review_id) AS rating
         FROM products p
         LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1 
         LEFT JOIN product_reviews r ON p.product_id=r.product_id 
         WHERE {filters['where_str']}
         GROUP BY p.product_id
@@ -187,7 +219,7 @@ def all_products():
 
 @prod_bp.route('/all_earbuds',methods=['GET'])
 def all_earbuds():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     page=request.args.get('page', 1, type=int)
     if page<1:
@@ -199,22 +231,28 @@ def all_earbuds():
     cursor.execute("""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
-            pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
+            pd.short_description,pd.long_description,
+            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+                FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+            ) AS all_images,
+            (SELECT image_url FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS image_url,
+            (SELECT alt_text FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS alt_text,
             pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
             pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
-            COUNT(r.review_id) AS rating        
+            COUNT(DISTINCT r.review_id) AS rating        
         FROM products p
         LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi ON p.product_id=pi.product_id
-        LEFT JOIN product_reviews r ON p.product_id=r.product_id           
-        AND pi.is_active=1
+        LEFT JOIN product_reviews r ON p.product_id=r.product_id
         WHERE p.status='active' AND p.category_id=4
-        GROUP BY p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                 p.base_price,p.sale_price,p.status,c.name,
-                 pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
-                 pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                 pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
+        GROUP BY p.product_id
         ORDER BY RAND()
         LIMIT %s OFFSET %s
     """,(per_page,offset))
@@ -236,7 +274,8 @@ def all_earbuds():
 
 @prod_bp.route('/mix_products',methods=['GET'])
 def mix_products():
-    cursor=mysql.connection.cursor()
+    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    filters=build_product_filter(request)
     page=request.args.get('page', 1, type=int)
     if page<1:
         page=1
@@ -245,21 +284,36 @@ def mix_products():
     offset=(page - 1) * per_page
 
 
-    cursor.execute("""
+    cursor.execute(
+        f"""
         SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
             p.base_price,p.sale_price,p.status,c.name AS category_name,
-            pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
+            pd.short_description,pd.long_description,
+            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+                FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+            ) AS all_images,
+            (SELECT image_url FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS image_url,
+            (SELECT alt_text FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS alt_text,
             pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-            pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
+            pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
+            COUNT(r.review_id) AS rating
         FROM products p
         LEFT JOIN categories c ON p.category_id=c.category_id
         LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        LEFT JOIN product_images pi ON p.product_id=pi.product_id
-        AND pi.is_active=1
-        WHERE p.status='active'
-        ORDER BY RAND()
+        LEFT JOIN product_reviews r ON p.product_id=r.product_id 
+        WHERE {filters['where_str']}
+        GROUP BY p.product_id
+        ORDER BY {filters['order_clause']} 
         LIMIT %s OFFSET %s
-    """,(per_page,offset))
+    """,filters['params']+[per_page,offset])
+
     products=cursor.fetchall()
 
     cursor.execute("SELECT COUNT(*) AS total_count FROM products")
@@ -366,6 +420,13 @@ def product_page(slug):
     if not product:
         return render_template('404.htm'),404
 
+    cursor.execute("""
+        SELECT image_url, alt_text
+        FROM product_images
+        WHERE product_id = %s AND is_active = 1
+        ORDER BY image_id ASC
+    """, (product_id,))
+    product_images = cursor.fetchall()
     
     cursor.execute("""
         SELECT p.product_id,p.title,p.base_price,p.sale_price,p.category_id,
@@ -389,4 +450,4 @@ def product_page(slug):
     reviews=cursor.fetchall()
 
     cursor.close()
-    return render_template('product_page.htm',product=product,relateds=relateds,reviews=reviews)
+    return render_template('product_page.htm',product=product,relateds=relateds,reviews=reviews,product_images=product_images)

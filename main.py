@@ -68,24 +68,34 @@ def homepage():
     cursor=mysql.connection.cursor()
     
 
-    cursor.execute(""" 
-    SELECT p.product_id,p.product_no,p.title,
-           p.base_price,p.sale_price,p.status,c.name AS category_name,
-           pd.short_description,pi.image_url,pi.alt_text,
-           COUNT(r.review_id) AS rating
-    FROM products p
-    LEFT JOIN categories c ON p.category_id=c.category_id
-    LEFT JOIN product_details pd ON p.product_id=pd.product_id
-    LEFT JOIN product_images pi ON p.product_id=pi.product_id 
-    LEFT JOIN product_reviews r ON p.product_id=r.product_id
-    WHERE p.status='active' AND pi.is_active=1 
-    GROUP BY p.product_id,p.product_no,p.title,
-            p.base_price,p.sale_price,p.status,c.name,
-            pd.short_description,pi.image_url,pi.alt_text
-    ORDER BY RAND()
-    LIMIT 5
+    cursor.execute("""
+        SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
+            p.base_price,p.sale_price,p.status,c.name AS category_name,
+            pd.short_description,pd.long_description,
+            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
+                FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+            ) AS all_images,
+            (SELECT image_url FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS image_url,
+            (SELECT alt_text FROM product_images
+                WHERE product_id=p.product_id AND is_active=1
+                ORDER BY image_id ASC LIMIT 1
+            ) AS alt_text,
+            pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
+            pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
+            COUNT(DISTINCT r.review_id) AS rating        
+        FROM products p
+        LEFT JOIN categories c ON p.category_id=c.category_id
+        LEFT JOIN product_details pd ON p.product_id=pd.product_id
+        LEFT JOIN product_reviews r ON p.product_id=r.product_id
+        WHERE p.status='active' 
+        GROUP BY p.product_id
+        ORDER BY RAND()
+        LIMIT 5
     """)
- 
     products=cursor.fetchall()
     cursor.close()
  
