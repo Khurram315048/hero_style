@@ -1,6 +1,7 @@
 
 ```
 hero_watches
+├─ 404.htm
 ├─ admin
 │  ├─ admin_models.py
 │  ├─ admin_routes.py
@@ -23,10 +24,7 @@ hero_watches
 │  │  ├─ set_new_pass_admin.htm
 │  │  ├─ support_forms.htm
 │  │  └─ verify_admin_otp.htm
-│  ├─ __init__.py
-│  └─ __pycache__
-│     ├─ admin_routes.cpython-312.pyc
-│     └─ __init__.cpython-312.pyc
+│  └─ __init__.py
 ├─ auto_export_db.py
 ├─ categories
 │  ├─ categ_models.py
@@ -34,10 +32,7 @@ hero_watches
 │  ├─ views
 │  │  ├─ all_categories.htm
 │  │  └─ category_product.htm
-│  ├─ __init__.py
-│  └─ __pycache__
-│     ├─ categ_routes.cpython-312.pyc
-│     └─ __init__.cpython-312.pyc
+│  └─ __init__.py
 ├─ config.py
 ├─ main.py
 ├─ orders
@@ -47,10 +42,7 @@ hero_watches
 │  │  ├─ cart.htm
 │  │  ├─ checkout.htm
 │  │  └─ order_confirmed.htm
-│  ├─ __init__.py
-│  └─ __pycache__
-│     ├─ order_routes.cpython-312.pyc
-│     └─ __init__.cpython-312.pyc
+│  └─ __init__.py
 ├─ products
 │  ├─ pages
 │  │  ├─ all_earbuds.htm
@@ -62,10 +54,7 @@ hero_watches
 │  │  └─ smart_watches.htm
 │  ├─ prod_models.py
 │  ├─ prod_routes.py
-│  ├─ __init__.py
-│  └─ __pycache__
-│     ├─ prod_routes.cpython-312.pyc
-│     └─ __init__.cpython-312.pyc
+│  └─ __init__.py
 ├─ README.md
 ├─ static
 │  ├─ css
@@ -107,16 +96,43 @@ hero_watches
 │     │  └─ img6.PNG
 │     ├─ metal_watches
 │     │  ├─ img1m.PNG
+│     │  ├─ img1m_i.PNG
+│     │  ├─ img1m_ii.PNG
+│     │  ├─ img1m_iii.PNG
 │     │  ├─ img2m.PNG
+│     │  ├─ img2m_i.PNG
+│     │  ├─ img2m_ii.PNG
+│     │  ├─ img2m_iii.PNG
 │     │  ├─ img3m.PNG
+│     │  ├─ img3m_i.PNG
+│     │  ├─ img3m_ii.PNG
+│     │  ├─ img3m_iii.PNG
 │     │  ├─ img4m.PNG
+│     │  ├─ img4m_i.PNG
+│     │  ├─ img4m_ii.PNG
+│     │  ├─ img4m_iii.PNG
 │     │  └─ img5m.PNG
 │     ├─ smart_watches
 │     │  ├─ img1a.PNG
+│     │  ├─ img1a_i.PNG
+│     │  ├─ img1a_ii.PNG
+│     │  ├─ img1a_iii.PNG
 │     │  ├─ img2a.PNG
+│     │  ├─ img2a_i.PNG
+│     │  ├─ img2a_ii.PNG
+│     │  ├─ img2a_iii.PNG
 │     │  ├─ img3a.PNG
+│     │  ├─ img3a_i.PNG
+│     │  ├─ img3a_ii.PNG
+│     │  ├─ img3a_iii.PNG
 │     │  ├─ img4a.PNG
-│     │  └─ img5a.PNG
+│     │  ├─ img4a_i.PNG
+│     │  ├─ img4a_ii.PNG
+│     │  ├─ img4a_iii.PNG
+│     │  ├─ img5a.PNG
+│     │  ├─ img5a_i.PNG
+│     │  ├─ img5a_ii.PNG
+│     │  └─ img5a_iii.PNG
 │     └─ support_forms
 │        ├─ sample.PNG
 │        └─ tbl_pic.PNG
@@ -148,22 +164,11 @@ hero_watches
 │  │  └─ verify_otp.htm
 │  ├─ user_models.py
 │  ├─ user_routes.py
-│  ├─ __init__.py
-│  └─ __pycache__
-│     ├─ user_routes.cpython-312.pyc
-│     └─ __init__.cpython-312.pyc
-├─ utils
-│  ├─ auth.py
-│  ├─ db.py
-│  ├─ path_link.py
-│  ├─ product_filter.py
-│  └─ __pycache__
-│     ├─ auth.cpython-312.pyc
-│     ├─ db.cpython-312.pyc
-│     ├─ path_link.cpython-312.pyc
-│     └─ product_filter.cpython-312.pyc
-└─ __pycache__
-   ├─ config.cpython-312.pyc
-   └─ main.cpython-312.pyc
+│  └─ __init__.py
+└─ utils
+   ├─ auth.py
+   ├─ db.py
+   ├─ path_link.py
+   └─ product_filter.py
 
 ```

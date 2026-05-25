@@ -268,7 +268,7 @@
         
           <!--<div class="product-card" onclick="window.location='/products/{{ related.product_id }}'">-->
           <div class="product-card" onclick="window.location='/products/{{related.title | slugify }}-{{related.product_id }}'">
-            {% set imgs=product.all_images.split('|||') if related.all_images else [related.image_url] %}
+            {% set imgs=related.all_images.split('|||') if related.all_images else [related.image_url] %}
             <div class="card-image-wrap">
               <div class="card-slider" data-index="0">
       {% for img_url in imgs %}
@@ -280,7 +280,7 @@
       {% endfor %}
     </div>
 
-          {% if imgs|length > 1 %}
+    {% if imgs|length > 1 %}
     <button class="slide-arrow slide-prev"
             onclick="event.stopPropagation(); slideCard(this, -1)">&#8249;</button>
     <button class="slide-arrow slide-next"

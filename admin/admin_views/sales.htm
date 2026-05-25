@@ -178,6 +178,7 @@
                                     {% if order.pay_status != 'refunded' %}
                                     <form action="{{ url_for('admin.mark_refunded',order_id=order.order_id) }}" method="POST"
                                                 onsubmit="return confirm('Mark order {{ order.order_number }} as refunded?')">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-sm"
                                                         style="padding:4px 10px; font-size:12px; border-radius:6px; border:0.5px solid #e6a817; color:#996b00; text-decoration:none;">
                                                     Mark Refunded
