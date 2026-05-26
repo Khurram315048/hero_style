@@ -163,3 +163,54 @@
     .auth-card { grid-template-columns: 1fr; }
     .auth-visual { display: none; }
 }
+
+
+/* Password Requirements Styling */
+.password-requirements {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.requirement {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.requirement .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* When requirement is met */
+.requirement.met {
+    color: #28a745;
+}
+
+.requirement.met .icon {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+/* All requirements met - change border color */
+.password-requirements.all-met {
+    border-left-color: #28a745;
+    background-color: #f0f9f6;
+}

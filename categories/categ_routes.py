@@ -193,3 +193,5 @@ def edit_category(category_id):
     finally:
             cursor.close()    
             
+    return redirect(url_for('categories.all_categories'))        
+            

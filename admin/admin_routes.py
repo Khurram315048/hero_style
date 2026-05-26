@@ -5,6 +5,7 @@ import uuid
 import random, string
 from flask_mail import Message
 import math
+from utils.limiter import limiter
 from datetime import datetime,timedelta
 from admin import admin_bp
 from utils.db import mysql
@@ -29,6 +30,7 @@ def inject_admin():
 
 
 @admin_bp.route('/admin_login',methods=['GET','POST'])
+@limiter.limit("5 per 15 minutes")
 def admin_login():
     cursor=mysql.connection.cursor()
     try:

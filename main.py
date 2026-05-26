@@ -14,9 +14,11 @@ from categories import cat_bp
 from orders.order_routes import get_cart_count
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
+from utils.limiter import limiter
 
 app=Flask(__name__,static_folder='static',template_folder='templates')
 
+limiter.init_app(app)
 
 ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'pdf'}
 UPLOAD_FOLDER='static/uploads/support_forms'
@@ -61,6 +63,7 @@ def slugify_filter(text):
     text=re.sub(r'[^\w\s-]', '', text)
     text=re.sub(r'[\s_]+', '-', text)
     return text
+
 
 
 
@@ -153,6 +156,12 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('404.htm'), 500
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    flash('Too many login attempts.Please try again after 15 minutes.','danger')
+    return redirect(url_for('users.user_login')),429
 
 
 @app.context_processor

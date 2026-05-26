@@ -1,6 +1,7 @@
 from flask import render_template,request,flash,redirect,url_for,session
 import random, string
 from flask_mail import Message
+from utils.limiter import limiter
 from werkzeug.security import generate_password_hash,check_password_hash
 from utils.auth import login_required
 from datetime import datetime,timedelta
@@ -9,6 +10,7 @@ from utils.db import mysql
 
 
 @user_bp.route('/user_login',methods=['GET','POST'])
+@limiter.limit("6 per 15 minutes")
 def user_login():
     cursor=mysql.connection.cursor()
     try:
@@ -43,6 +45,7 @@ def user_login():
 
 
 @user_bp.route('/user_signup',methods=['GET','POST'])
+@limiter.limit("10 per hour")
 def user_signup():
     cursor=mysql.connection.cursor()
     try:
@@ -52,14 +55,28 @@ def user_signup():
             last_name=request.form.get('last_name')
             email=request.form.get('email')
             plain_password=request.form.get('password')
-            hashed_password=generate_password_hash(plain_password)
+            
 
+            if not plain_password or len(plain_password.strip())<8:
+                flash('Password Must be at least 8 characters long!','danger')
+                return redirect(url_for('users.user_signup'))
+            
+            if not any(char.isupper() for char in plain_password):
+                flash('Password must contain at least one uppercase letter!','danger')
+                return redirect(url_for('users.user_signup'))
+            
+            if not any(char.isdigit() for char in plain_password):
+                flash('Password must contain at least one number!','danger')
+                return redirect(url_for('users.user_signup'))
+            
+            hashed_password=generate_password_hash(plain_password)
             cursor.execute('SELECT email FROM users WHERE email=%s',(email,))
             user_exist=cursor.fetchone()
             if user_exist:
-                flash('Email Already Exist','success')
+                flash('Email Already Exist','danger')
                 return redirect(url_for('users.user_login'))
             
+           
             cursor.execute('''INSERT INTO users
                             (role_id,first_name,last_name,email,password_hash,last_login_at,created_at,updated_at)
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s)''',(2,first_name,last_name,email,
@@ -104,6 +121,7 @@ def user_options():
 
 
 @user_bp.route('/reset_password',methods=['GET','POST'])
+@limiter.limit("5 per hour")
 def reset_password():
     from main import mail 
     cursor=mysql.connection.cursor()
