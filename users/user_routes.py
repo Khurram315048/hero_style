@@ -27,7 +27,7 @@ def user_login():
                 return redirect(url_for('users.user_signup'))
 
             if not check_password_hash(user['password_hash'],password):
-                session['toast']='Password doesnot match!'
+                session['toast']='Password does not match!'
                 return redirect(url_for('users.user_login'))
 
             session['user_id']=user['user_id']

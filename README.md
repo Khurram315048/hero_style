@@ -56,6 +56,7 @@ hero_watches
 │  ├─ prod_routes.py
 │  └─ __init__.py
 ├─ README.md
+├─ requirements.txt
 ├─ static
 │  ├─ css
 │  │  ├─ admin_css
