@@ -113,13 +113,11 @@ def add_to_cart():
         if not product:
             return redirect(redirect_to)
         
-        try:
 
-            if product['stock_quantity'] < 1:
-                session['toast']=f"'{product['title']}' is out of stock."
-                return redirect(redirect_to)
-        finally:
-            cursor.close()    
+        if product['stock_quantity'] < 1:
+            session['toast']=f"'{product['title']}' is out of stock."
+            return redirect(redirect_to)
+          
 
         price=float(product['sale_price'] or product['base_price'])
 

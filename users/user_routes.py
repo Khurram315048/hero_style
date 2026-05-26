@@ -400,12 +400,10 @@ def cancel_order(order_id):
                         WHERE order_id=%s AND user_id=%s AND is_deleted=0''', 
                     (order_id,user_id))
         order=cursor.fetchone()
-        try:
-            if not order:
-                session['toast']='Order not found or already deleted!'
-                return redirect(url_for('users.user_orders'))
-        finally:
-            cursor.close()    
+        if not order:
+            session['toast']='Order not found or already deleted!'
+            return redirect(url_for('users.user_orders'))
+          
 
         current_status=order['status']
         if current_status != 'pending':

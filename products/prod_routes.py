@@ -441,7 +441,8 @@ def product_page(slug):
                 p.base_price,p.sale_price,p.status,c.name AS category_name,
                 pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
                 pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
+                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
+                COUNT(r.review_id) AS total_rating
             FROM products p
             LEFT JOIN categories c ON p.category_id=c.category_id
             LEFT JOIN product_details pd ON p.product_id=pd.product_id
