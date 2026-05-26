@@ -116,12 +116,10 @@ def reset_password():
                 email=request.form.get('email', '').strip()
                 cursor.execute('SELECT email FROM users WHERE email=%s AND is_active=1',(email,))
                 user=cursor.fetchone()
-                try:
-                    if not user: 
-                        session['toast']='Email not found!'
-                        return redirect(url_for('users.user_signup'))
-                finally:
-                    cursor.close()
+                
+                if not user: 
+                    session['toast']='Email not found!'
+                    return redirect(url_for('users.user_signup'))
 
                 otp=''.join(random.choices(string.digits,k=6))
                 expires=datetime.now() + timedelta(minutes=10)
@@ -170,13 +168,10 @@ def verify_otp():
                     AND expires_at > NOW()''',
                     (email,otp_entered))
                 record=cursor.fetchone()
-                try:
-                    if not record:
-                        session['toast']='Invalid or expired OTP!'
-                        return redirect(url_for('users.verify_otp'))
-                    
-                finally:
-                    cursor.close()    
+              
+                if not record:
+                    session['toast']='Invalid or expired OTP!'
+                    return redirect(url_for('users.verify_otp'))  
 
                 session['otp_verified']=True
                 cursor.execute('UPDATE password_reset_otps SET is_used=1 WHERE email=%s',(email,))
@@ -196,14 +191,10 @@ def set_new_password():
 
         email=session.get('reset_email')
         verified=session.get('otp_verified')
-        try:
-
-            if not email or not verified:
-                return redirect(url_for('users.reset_password'))
-        finally:
-            cursor.close()    
-
-    
+       
+        if not email or not verified:
+            return redirect(url_for('users.reset_password'))
+         
         if request.method=='POST':
             new_password=request.form.get('new_password','').strip()
             confirm=request.form.get('confirm_password','').strip()
@@ -368,12 +359,10 @@ def order_details(order_id):
             WHERE o.order_id=%s AND o.user_id=%s AND is_deleted=0
         ''', (order_id,user_id))
         order=cursor.fetchone()
-        try:
-            if not order:
-                session['toast']='Order not found!'
-                return redirect(url_for('users.user_orders'))
-        finally:
-            cursor.close()    
+     
+        if not order:
+            session['toast']='Order not found!'
+            return redirect(url_for('users.user_orders'))   
 
         cursor.execute('''
             SELECT od.order_detail_id,od.quantity,od.subtotal,

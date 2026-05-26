@@ -14,7 +14,7 @@ from werkzeug.utils import secure_filename
 @cat_bp.route('/all_categories')
 @admin_required
 def all_categories():
-    cursor = mysql.connection.cursor()
+    cursor=mysql.connection.cursor()
     try:
         admin_id=session.get('admin_id')
         cursor.execute('SELECT first_name,last_name,username FROM admins WHERE admin_id=%s',(admin_id,))
@@ -167,25 +167,20 @@ def edit_category(category_id):
 
             cursor.execute('SELECT * FROM categories WHERE category_id=%s',(category_id,))
             category=cursor.fetchone()
-            try:
 
-                if not category:
-                    session['admin_toast']='Category doesnot exist!'
-                    return redirect(url_for('categories.all_categories'))
-            finally:    
-                cursor.close()
-                
+            if not category:
+                session['admin_toast']='Category doesnot exist!'
+                return redirect(url_for('categories.all_categories'))
+            
 
             cursor.execute('SELECT category_id FROM categories WHERE name=%s AND category_id !=%s',
                 (name,category_id))
             name_exists=cursor.fetchone()
-            try:
 
-                if name_exists:
-                    session['admin_toast']=f'{name} category already exist'
-                    return redirect(url_for('categories.all_categories'))
-            finally:    
-                cursor.close()
+            if name_exists:
+                session['admin_toast']=f'{name} category already exist'
+                return redirect(url_for('categories.all_categories'))
+           
                 
 
             cursor.execute(''' UPDATE categories SET name=%s,description=%s,is_active=%s

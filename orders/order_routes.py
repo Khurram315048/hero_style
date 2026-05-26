@@ -66,7 +66,8 @@ def get_cart_items():
                 'short_description':row['short_description'] or ''
             })
             grand_total += price * qty
-            return items,grand_total
+            
+        return items,grand_total
     finally:
         cursor.close()
        
