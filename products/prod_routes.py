@@ -3,6 +3,7 @@ from products import prod_bp
 from utils.db import mysql
 from utils.path_link import make_links
 import math
+import random
 import re
 from utils.product_filter import build_product_filter
 import MySQLdb.cursors
@@ -43,11 +44,12 @@ def smart_watches():
             LEFT JOIN product_reviews r ON p.product_id=r.product_id
             WHERE p.status='active' AND p.category_id=1
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT %s OFFSET %s """,(per_page,offset))
         
     
-        products=cursor.fetchall()
+        products=list(cursor.fetchall())
+        random.shuffle(products)
 
         cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
                 FROM products p
@@ -100,10 +102,11 @@ def leather_watches():
             LEFT JOIN product_reviews r ON p.product_id=r.product_id
             WHERE p.status='active' AND p.category_id=3
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT %s OFFSET %s """,(per_page,offset))
     
-        products=cursor.fetchall()
+        products=list(cursor.fetchall())
+        random.shuffle(products)
 
         cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
                 FROM products p
@@ -153,10 +156,12 @@ def metal_watches():
             LEFT JOIN product_reviews r ON p.product_id=r.product_id
             WHERE p.status='active' AND p.category_id=2
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT %s OFFSET %s """,(per_page,offset))
     
-        products=cursor.fetchall()
+        products=list(cursor.fetchall())
+        random.shuffle(products)
+
         cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
                 FROM products p
                 WHERE p.category_id=2 AND p.status='active'""")
@@ -272,10 +277,11 @@ def all_earbuds():
             LEFT JOIN product_reviews r ON p.product_id=r.product_id
             WHERE p.status='active' AND p.category_id=4
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT %s OFFSET %s
         """,(per_page,offset))
-        products=cursor.fetchall()
+        products=list(cursor.fetchall())
+        random.shuffle(products)
 
         if not products:
             return render_template('404.htm'), 404
@@ -460,17 +466,6 @@ def product_page(slug):
         """,(product_id,))
         product_images=cursor.fetchall()
     
-        # cursor.execute("""
-        #     SELECT p.product_id,p.title,p.base_price,p.sale_price,p.category_id,
-        #         pi.image_url,pi.alt_text
-        #     FROM products p
-        #     LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
-        #     WHERE p.status='active' AND p.category_id=%s AND p.product_id != %s
-        #     GROUP BY p.product_id
-        #     ORDER BY RAND()
-        #     LIMIT 4
-        # """, (product['category_id'],product['product_id']))
-        # relateds=cursor.fetchall()
         cursor.execute("""
             SELECT p.product_id, p.title, p.base_price, p.sale_price, p.category_id,
                 pi.image_url, pi.alt_text,
@@ -482,10 +477,11 @@ def product_page(slug):
             LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
             WHERE p.status='active' AND p.category_id=%s AND p.product_id != %s
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT 4
             """,(product['category_id'],product['product_id']))
-        relateds=cursor.fetchall()
+        relateds=list(cursor.fetchall())
+        random.shuffle(relateds)
 
         cursor.execute("""
             SELECT us.first_name,us.last_name,r.user_id,r.product_id,

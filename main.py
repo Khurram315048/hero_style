@@ -4,6 +4,7 @@ from config import *
 from datetime import timedelta
 import os
 import re
+import random
 from werkzeug.utils import secure_filename
 from products import prod_bp
 from orders import order_bp
@@ -94,10 +95,12 @@ def homepage():
             LEFT JOIN product_reviews r ON p.product_id=r.product_id
             WHERE p.status='active' 
             GROUP BY p.product_id
-            ORDER BY RAND()
+            ORDER BY p.product_id
             LIMIT 5
         """)
-        products=cursor.fetchall()
+        products=list(cursor.fetchall())
+        random.shuffle(products)
+        
         return render_template('homepage.htm',products=products)
     finally:
         cursor.close()
