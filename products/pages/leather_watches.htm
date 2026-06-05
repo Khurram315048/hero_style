@@ -233,7 +233,92 @@
       </div>
       {% endfor %}
     {% endif %}
-    <div class="pagination">
+
+
+    <div class="pagination-wrapper">
+  <nav class="pagination" aria-label="Page navigation">
+    
+    <!-- Previous Button -->
+    {% if page > 1 %}
+      <a href="{{ url_for('products.leather_watches', page=page - 1) }}" 
+         class="pagination-btn pagination-prev" 
+         aria-label="Previous page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Previous
+      </a>
+    {% else %}
+      <button class="pagination-btn pagination-prev" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Previous
+      </button>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    <div class="pagination-pages">
+      {% if total_pages <= 7 %}
+        <!-- Show all pages if 7 or less -->
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == page %}
+            <span class="pagination-number active" aria-current="page">{{ p }}</span>
+          {% else %}
+            <a href="{{ url_for('products.leather_watches', page=p) }}" 
+               class="pagination-number">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <!-- Smart pagination with ellipsis for many pages -->
+        {% if page > 3 %}
+          <a href="{{ url_for('products.leather_watches', page=1) }}" class="pagination-number">1</a>
+          <span class="pagination-ellipsis">...</span>
+        {% endif %}
+
+        {% for p in range(max(1, page - 1), min(total_pages + 1, page + 2)) %}
+          {% if p == page %}
+            <span class="pagination-number active" aria-current="page">{{ p }}</span>
+          {% else %}
+            <a href="{{ url_for('products.leather_watches', page=p) }}" 
+               class="pagination-number">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages - 2 %}
+          <span class="pagination-ellipsis">...</span>
+          <a href="{{ url_for('products.leather_watches', page=total_pages) }}" 
+             class="pagination-number">{{ total_pages }}</a>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Next Button -->
+    {% if page < total_pages %}
+      <a href="{{ url_for('products.leather_watches', page=page + 1) }}" 
+         class="pagination-btn pagination-next" 
+         aria-label="Next page">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </a>
+    {% else %}
+      <button class="pagination-btn pagination-next" disabled>
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    {% endif %}
+  </nav>
+
+  <!-- Info text -->
+  <p class="pagination-info">
+    Page <strong>{{ page }}</strong> of <strong>{{ total_pages if total_pages > 0 else 1 }}</strong>
+  </p>
+</div>
+    <!--<div class="pagination">
                     {% if page > 1 %}
                         <a href="{{ url_for('products.leather_watches',page=page - 1) }}">« Previous</a>
                     {% else %}
@@ -247,7 +332,7 @@
                         <span class="disabled">Next »</span>
                     {% endif %}
 
-                </div>
+                </div>-->
 
   </div>
 </div>
