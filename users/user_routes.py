@@ -1,666 +1,313 @@
-from flask import render_template,request,flash,redirect,url_for,session
-import random, string
-from flask_mail import Message
-from utils.limiter import limiter
-from werkzeug.security import generate_password_hash,check_password_hash
-from utils.auth import login_required
-from datetime import datetime,timedelta
+from flask import flash, redirect, render_template, request, session, url_for
+
 from users import user_bp
-from utils.db import mysql
+from users.user_models import (
+    cancel_return_request, cancel_user_order, delete_product_review,
+    get_dashboard_data, get_my_cancellations, get_my_returns, get_my_reviews,
+    get_order_details, get_user_options, get_user_orders, get_user_profile,
+    get_wishlist, login_user, register_user, remove_wishlist_item,
+    send_reset_otp, submit_item_return, submit_order_return,
+    submit_product_review, update_password, update_product_review,
+    update_user_profile, verify_reset_otp
+)
+from utils.auth import login_required
+from utils.limiter import limiter
 
 
-@user_bp.route('/user_login',methods=['GET','POST'])
+# ─── Auth ─────────────────────────────────────────────────────────────────────
+
+@user_bp.route('/user_login', methods=['GET', 'POST'])
 @limiter.limit("6 per 15 minutes")
 def user_login():
-    cursor=mysql.connection.cursor()
-    try:
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = login_user(email, password)
 
-        if request.method=='POST':
-            email=request.form.get('email')
-            password=request.form.get('password')
-            
-            cursor.execute('SELECT * FROM users WHERE email=%s AND is_active=1',(email,))
-            user=cursor.fetchone()
+        if result is None:
+            flash('Account does not exist', 'danger')
+            return redirect(url_for('users.user_signup'))
+        if result is False:
+            session['toast'] = 'Password does not match!'
+            return redirect(url_for('users.user_login'))
 
-            if not user:
-                flash('Account does not exist','danger')
-                return redirect(url_for('users.user_signup'))
+        session['user_id'] = result['user_id']
+        session['role'] = 'user'
+        session.permanent = True if request.form.get('remember_me') else False
+        session['toast'] = 'Welcome back!'
+        return redirect(url_for('users.user_dashboard'))
 
-            if not check_password_hash(user['password_hash'],password):
-                session['toast']='Password does not match!'
-                return redirect(url_for('users.user_login'))
-
-            session['user_id']=user['user_id']
-            session['role']='user'
-            session.permanent=True if request.form.get('remember_me') else False
-            session['toast']='Welcome back!'
-            return redirect(url_for('users.user_dashboard'))
-        return render_template('user_login.htm')
-    finally:
-        cursor.close()    
-
-    
+    return render_template('user_login.htm')
 
 
-
-
-@user_bp.route('/user_signup',methods=['GET','POST'])
+@user_bp.route('/user_signup', methods=['GET', 'POST'])
 @limiter.limit("10 per hour")
 def user_signup():
-    cursor=mysql.connection.cursor()
-    try:
-
-        if request.method=='POST':
-            first_name=request.form.get('first_name')
-            last_name=request.form.get('last_name')
-            email=request.form.get('email')
-            plain_password=request.form.get('password')
-            
-
-            if not plain_password or len(plain_password.strip())<8:
-                flash('Password Must be at least 8 characters long!','danger')
-                return redirect(url_for('users.user_signup'))
-            
-            if not any(char.isupper() for char in plain_password):
-                flash('Password must contain at least one uppercase letter!','danger')
-                return redirect(url_for('users.user_signup'))
-            
-            if not any(char.isdigit() for char in plain_password):
-                flash('Password must contain at least one number!','danger')
-                return redirect(url_for('users.user_signup'))
-            
-            hashed_password=generate_password_hash(plain_password)
-            cursor.execute('SELECT email FROM users WHERE email=%s',(email,))
-            user_exist=cursor.fetchone()
-            if user_exist:
-                flash('Email Already Exist','danger')
-                return redirect(url_for('users.user_login'))
-            
-           
-            cursor.execute('''INSERT INTO users
-                            (role_id,first_name,last_name,email,password_hash,last_login_at,created_at,updated_at)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)''',(2,first_name,last_name,email,
-                                                    hashed_password,datetime.now(),datetime.now(),datetime.now()))
-            mysql.connection.commit()
-      
-            flash('Registeration Successfull','success')
+    if request.method == 'POST':
+        status, msg = register_user(
+            request.form.get('first_name'),
+            request.form.get('last_name'),
+            request.form.get('email'),
+            request.form.get('password')
+        )
+        if status == 'weak_password':
+            flash(msg, 'danger')
+            return redirect(url_for('users.user_signup'))
+        if status == 'email_exists':
+            flash('Email Already Exist', 'danger')
             return redirect(url_for('users.user_login'))
-        
-        return render_template('user_signup.htm')
-    finally:
-        cursor.close()    
-    
-   
 
+        flash('Registeration Successfull', 'success')
+        return redirect(url_for('users.user_login'))
+
+    return render_template('user_signup.htm')
 
 
 @user_bp.route('/logout')
 def logout():
     session.clear()
-
-    session['toast']='You have been logged out.'
+    session['toast'] = 'You have been logged out.'
     return redirect(url_for('homepage'))
 
 
-@user_bp.route('/user_options',methods=['GET','POST'])
-def user_options():
-    cursor=mysql.connection.cursor()
-    try:
+# ─── Password Reset ───────────────────────────────────────────────────────────
 
-        user_id=session.get('user_id')
-        cursor.execute(
-            "SELECT email,CONCAT(first_name,' ',last_name) AS username FROM users WHERE user_id=%s",
-            (user_id,)
-        )
-        user=cursor.fetchone()
-        return render_template('user_options.htm',user=user)
-    finally:    
-        cursor.close()
-
-    
-
-
-@user_bp.route('/reset_password',methods=['GET','POST'])
+@user_bp.route('/reset_password', methods=['GET', 'POST'])
 @limiter.limit("5 per hour")
 def reset_password():
-    from main import mail 
-    cursor=mysql.connection.cursor()
-    try:
+    if request.method == 'POST' and request.form.get('step') == 'send_otp':
+        from main import mail
+        email = request.form.get('email', '').strip()
+        sent = send_reset_otp(email, mail)
+        if not sent:
+            session['toast'] = 'Email not found!'
+            return redirect(url_for('users.user_signup'))
+        session['reset_email'] = email
+        session['toast'] = 'OTP sent to your email!'
+        return redirect(url_for('users.verify_otp'))
 
-        if request.method=='POST':
-            step=request.form.get('step')
-
-            if step=='send_otp':
-                email=request.form.get('email', '').strip()
-                cursor.execute('SELECT email FROM users WHERE email=%s AND is_active=1',(email,))
-                user=cursor.fetchone()
-                
-                if not user: 
-                    session['toast']='Email not found!'
-                    return redirect(url_for('users.user_signup'))
-
-                otp=''.join(random.choices(string.digits,k=6))
-                expires=datetime.now() + timedelta(minutes=10)
-
-                cursor.execute('DELETE FROM password_reset_otps WHERE email=%s',(email,))
-                cursor.execute(
-                    'INSERT INTO password_reset_otps(email,otp,expires_at) VALUES(%s,%s,%s)',
-                    (email,otp,expires))
-                mysql.connection.commit()
-
-                msg=Message(
-                    subject='Hero Style — Password Reset OTP',
-                    recipients=[email],
-                    body=f"""Your OTP for password reset is: {otp}
-                                This code expires in 10 minutes.
-                                If you did not request this, ignore this email.
-                                — Hero Style Team Developed By Muhammad Khurram""",)
-                mail.send(msg)
-                session['reset_email']=email
-                session['toast']='OTP sent to your email!'
-                return redirect(url_for('users.verify_otp'))
-        return render_template('reset_password.htm')    
-    finally:
-        cursor.close()        
-
-    
+    return render_template('reset_password.htm')
 
 
-
-@user_bp.route('/verify_otp',methods=['GET','POST'])
+@user_bp.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
-    from main import mail
-    cursor=mysql.connection.cursor()
-    try:
-        email=session.get('reset_email')
-        if not email:
-            return redirect(url_for('users.reset_password'))
+    email = session.get('reset_email')
+    if not email:
+        return redirect(url_for('users.reset_password'))
 
-        if request.method=='POST':
-            step=request.form.get('step')
+    if request.method == 'POST' and request.form.get('step') == 'verify':
+        # BUG FIX: removed unused 'from main import mail' that was here
+        otp_entered = request.form.get('otp', '').strip()
+        if not verify_reset_otp(email, otp_entered):
+            session['toast'] = 'Invalid or expired OTP!'
+            return redirect(url_for('users.verify_otp'))
+        session['otp_verified'] = True
+        return redirect(url_for('users.set_new_password'))
 
-            if step=='verify':
-                otp_entered=request.form.get('otp','').strip()
-                cursor.execute('''SELECT id FROM password_reset_otps 
-                    WHERE email=%s AND otp=%s AND is_used=0 
-                    AND expires_at > NOW()''',
-                    (email,otp_entered))
-                record=cursor.fetchone()
-              
-                if not record:
-                    session['toast']='Invalid or expired OTP!'
-                    return redirect(url_for('users.verify_otp'))  
-
-                session['otp_verified']=True
-                cursor.execute('UPDATE password_reset_otps SET is_used=1 WHERE email=%s',(email,))
-                mysql.connection.commit()
-                return redirect(url_for('users.set_new_password'))
-        return render_template('verify_otp.htm',email=email)
-    finally:
-        cursor.close()        
-
-    
+    return render_template('verify_otp.htm', email=email)
 
 
-@user_bp.route('/set_new_password',methods=['GET','POST'])
+@user_bp.route('/set_new_password', methods=['GET', 'POST'])
 def set_new_password():
-    cursor=mysql.connection.cursor()
-    try:
+    email = session.get('reset_email')
+    verified = session.get('otp_verified')
+    if not email or not verified:
+        return redirect(url_for('users.reset_password'))
 
-        email=session.get('reset_email')
-        verified=session.get('otp_verified')
-       
-        if not email or not verified:
-            return redirect(url_for('users.reset_password'))
-         
-        if request.method=='POST':
-            new_password=request.form.get('new_password','').strip()
-            confirm=request.form.get('confirm_password','').strip()
+    if request.method == 'POST':
+        result = update_password(
+            email,
+            request.form.get('new_password', '').strip(),
+            request.form.get('confirm_password', '').strip()
+        )
+        if result == 'mismatch':
+            session['toast'] = 'Passwords do not match!'
+            return redirect(url_for('users.set_new_password'))
+        if result == 'too_short':
+            session['toast'] = 'Password must be at least 8 characters!'
+            return redirect(url_for('users.set_new_password'))
 
-            if new_password != confirm:
-                session['toast']='Passwords do not match!'
-                return redirect(url_for('users.set_new_password'))
+        session.pop('reset_email', None)
+        session.pop('otp_verified', None)
+        session['toast'] = 'Password updated successfully!'
+        return redirect(url_for('users.user_login'))
 
-            if len(new_password) < 8:
-                session['toast']='Password must be at least 8 characters!'
-                return redirect(url_for('users.set_new_password'))
-
-            hashed=generate_password_hash(new_password)
-            cursor.execute('UPDATE users SET password_hash=%s WHERE email=%s AND is_active=1',(hashed,email))
-            mysql.connection.commit()
-            session.pop('reset_email',None)
-            session.pop('otp_verified',None)
-            session['toast']='Password updated successfully!'
-            return redirect(url_for('users.user_login'))
-        return render_template('set_new_password.htm')
-    finally:
-        cursor.close()
-       
-   
+    return render_template('set_new_password.htm')
 
 
-@user_bp.route('/user_dashboard',methods=['GET','POST'])
+# ─── User Options & Profile ───────────────────────────────────────────────────
+
+@user_bp.route('/user_options', methods=['GET', 'POST'])
+@login_required  # BUG FIX: missing decorator added
+def user_options():
+    user = get_user_options(session.get('user_id'))
+    return render_template('user_options.htm', user=user)
+
+
+@user_bp.route('/user_dashboard', methods=['GET', 'POST'])
 @login_required
 def user_dashboard():
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-
-        cursor.execute('''
-            SELECT u.*,COUNT(o.order_id) AS total_orders,
-                MAX(o.order_id) AS latest_order_id
-            FROM users u
-            LEFT JOIN orders o ON u.user_id=o.user_id AND o.is_deleted=0
-            WHERE u.user_id=%s
-            GROUP BY u.user_id
-        ''', (user_id,))
-        user_exist=cursor.fetchone()
-
-        latest_order=None
-        if user_exist and user_exist['latest_order_id']:
-            cursor.execute('''
-                SELECT order_number,status,total_amount,ordered_at
-                FROM orders
-                WHERE order_id=%s
-            ''', (user_exist['latest_order_id'],))
-            latest_order=cursor.fetchone()
-
-        return render_template('user_dashboard.htm',user_exist=user_exist,latest_order=latest_order)    
-
-    finally:
-        cursor.close()        
-        
-    
+    user_exist, latest_order = get_dashboard_data(session.get('user_id'))
+    return render_template('user_dashboard.htm', user_exist=user_exist, latest_order=latest_order)
 
 
-
-@user_bp.route('/user_profile',methods=['GET','POST'])
+@user_bp.route('/user_profile', methods=['GET', 'POST'])
 @login_required
 def user_profile():
-    cursor=mysql.connection.cursor()
-    try:
+    user_id = session.get('user_id')
+    if request.method == 'POST':
+        update_user_profile(
+            user_id,
+            request.form.get('first_name'),
+            request.form.get('last_name'),
+            request.form.get('email')
+        )
+        session['toast'] = 'Profile Updated Successfully!'
+        return redirect(url_for('users.user_profile'))
 
-        user_id=session.get('user_id')
-        cursor.execute('SELECT * FROM users WHERE user_id=%s',(user_id,))
-        user_details=cursor.fetchone()
-        if request.method=='POST':
-            first_name=request.form.get('first_name')
-            last_name=request.form.get('last_name')
-            email=request.form.get('email')
-            cursor.execute('''UPDATE users SET first_name=%s,last_name=%s,email=%s
-                        WHERE user_id=%s AND is_active=%s''',(first_name,last_name,email,user_id,1))
-            mysql.connection.commit()
-            session['toast']='Profile Updated Successfully!'
-            return redirect(url_for('users.user_profile'))
-        
-        return render_template('user_profile.htm',user_details=user_details)
-    finally:
-        cursor.close()    
-
-    
+    user_details = get_user_profile(user_id)
+    return render_template('user_profile.htm', user_details=user_details)
 
 
+# ─── Wishlist ─────────────────────────────────────────────────────────────────
 
-@user_bp.route('/user_wishlist',methods=['GET','POST'])
+@user_bp.route('/user_wishlist', methods=['GET', 'POST'])
 @login_required
 def user_wishlist():
-    cursor=mysql.connection.cursor()
-    try:
-        id=session.get('user_id')
-        cursor.execute('''SELECT p.*,pi.image_url,pi.alt_text
-            FROM products p 
-            JOIN wishlist w ON p.product_id=w.product_id 
-            JOIN product_images pi ON p.product_id=pi.product_id           
-            WHERE w.user_id=%s
-        ''',(id,))
-        products=cursor.fetchall()
-        return render_template('user_wishlist.htm',products=products)
+    products = get_wishlist(session.get('user_id'))
+    return render_template('user_wishlist.htm', products=products)
 
-    finally:
-        cursor.close()
 
-    
-
-@user_bp.route('/remove_from_the_list',methods=['POST'])
+@user_bp.route('/remove_from_the_list', methods=['POST'])
 @login_required
 def remove_from_the_list():
-    cursor=mysql.connection.cursor()
-    try:
-        user_id=session.get('user_id')
-        product_id=request.form.get('product_id')
-        redirect_to=request.form.get('redirect_to',url_for('users.user_wishlist'))
-        if request.method=='POST':
-            cursor.execute('DELETE FROM wishlist WHERE product_id=%s AND user_id=%s',(product_id,user_id))
-            mysql.connection.commit()
-            session['toast']='Item removed from wishlist!'
-            return redirect(redirect_to)
-    finally:
-        cursor.close()    
+    # BUG FIX: removed redundant if request.method=='POST' (route is POST-only)
+    remove_wishlist_item(session.get('user_id'), request.form.get('product_id'))
+    session['toast'] = 'Item removed from wishlist!'
+    return redirect(request.form.get('redirect_to', url_for('users.user_wishlist')))
 
 
+# ─── Orders ───────────────────────────────────────────────────────────────────
 
 @user_bp.route('/user_orders')
 @login_required
 def user_orders():
-    cursor=mysql.connection.cursor()
-    try:
-        user_id=session.get('user_id')
-        cursor.execute('''
-            SELECT o.*,r.status as return_status 
-            FROM orders o
-            LEFT JOIN order_returns r ON o.order_id=r.order_id
-            WHERE o.user_id=%s
-            ORDER BY o.ordered_at DESC
-        ''',(user_id,))
-        orders=cursor.fetchall()
-        return render_template('user_orders.htm',orders=orders)
-    finally:
-        cursor.close()
- 
-    
+    orders = get_user_orders(session.get('user_id'))
+    return render_template('user_orders.htm', orders=orders)
 
 
-
-@user_bp.route('/order_details/<int:order_id>',methods=['GET'])
+@user_bp.route('/order_details/<int:order_id>', methods=['GET'])
 @login_required
 def order_details(order_id):
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-        
-        cursor.execute('''
-            SELECT o.*, r.status AS return_status,r.reason AS return_reason
-            FROM orders o
-            LEFT JOIN order_returns r ON o.order_id=r.order_id
-            WHERE o.order_id=%s AND o.user_id=%s AND is_deleted=0
-        ''', (order_id,user_id))
-        order=cursor.fetchone()
-     
-        if not order:
-            session['toast']='Order not found!'
-            return redirect(url_for('users.user_orders'))   
-
-        cursor.execute('''
-            SELECT od.order_detail_id,od.quantity,od.subtotal,
-                p.title,p.product_id,
-                pi.image_url,
-                ir.status AS item_return_status
-            FROM order_details od
-            JOIN products p ON p.product_id=od.product_id
-            JOIN product_images pi ON pi.product_id=od.product_id 
-            LEFT JOIN order_item_returns ir ON ir.order_detail_id=od.order_detail_id
-            WHERE od.order_id=%s AND pi.is_active=1
-        ''', (order_id,))
-        order_items=cursor.fetchall()
-
-        cursor.execute('''
-            SELECT payment_method,amount,status
-            FROM order_payments WHERE order_id=%s
-        ''',(order_id,))
-        payment=cursor.fetchone()
-        return render_template('order_details.htm',order=order,order_items=order_items,payment=payment)
-    finally:
-        cursor.close()
-
-    
+    result = get_order_details(session.get('user_id'), order_id)
+    if not result:
+        session['toast'] = 'Order not found!'
+        return redirect(url_for('users.user_orders'))
+    order, order_items, payment = result
+    return render_template('order_details.htm', order=order, order_items=order_items, payment=payment)
 
 
-@user_bp.route('/cancel_order/<int:order_id>',methods=['POST'])
+@user_bp.route('/cancel_order/<int:order_id>', methods=['POST'])
 @login_required
 def cancel_order(order_id):
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-        cursor.execute('''SELECT status FROM orders 
-                        WHERE order_id=%s AND user_id=%s AND is_deleted=0''', 
-                    (order_id,user_id))
-        order=cursor.fetchone()
-        if not order:
-            session['toast']='Order not found or already deleted!'
-            return redirect(url_for('users.user_orders'))
-          
-
-        current_status=order['status']
-        if current_status != 'pending':
-            cursor.close()
-            session['toast']=f'Cannot cancel an order that is already {current_status}!'
-            return redirect(url_for('users.user_orders'))
-
-        cursor.execute('''UPDATE orders 
-                        SET status='cancelled',updated_at=%s,is_cancelled=1,cancelled_at=%s 
-                        WHERE order_id=%s AND user_id=%s AND is_deleted=0''',
-                    (datetime.now(),datetime.now(),order_id,user_id))
-        cursor.execute("""UPDATE products p
-            JOIN order_details od ON p.product_id=od.product_id
-            SET p.stock_quantity=p.stock_quantity + od.quantity,
-            p.status=CASE WHEN p.status='draft' THEN 'active' ELSE p.status END
-            WHERE od.order_id=%s
-        """, (order_id,))
-        mysql.connection.commit()
-        session['toast']='Order has been cancelled successfully!'
-        return redirect(url_for('users.user_orders'))
-    finally:
-        cursor.close()
+    status, val = cancel_user_order(session.get('user_id'), order_id)
+    if status == 'not_found':
+        session['toast'] = 'Order not found or already deleted!'
+    elif status == 'not_pending':
+        session['toast'] = f'Cannot cancel an order that is already {val}!'
+    else:
+        session['toast'] = 'Order has been cancelled successfully!'
+    return redirect(url_for('users.user_orders'))
 
 
-@user_bp.route('/submit_review/<int:product_id>',methods=['GET','POST'])
+# ─── Reviews ──────────────────────────────────────────────────────────────────
+
+@user_bp.route('/submit_review/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def submit_review(product_id):
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-        rating=request.form.get('rating')
-        comment=request.form.get('comment')
-
-        if not rating or not comment:
-            session['toast']='Please provide both a rating and a comment.'
-            return redirect(request.referrer)
-
-    
-        if not user_id:
-            session['toast']='Please Login to write review!'
-            return redirect(url_for('users.user_login'))
-    
-        cursor.execute('SELECT review_id FROM product_reviews WHERE product_id=%s AND user_id=%s',(product_id,user_id))
-        review_id=cursor.fetchone()
-        if review_id:
-            session['toast']='Review Already Exist!'
-            return redirect(request.referrer)
-        
-        cursor.execute('''INSERT INTO product_reviews(product_id,user_id,rating,comment,status,created_at)
-                    VALUES(%s,%s,%s,%s,%s,%s)''',(product_id,user_id,rating,comment,'pending',datetime.now()))
-        mysql.connection.commit()
-        session['toast']='Thank You! your review has been posted'
-        return redirect(request.referrer)
-    finally:
-        cursor.close()
+    result = submit_product_review(
+        session.get('user_id'), product_id,
+        request.form.get('rating'),
+        request.form.get('comment')
+    )
+    if result == 'missing_fields':
+        session['toast'] = 'Please provide both a rating and a comment.'
+    elif result == 'already_exists':
+        session['toast'] = 'Review Already Exist!'
+    else:
+        session['toast'] = 'Thank You! your review has been posted'
+    return redirect(request.referrer)
 
 
-
-@user_bp.route('/my_reviews',methods=['GET'])
+@user_bp.route('/my_reviews', methods=['GET'])
 @login_required
 def my_reviews():
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-        if not user_id:
-            session['toast']='Please Login'
-            return redirect(request.referrer)
-
-    
-        cursor.execute('''SELECT r.review_id,r.user_id,r.rating,r.comment,r.created_at,r.status,
-                p.product_id,p.title,pi.image_url
-            FROM product_reviews r
-            JOIN products p ON r.product_id=p.product_id
-            LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
-            WHERE r.user_id=%s AND r.is_deleted=0
-            ORDER BY r.created_at DESC
-        ''', (user_id,))
-        reviews=cursor.fetchall()
-        return render_template('my_reviews.htm',reviews=reviews)
-    finally:
-        cursor.close()
+    # BUG FIX: removed redundant if not user_id check (@login_required handles it)
+    reviews = get_my_reviews(session.get('user_id'))
+    return render_template('my_reviews.htm', reviews=reviews)
 
 
-
-@user_bp.route('/update_review/<int:review_id>',methods=['GET','POST'])
+@user_bp.route('/update_review/<int:review_id>', methods=['GET', 'POST'])
 @login_required
 def update_review(review_id):
-    cursor=mysql.connection.cursor()
-    try:
-        rating=request.form.get('rating')
-        comment=request.form.get('comment')
-        user_id=session.get('user_id')
-        if not user_id:
-            session['toast']='Please login!'
-            return redirect(url_for('users.user_login'))
-        
-        cursor.execute('''UPDATE product_reviews SET rating=%s,comment=%s WHERE user_id=%s AND review_id=%s''',
-                    (rating,comment,user_id,review_id))
-        mysql.connection.commit()
-        session['toast']='Thank You! For updating the product review'
-        return redirect(url_for('users.my_reviews'))
-    finally:
-        cursor.close()
+    update_product_review(
+        session.get('user_id'), review_id,
+        request.form.get('rating'),
+        request.form.get('comment')
+    )
+    session['toast'] = 'Thank You! For updating the product review'
+    return redirect(url_for('users.my_reviews'))
 
 
-@user_bp.route('/delete_review/<int:review_id>',methods=['GET','POST'])
+@user_bp.route('/delete_review/<int:review_id>', methods=['GET', 'POST'])
 @login_required
 def delete_review(review_id):
-    cursor=mysql.connection.cursor()
-    try:
-
-        user_id=session.get('user_id')
-        if not user_id:
-            session['toast']='Please login!'
-            return redirect(url_for('users.user_login'))
-    
-        cursor.execute('UPDATE product_reviews SET is_deleted=1 WHERE review_id=%s AND user_id=%s',(review_id,user_id))
-        mysql.connection.commit()
-        session['toast']='Thank You! Review has been deleted successfully'
-        return redirect(url_for('users.my_reviews'))
-    finally:
-        cursor.close()
+    delete_product_review(session.get('user_id'), review_id)
+    session['toast'] = 'Thank You! Review has been deleted successfully'
+    return redirect(url_for('users.my_reviews'))
 
 
+# ─── Returns & Cancellations ──────────────────────────────────────────────────
 
-@user_bp.route('/return_order/<int:order_id>',methods=['GET','POST'])
+@user_bp.route('/return_order/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def return_order(order_id):
-    cursor=mysql.connection.cursor()
-    try:
-        reason=request.form.get('reason')
-        
-        cursor.execute('''INSERT INTO order_returns(order_id,reason,status,requested_at)
-                    VALUES(%s,%s,%s,%s)''',(order_id,reason,'requested',datetime.now()))
-        mysql.connection.commit()
-        session['toast']='Thank You! For sharing the sharing the experience with us'
-        return redirect(url_for('users.user_orders'))
-    finally:
-        cursor.close()
+    submit_order_return(order_id, request.form.get('reason'))
+    session['toast'] = 'Return request submitted successfully!'
+    return redirect(url_for('users.user_orders'))
 
 
-
-@user_bp.route('/return_items/<int:order_detail_id>',methods=['GET','POST'])
+@user_bp.route('/return_items/<int:order_detail_id>', methods=['GET', 'POST'])
 @login_required
 def return_items(order_detail_id):
-    cursor=mysql.connection.cursor()
-    try:
-        reason=request.form.get('reason')
-        cursor.execute('SELECT order_id FROM order_details WHERE order_detail_id=%s',(order_detail_id,))
-        row=cursor.fetchone()
-        
-        cursor.execute('''INSERT INTO order_item_returns(order_id,order_detail_id,reason,status,requested_at,resolved_at)
-                    VALUES(%s,%s,%s,%s,%s,%s)''',(row['order_id'],order_detail_id,reason,'requested',datetime.now(),datetime.now()))
-        mysql.connection.commit()
-        session['toast']='Thank You! For sharing the sharing the experience with us'
-        return redirect(url_for('users.user_orders'))
-    finally:
-        cursor.close()
+    # BUG FIX: model returns False if order_detail_id not found
+    success = submit_item_return(order_detail_id, request.form.get('reason'))
+    if not success:
+        session['toast'] = 'Order item not found!'
+    else:
+        session['toast'] = 'Item return request submitted successfully!'
+    return redirect(url_for('users.user_orders'))
 
 
-@user_bp.route('/my_returns',methods=['GET', 'POST'])
+@user_bp.route('/my_returns', methods=['GET', 'POST'])
 @login_required
 def my_returns():
-    cursor=mysql.connection.cursor()
-    try:
-        user_id=session.get('user_id')
-        if not user_id:
-            session['toast']='Please Login!'
-            return redirect(request.referrer)
-
-        cursor.execute('''SELECT o.order_id,o.order_number,o.status AS order_status,o.total_amount,
-                o.shipping_address,o.ordered_at,o.discount_amount,o.promo_code,
-                o.subtotal,od.product_amount,od.quantity,od.subtotal AS item_subtotal,
-                op.payment_method,op.status AS payment_status,
-                orr.reason AS return_reason,
-                orr.requested_at AS return_date,
-                orr.status AS return_status,
-                p.title AS product_title,
-                pi.image_url
-            FROM order_returns orr
-            JOIN orders o ON orr.order_id=o.order_id
-            JOIN order_payments op ON o.order_id=op.order_id
-            JOIN order_details od  ON o.order_id=od.order_id
-            JOIN products p ON od.product_id=p.product_id
-            JOIN product_images pi ON od.product_id=pi.product_id
-            WHERE o.is_deleted=0 AND pi.is_active=1 AND orr.is_cancelled=0 AND o.user_id=%s''',(user_id,))
-
-        return_details=cursor.fetchall()
-        return render_template('my_returns.htm',return_details=return_details)
-    finally:
-        cursor.close()
-
-    
+    # BUG FIX: removed redundant if not user_id check
+    return_details = get_my_returns(session.get('user_id'))
+    return render_template('my_returns.htm', return_details=return_details)
 
 
-@user_bp.route('/return_cancel/<int:order_id>',methods=['GET','POST'])
+@user_bp.route('/return_cancel/<int:order_id>', methods=['GET', 'POST'])
 @login_required
 def return_cancel(order_id):
-    cursor=mysql.connection.cursor()
-    try:
-        reason=request.form.get('reason')
-        cursor.execute('''UPDATE order_returns SET reason=%s,is_cancelled=1,requested_at=%s WHERE
-                        order_id=%s''',(reason,datetime.now(),order_id))
-        mysql.connection.commit()
-        session['toast']='Request Send Successfully!'
-        return redirect(request.referrer)
-    finally:
-        cursor.close()
-    
-   
+    cancel_return_request(order_id, request.form.get('reason'))
+    session['toast'] = 'Request Send Successfully!'
+    return redirect(request.referrer)
 
-@user_bp.route('/my_cancellations',methods=['GET','POST'])
+
+@user_bp.route('/my_cancellations', methods=['GET', 'POST'])
 @login_required
 def my_cancellations():
-    cursor=mysql.connection.cursor()
-    try:
-        user_id=session.get('user_id')
-        if not user_id:
-            session['toast']='Please Login!'
-            return redirect(request.referrer)
-
-        cursor.execute('''SELECT o.order_id,o.order_number,o.status AS order_status,o.total_amount,
-                o.shipping_address,o.ordered_at,o.discount_amount,o.promo_code,
-                o.subtotal,od.product_amount,od.quantity,od.subtotal AS item_subtotal,
-                o.cancelled_at AS cancellation_date,
-                op.payment_method,op.status AS payment_status,
-                p.title AS product_title,
-                pi.image_url
-            FROM orders o 
-            JOIN order_payments op ON o.order_id=op.order_id
-            JOIN order_details od ON o.order_id=od.order_id
-            JOIN products p ON od.product_id=p.product_id
-            JOIN product_images pi ON od.product_id=pi.product_id
-            WHERE o.is_deleted=0 AND pi.is_active=1 AND o.user_id=%s AND o.is_cancelled=1''',(user_id,))
-
-        cancel_details=cursor.fetchall()
-        return render_template('my_cancellations.htm',cancel_details=cancel_details)
-    finally:
-        cursor.close()
-   
+    # BUG FIX: removed redundant if not user_id check
+    cancel_details = get_my_cancellations(session.get('user_id'))
+    return render_template('my_cancellations.htm', cancel_details=cancel_details)
