@@ -1,501 +1,91 @@
-from flask import render_template,request,jsonify
+from flask import render_template, request, jsonify
 from products import prod_bp
-from utils.db import mysql
-from utils.path_link import make_links
-import math
-import random
-import re
-from utils.product_filter import build_product_filter
-import MySQLdb.cursors
-
+from products.prod_models import (
+    get_smart_watches, get_leather_watches, get_metal_watches,
+    get_all_products, get_all_earbuds, get_mix_products,
+    search_products, get_product_by_slug
+)
 
 
 @prod_bp.route('/smart_watches')
 def smart_watches():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-        page=request.args.get('page',1,type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
-
-        cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
-            c.name AS category_name,
-            pd.short_description,
-            COUNT(DISTINCT r.review_id) AS rating,
-            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-            ) AS all_images,
-            (SELECT image_url FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS image_url,
-            (SELECT alt_text FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS alt_text
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id
-            WHERE p.status='active' AND p.category_id=1
-            GROUP BY p.product_id
-            ORDER BY p.product_id
-            LIMIT %s OFFSET %s """,(per_page,offset))
-        
-    
-        products=list(cursor.fetchall())
-        random.shuffle(products)
-
-        cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
-                FROM products p
-                WHERE p.category_id=1 AND p.status='active' """)
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('smart_watches.htm',products=products,page=page,total_pages=total_pages)
-    
-    finally:
-        cursor.close()
-
-    
-
+    products,page,total_pages=get_smart_watches(request)
+    return render_template('smart_watches.htm',products=products,page=page, 
+                           total_pages=total_pages)
 
 
 @prod_bp.route('/leather_watches')
 def leather_watches():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-
-        page=request.args.get('page', 1, type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
-
-        
-
-        cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
-            c.name AS category_name,
-            pd.short_description,
-            COUNT(DISTINCT r.review_id) AS rating,
-            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-            ) AS all_images,
-            (SELECT image_url FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS image_url,
-            (SELECT alt_text FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS alt_text
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id
-            WHERE p.status='active' AND p.category_id=3
-            GROUP BY p.product_id
-            ORDER BY p.product_id
-            LIMIT %s OFFSET %s """,(per_page,offset))
-    
-        products=list(cursor.fetchall())
-        random.shuffle(products)
-
-        cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
-                FROM products p
-                WHERE p.category_id=3 AND p.status='active' """)
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('leather_watches.htm',products=products,page=page,total_pages=total_pages) 
-    
-    finally:
-        cursor.close()
-
-       
+    products,page,total_pages=get_leather_watches(request)
+    return render_template('leather_watches.htm',products=products, 
+                           page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/metal_watches')
 def metal_watches():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-
-        page=request.args.get('page', 1, type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
- 
-        cursor.execute("""SELECT p.product_id,p.title,p.base_price,p.sale_price,p.status,
-            c.name AS category_name,
-            pd.short_description,
-            COUNT(DISTINCT r.review_id) AS rating,
-            (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-            ) AS all_images,
-            (SELECT image_url FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS image_url,
-            (SELECT alt_text FROM product_images
-                WHERE product_id=p.product_id AND is_active=1
-                ORDER BY image_id ASC LIMIT 1
-            ) AS alt_text
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id
-            WHERE p.status='active' AND p.category_id=2
-            GROUP BY p.product_id
-            ORDER BY p.product_id
-            LIMIT %s OFFSET %s """,(per_page,offset))
-    
-        products=list(cursor.fetchall())
-        random.shuffle(products)
-
-        cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
-                FROM products p
-                WHERE p.category_id=2 AND p.status='active'""")
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('metal_watches.htm',products=products,page=page,total_pages=total_pages)
-    
-    finally:
-        cursor.close()
-
-       
-
-
+    products,page,total_pages=get_metal_watches(request)
+    return render_template('metal_watches.htm',products=products,
+                           page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/all_products',methods=['GET'])
 def all_products():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-        filters=build_product_filter(request, exclude_category=4)
-        page=request.args.get('page', 1, type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
+    result=get_all_products(request)
+    if not result:
+        return render_template('404.htm'), 404
     
-
-        cursor.execute(
-            f"""
-            SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                p.base_price,p.sale_price,p.status,c.name AS category_name,
-                pd.short_description,pd.long_description,
-                (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                    FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                ) AS all_images,
-                (SELECT image_url FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS image_url,
-                (SELECT alt_text FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS alt_text,
-                pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
-                COUNT(r.review_id) AS rating
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id 
-            WHERE {filters['where_str']}
-            GROUP BY p.product_id
-            ORDER BY {filters['order_clause']} 
-            LIMIT %s OFFSET %s
-        """,filters['params']+[per_page,offset])
-        products=cursor.fetchall()
-
-        if not products:
-            return render_template('404.htm'), 404
-
-        cursor.execute("SELECT category_id,name FROM categories WHERE is_active=1 AND category_id != 4")
-        categories=cursor.fetchall()
-
-        cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
-                FROM products p WHERE p.status='active' """)
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('all_products.htm',products=products,categories=categories,page=page,total_pages=total_pages)
-    
-    finally:
-        cursor.close()
-    
-   
+    products,categories,page,total_pages=result
+    return render_template('all_products.htm',products=products,
+                           categories=categories,page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/all_earbuds',methods=['GET'])
 def all_earbuds():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-        page=request.args.get('page', 1, type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
-
-        cursor.execute("""
-            SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                p.base_price,p.sale_price,p.status,c.name AS category_name,
-                pd.short_description,pd.long_description,
-                (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                    FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                ) AS all_images,
-                (SELECT image_url FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS image_url,
-                (SELECT alt_text FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS alt_text,
-                pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
-                COUNT(DISTINCT r.review_id) AS rating        
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id
-            WHERE p.status='active' AND p.category_id=4
-            GROUP BY p.product_id
-            ORDER BY p.product_id
-            LIMIT %s OFFSET %s
-        """,(per_page,offset))
-        products=list(cursor.fetchall())
-        random.shuffle(products)
-
-        if not products:
-            return render_template('404.htm'), 404
-        
-        cursor.execute("""SELECT COUNT(p.product_id) AS total_count 
-                FROM products p
-                WHERE p.category_id=4 AND p.status='active'""")
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('all_earbuds.htm',products=products,page=page,total_pages=total_pages)
-    finally:
-        cursor.close()
+    result=get_all_earbuds(request)
+    if not result:
+        return render_template('404.htm'), 404
     
-    
+    products,page,total_pages=result
+    return render_template('all_earbuds.htm',products=products,
+                           page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/mix_products',methods=['GET'])
 def mix_products():
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-        filters=build_product_filter(request)
-        page=request.args.get('page', 1, type=int)
-        if page<1:
-            page=1
-
-        per_page=10
-        offset=(page - 1) * per_page
-
-
-        cursor.execute(
-            f"""
-            SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                p.base_price,p.sale_price,p.status,c.name AS category_name,
-                pd.short_description,pd.long_description,
-                (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                    FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                ) AS all_images,
-                (SELECT image_url FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS image_url,
-                (SELECT alt_text FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                    ORDER BY image_id ASC LIMIT 1
-                ) AS alt_text,
-                pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
-                COUNT(r.review_id) AS rating
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id 
-            WHERE {filters['where_str']}
-            GROUP BY p.product_id
-            ORDER BY {filters['order_clause']} 
-            LIMIT %s OFFSET %s
-        """,filters['params']+[per_page,offset])
-
-        products=cursor.fetchall()
-
-        if not products:
-            return render_template('404.htm'), 404
-
-        cursor.execute("SELECT COUNT(*) AS total_count FROM products")
-        total_rows=cursor.fetchone()['total_count']
-        total_pages=math.ceil(total_rows / per_page)
-        return render_template('mix_products.htm',products=products,page=page,total_pages=total_pages)
-
-    finally:
-        cursor.close()
+    result=get_mix_products(request)
+    if not result:
+        return render_template('404.htm'), 404
     
-    
-
-
+    products,page,total_pages=result
+    return render_template('mix_products.htm',products=products, 
+                           page=page,total_pages=total_pages)
 
 
 @prod_bp.route('/search')
 def search():
-    cursor=mysql.connection.cursor()
-    try:
+    q=request.args.get('q', '').strip()
+    fmt=request.args.get('format','html')
 
-        q=request.args.get('q', '').strip()
-        fmt=request.args.get('format', 'html')
-
-        if not q:
-            if fmt == 'json':
-                return jsonify([])
-            return render_template('all_products.htm',products=[],categories=[])
-
-    
-        cursor.execute("""
-        SELECT p.product_id,p.title,p.base_price,p.sale_price,
-            pi.image_url,pi.alt_text,c.name AS category_name,
-            pd.short_description
-        FROM products p
-        LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
-        LEFT JOIN categories c ON p.category_id=c.category_id
-        LEFT JOIN product_details pd ON p.product_id=pd.product_id
-        WHERE p.status='active'
-        AND(
-            p.title LIKE %s OR 
-            p.product_no LIKE %s OR
-            c.name  LIKE %s OR
-            pd.short_description LIKE %s
-            )
-        GROUP BY p.product_id
-        ORDER BY
-            CASE
-                WHEN p.title LIKE %s THEN 1
-                WHEN c.name  LIKE %s THEN 2
-                WHEN p.product_no LIKE %s THEN 3
-                ELSE 4
-            END
-        LIMIT 20
-        """,(f'%{q}%',f'%{q}%',f'%{q}%',f'%{q}%',
-        f'%{q}%',f'%{q}%',f'%{q}%'))
+    if not q:
+        if fmt=='json':
+            return jsonify([])
         
-        products=cursor.fetchall()
+        return render_template('all_products.htm',products=[],categories=[])
 
-        if fmt == 'json':
-            
-            safe=[]
-            for p in products:
-                row = dict(p)
-                if row.get('base_price') is not None:
-                    row['base_price'] = float(row['base_price'])
-                if row.get('sale_price') is not None:
-                    row['sale_price'] = float(row['sale_price'])
-                safe.append(row)
-            return jsonify(safe)
-        
-        return render_template('all_products.htm',products=products,categories=[])
-        
-    finally:
-        cursor.close()    
+    products=search_products(q)
 
+    if fmt=='json':
+        return jsonify(products)
 
+    return render_template('all_products.htm',products=products,categories=[])
 
 
 @prod_bp.route('/<slug>',methods=['GET'])
 def product_page(slug):
-    cursor=mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    try:
-
-        match=re.search(r'-(\d+)$',slug)
-        if not match:
-            return render_template('404.htm'),404
-        
-        product_id=int(match.group(1))
-
+    result=get_product_by_slug(slug)
+    if not result:
+        return render_template('404.htm'), 404
     
-    
-        cursor.execute("""
-            SELECT p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                p.base_price,p.sale_price,p.status,c.name AS category_name,
-                pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
-                pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight,
-                COUNT(r.review_id) AS total_rating
-            FROM products p
-            LEFT JOIN categories c ON p.category_id=c.category_id
-            LEFT JOIN product_details pd ON p.product_id=pd.product_id
-            LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
-            LEFT JOIN product_reviews r ON p.product_id=r.product_id
-            WHERE p.status='active' AND p.product_id=%s
-            GROUP BY p.product_id,p.product_no,p.title,p.category_id,p.stock_quantity,
-                    p.base_price,p.sale_price,p.status,c.name,
-                    pd.short_description,pd.long_description,pi.image_url,pi.alt_text,
-                    pd.display_type,pd.display_size,pd.brightness_nits,pd.battery_life,pd.connectivity,
-                    pd.strap_material,pd.case_material,pd.water_resistance,pd.warranty_months,pd.weight
-        """,(product_id,))
-        product=cursor.fetchone()
-
-        if not product:
-            return render_template('404.htm'),404
-
-        cursor.execute("""SELECT image_url, alt_text
-            FROM product_images
-            WHERE product_id=%s AND is_active=1
-            ORDER BY image_id ASC
-        """,(product_id,))
-        product_images=cursor.fetchall()
-    
-        cursor.execute("""
-            SELECT p.product_id, p.title, p.base_price, p.sale_price, p.category_id,
-                pi.image_url, pi.alt_text,
-                (SELECT GROUP_CONCAT(image_url ORDER BY image_id ASC SEPARATOR '|||')
-                    FROM product_images
-                    WHERE product_id=p.product_id AND is_active=1
-                ) AS all_images
-            FROM products p
-            LEFT JOIN product_images pi ON p.product_id=pi.product_id AND pi.is_active=1
-            WHERE p.status='active' AND p.category_id=%s AND p.product_id != %s
-            GROUP BY p.product_id
-            ORDER BY p.product_id
-            LIMIT 4
-            """,(product['category_id'],product['product_id']))
-        relateds=list(cursor.fetchall())
-        random.shuffle(relateds)
-
-        cursor.execute("""
-            SELECT us.first_name,us.last_name,r.user_id,r.product_id,
-                r.rating,r.comment,r.status,r.created_at
-            FROM product_reviews r
-            JOIN users us ON r.user_id=us.user_id
-            WHERE r.status='approved' AND r.product_id=%s
-        """, (product_id,))
-        reviews=cursor.fetchall()
-        return render_template('product_page.htm',product=product,relateds=relateds,
+    product,product_images,relateds,reviews=result
+    return render_template('product_page.htm',product=product,relateds=relateds,
                            reviews=reviews,product_images=product_images)
-    
-    finally:
-        cursor.close()
-
-    
