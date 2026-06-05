@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request,flash,url_for,redirect
+from flask import Flask, render_template,request,flash,url_for,redirect,session
 from utils.db import mysql
 from config import *
 from datetime import timedelta
@@ -127,12 +127,17 @@ def support():
             order_id_raw=request.form.get('orderId', '').strip()
             order_id=str(order_id_raw) if order_id_raw.isdigit() else None
 
-            form_path=None
             file=request.files.get('attachment')
-            if file and file.filename != '' and allowed_file(file.filename):
-                os.makedirs(UPLOAD_FOLDER,exist_ok=True)
-                filename =secure_filename(file.filename)
-                save_path=os.path.join(UPLOAD_FOLDER, filename)
+            form_path=None
+            if file and file.filename != '':
+                if not allowed_file(file.filename):
+                    session['toast']='File Type is not allowed!'
+                    #flash('File Type is not allowed!', 'danger')
+                    return redirect(url_for('support'))  
+                
+                os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+                filename=secure_filename(file.filename)
+                save_path=os.path.join(UPLOAD_FOLDER,filename)
                 file.save(save_path)
                 form_path=save_path
             else:
