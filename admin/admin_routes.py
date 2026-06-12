@@ -380,47 +380,110 @@ def delete_product(product_id):
     return redirect(url_for('admin.main_products'))
 
 
+# @admin_bp.route('/edit_product/<int:product_id>',methods=['POST'])
+# @admin_required
+# def edit_product(product_id):
+#     title=request.form.get('title')
+#     category_id=request.form.get('category')
+#     base_price=request.form.get('base_price')
+#     sale_price=request.form.get('sale_price')
+#     stock=request.form.get('stock')
+#     status=request.form.get('status','active')
+#     short_desc=request.form.get('short_description')
+#     long_desc=request.form.get('long_description')
+#     display_type=request.form.get('display_type')
+#     brightness_nits=request.form.get('brightness_nits') or None
+#     battery_life=request.form.get('battery_life')
+#     connectivity=request.form.get('connectivity')
+#     strap_material=request.form.get('strap_material')
+#     case_material=request.form.get('case_material')
+#     water_resistance=request.form.get('water_resistance')
+#     weight=request.form.get('weight')
+#     warranty_month=request.form.get('warranty_month')
+#     always_display=request.form.get('always_display')
+#     product_no=request.form.get('product_no')
+#     image=request.files.get('image')
+#     width=12
+#     height=12
+
+#     ProductModel.update(product_id,product_no,category_id,title,base_price,sale_price,stock,status)
+#     ProductDetailsModel.update(product_id,short_desc,long_desc,display_type,brightness_nits,
+#         battery_life,connectivity,strap_material,case_material,water_resistance,
+#         weight,warranty_month,always_display)
+
+#     if image and image.filename != '':
+#         cat=ProductImageModel.get_category_name(category_id)
+#         cat_name=cat['name'].lower().replace(' ','_')
+#         filename=secure_filename(image.filename)
+#         upload_folder=os.path.join('static','uploads',cat_name)
+#         os.makedirs(upload_folder,exist_ok=True)
+#         image_path=os.path.join(upload_folder,filename)
+#         image.save(image_path)
+#         image_url='/'+image_path.replace('\\','/')
+#         ProductImageModel.update_or_create(product_id,image_url,title,width,height)
+
+#     session['admin_toast']='Product Updated Successfully!'
+#     return redirect(url_for('admin.main_products'))
+
+
+
 @admin_bp.route('/edit_product/<int:product_id>',methods=['POST'])
 @admin_required
 def edit_product(product_id):
-    title=request.form.get('title')
-    category_id=request.form.get('category')
-    base_price=request.form.get('base_price')
-    sale_price=request.form.get('sale_price')
-    stock=request.form.get('stock')
-    status=request.form.get('status','active')
-    short_desc=request.form.get('short_description')
-    long_desc=request.form.get('long_description')
-    display_type=request.form.get('display_type')
-    brightness_nits=request.form.get('brightness_nits') or None
-    battery_life=request.form.get('battery_life')
-    connectivity=request.form.get('connectivity')
-    strap_material=request.form.get('strap_material')
-    case_material=request.form.get('case_material')
-    water_resistance=request.form.get('water_resistance')
-    weight=request.form.get('weight')
-    warranty_month=request.form.get('warranty_month')
-    always_display=request.form.get('always_display')
-    product_no=request.form.get('product_no')
+    try:
+        data=ProductValidator(
+            title=request.form.get('title', ''),
+            product_no=request.form.get('product_no', ''),
+            category_id=request.form.get('category', 0),
+            base_price=request.form.get('base_price', 0),
+            sale_price=request.form.get('sale_price') or None,
+            stock=request.form.get('stock', 0),
+            status=request.form.get('status', 'active'),
+            short_description=request.form.get('short_description'),
+            long_description=request.form.get('long_description'),
+            display_type=request.form.get('display_type'),
+            battery_life=request.form.get('battery_life'),
+            connectivity=request.form.get('connectivity'),
+            strap_material=request.form.get('strap_material'),
+            case_material=request.form.get('case_material'),
+            water_resistance=request.form.get('water_resistance'),
+            weight=request.form.get('weight'),
+            warranty_month=request.form.get('warranty_month', 12),
+            always_display=request.form.get('always_display', 0),
+            brightness_nits=request.form.get('brightness_nits') or None,
+        )
+    except ValidationError as e:
+        session['admin_toast']=extract_errors(e)[0]
+        return redirect(url_for('admin.main_products'))
+
     image=request.files.get('image')
     width=12
     height=12
 
-    ProductModel.update(product_id,product_no,category_id,title,base_price,sale_price,stock,status)
-    ProductDetailsModel.update(product_id,short_desc,long_desc,display_type,brightness_nits,
-        battery_life,connectivity,strap_material,case_material,water_resistance,
-        weight,warranty_month,always_display)
+    ProductModel.update(
+        product_id,data.product_no,data.category_id,data.title,
+        data.base_price,data.sale_price,data.stock,data.status
+    )
+
+    ProductDetailsModel.update(
+        product_id,data.short_description,data.long_description,
+        data.display_type,data.brightness_nits,data.battery_life,
+        data.connectivity,data.strap_material,data.case_material,
+        data.water_resistance,data.weight,data.warranty_month,
+        data.always_display
+    )
 
     if image and image.filename != '':
-        cat=ProductImageModel.get_category_name(category_id)
-        cat_name=cat['name'].lower().replace(' ','_')
+        cat=ProductImageModel.get_category_name(data.category_id)
+        cat_name=cat['name'].lower().replace(' ', '_')
         filename=secure_filename(image.filename)
-        upload_folder=os.path.join('static','uploads',cat_name)
-        os.makedirs(upload_folder,exist_ok=True)
-        image_path=os.path.join(upload_folder,filename)
-        image.save(image_path)
-        image_url='/'+image_path.replace('\\','/')
-        ProductImageModel.update_or_create(product_id,image_url,title,width,height)
+        folder=os.path.join('static', 'uploads', cat_name)
+        os.makedirs(folder,exist_ok=True)
+        path=os.path.join(folder, filename)
+        image.save(path)
+        image_url='/' + path.replace('\\', '/')
+        ProductImageModel.update_or_create(
+            product_id,image_url,data.title,width,height)
 
     session['admin_toast']='Product Updated Successfully!'
     return redirect(url_for('admin.main_products'))

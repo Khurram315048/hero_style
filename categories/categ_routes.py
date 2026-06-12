@@ -3,6 +3,10 @@ from utils.auth import admin_required
 import math
 from categories import cat_bp
 from categories.categ_models import CategoryModel
+from pydantic import ValidationError
+from admin.admin_validators import CategoryValidator
+from utils.validators import extract_errors
+
 
 
 @cat_bp.route('/all_categories')
@@ -63,29 +67,85 @@ def toggle_category(category_id):
 
 
 
+# @cat_bp.route('/add_category',methods=['POST'])
+# @admin_required
+# def add_category():
+#     name=request.form.get('name')
+#     description=request.form.get('description')
+#     status=request.form.get('is_active')
+
+#     if CategoryModel.name_exists(name):
+#         session['admin_toast']=f'Category with this {name} already exist'
+#         return redirect(url_for('categories.all_categories'))
+
+#     CategoryModel.create(name,description,status)
+#     session['admin_toast']=name+' category added to the system successfully!'
+#     return redirect(url_for('categories.all_categories'))
+
+
 @cat_bp.route('/add_category',methods=['POST'])
 @admin_required
 def add_category():
-    name=request.form.get('name')
-    description=request.form.get('description')
-    status=request.form.get('is_active')
-
-    if CategoryModel.name_exists(name):
-        session['admin_toast']=f'Category with this {name} already exist'
+    try:
+        data=CategoryValidator(
+            name=request.form.get('name', ''),
+            description=request.form.get('description', '') or None,
+            is_active=request.form.get('is_active',1),
+        )
+    except ValidationError as e:
+        session['admin_toast']=extract_errors(e)[0]
         return redirect(url_for('categories.all_categories'))
 
-    CategoryModel.create(name,description,status)
-    session['admin_toast']=name+' category added to the system successfully!'
+
+    if CategoryModel.name_exists(data.name):
+        session['admin_toast']=f"Category '{data.name}' already exists."
+        return redirect(url_for('categories.all_categories'))
+
+    CategoryModel.create(data.name,data.description,data.is_active)
+    session['admin_toast']=f"'{data.name}' category added successfully!"
     return redirect(url_for('categories.all_categories'))
+
+
+# @cat_bp.route('/edit_category/<int:category_id>',methods=['GET','POST'])
+# @admin_required
+# def edit_category(category_id):
+#     if request.method=='POST':
+#         name=request.form.get('name')
+#         description=request.form.get('description')
+#         is_active=request.form.get('is_active')
+
+#         category=CategoryModel.get_by_id(category_id)
+#         if not category:
+#             session['admin_toast']='Category does not exist!'
+#             return redirect(url_for('categories.all_categories'))
+
+
+#         if CategoryModel.name_exists_other(name,category_id):
+#             session['admin_toast']=f'{name} category already exist'
+#             return redirect(url_for('categories.all_categories'))
+
+
+#         CategoryModel.update(category_id,name,description,is_active)
+#         session['admin_toast']=f'{name} category updated successfully!'
+
+#     return redirect(url_for('categories.all_categories'))
+
 
 
 @cat_bp.route('/edit_category/<int:category_id>',methods=['GET','POST'])
 @admin_required
 def edit_category(category_id):
     if request.method=='POST':
-        name=request.form.get('name')
-        description=request.form.get('description')
-        is_active=request.form.get('is_active')
+        try:
+            data=CategoryValidator(
+                name=request.form.get('name',''),
+                description=request.form.get('description','') or None,
+                is_active=request.form.get('is_active',1),
+            )
+        except ValidationError as e:
+            session['admin_toast']=extract_errors(e)[0]
+            return redirect(url_for('categories.all_categories'))
+
 
         category=CategoryModel.get_by_id(category_id)
         if not category:
@@ -93,12 +153,11 @@ def edit_category(category_id):
             return redirect(url_for('categories.all_categories'))
 
 
-        if CategoryModel.name_exists_other(name,category_id):
-            session['admin_toast']=f'{name} category already exist'
+        if CategoryModel.name_exists_other(data.name,category_id):
+            session['admin_toast']=f"'{data.name}' already exists."
             return redirect(url_for('categories.all_categories'))
 
-
-        CategoryModel.update(category_id,name,description,is_active)
-        session['admin_toast']=f'{name} category updated successfully!'
+        CategoryModel.update(category_id,data.name,data.description,data.is_active)
+        session['admin_toast']=f"'{data.name}' updated successfully!"
 
     return redirect(url_for('categories.all_categories'))

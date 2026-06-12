@@ -2,7 +2,7 @@ from pydantic import BaseModel,field_validator,EmailStr
 from typing import Optional
 from decimal import Decimal
 from utils.validators import BaseValidator,PasswordValidator
-
+ 
 
 
 
