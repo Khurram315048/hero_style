@@ -15,16 +15,20 @@ from orders.order_routes import get_cart_count
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from utils.limiter import limiter
+from utils.support_validator import SupportFormValidator
+from utils.file_handler import validate_and_save
+from pydantic import ValidationError
+from utils.validators import extract_errors
 
 app=Flask(__name__,static_folder='static',template_folder='templates')
 
 limiter.init_app(app)
 
-ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'pdf'}
+# ALLOWED_EXTENSIONS={'png', 'jpg', 'jpeg', 'pdf'}
 UPLOAD_FOLDER='static/uploads/support_forms'
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# def allowed_file(filename):
+#     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app.register_blueprint(prod_bp)
 app.register_blueprint(order_bp)
@@ -108,49 +112,90 @@ def homepage():
     finally:
         cursor.close()
  
-   
+
 
 
 @app.route('/support',methods=['GET','POST'])
 def support():
     cursor=mysql.connection.cursor()
     try:
-
         if request.method=='POST':
-            fullName=request.form.get('fullName')
-            email=request.form.get('email')
-            phone=request.form.get('phone')
-            category=request.form.get('category')
-            subject=request.form.get('subject')
-            message=request.form.get('message')
-            overall_rating=request.form.get('rating') or None
-            order_id_raw=request.form.get('orderId', '').strip()
-            order_id=str(order_id_raw) if order_id_raw.isdigit() else None
 
+            try:
+                data=SupportFormValidator(
+                    fullName=request.form.get('fullName', ''),
+                    email=request.form.get('email', ''),
+                    phone=request.form.get('phone', ''),
+                    category=request.form.get('category', ''),
+                    subject=request.form.get('subject', ''),
+                    message=request.form.get('message', ''),
+                    orderId=request.form.get('orderId', ''),
+                    rating=request.form.get('rating', ''),
+                )
+            except ValidationError as e:
+                session['toast']=extract_errors(e)[0]
+                return redirect(url_for('support'))
+
+            
             file=request.files.get('attachment')
-            form_path=None
-            if file and file.filename != '':
-                if not allowed_file(file.filename):
-                    session['toast']='File Type is not allowed!'
-                    #flash('File Type is not allowed!', 'danger')
-                    return redirect(url_for('support'))  
-                
-                os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-                filename=secure_filename(file.filename)
-                save_path=os.path.join(UPLOAD_FOLDER,filename)
-                file.save(save_path)
-                form_path=save_path
-            else:
-                flash('File Type is not allowed!','danger')
-                
-            cursor.execute('''INSERT INTO forms(order_id,full_name,email,phone_number,category,subject,message,form_path,overall_rating)
-                        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',(order_id,fullName,email,phone,category,subject,message,form_path,overall_rating))
+            ok,err,form_path=validate_and_save(file,UPLOAD_FOLDER)
+            if not ok:
+                session['toast']=err
+                return redirect(url_for('support'))
+
+            cursor.execute('''INSERT INTO forms(order_id,full_name,email,phone_number,
+                    category,subject,message,form_path,overall_rating)
+                   VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)''',(data.orderId,data.fullName,data.email,data.phone,
+                                                           data.category,data.subject,data.message,form_path,data.rating,))
             mysql.connection.commit()
             flash('Message sent successfully','success')
-            return redirect(url_for('support'))     
+            return redirect(url_for('support'))
+
         return render_template('support.htm')
     finally:
         cursor.close()
+
+
+# @app.route('/support',methods=['GET','POST'])
+# def support():
+#     cursor=mysql.connection.cursor()
+#     try:
+
+#         if request.method=='POST':
+#             fullName=request.form.get('fullName')
+#             email=request.form.get('email')
+#             phone=request.form.get('phone')
+#             category=request.form.get('category')
+#             subject=request.form.get('subject')
+#             message=request.form.get('message')
+#             overall_rating=request.form.get('rating') or None
+#             order_id_raw=request.form.get('orderId', '').strip()
+#             order_id=str(order_id_raw) if order_id_raw.isdigit() else None
+
+#             file=request.files.get('attachment')
+#             form_path=None
+#             if file and file.filename != '':
+#                 if not allowed_file(file.filename):
+#                     session['toast']='File Type is not allowed!'
+                   
+#                     return redirect(url_for('support'))  
+                
+#                 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+#                 filename=secure_filename(file.filename)
+#                 save_path=os.path.join(UPLOAD_FOLDER,filename)
+#                 file.save(save_path)
+#                 form_path=save_path
+#             else:
+#                 flash('File Type is not allowed!','danger')
+                
+#             cursor.execute('''INSERT INTO forms(order_id,full_name,email,phone_number,category,subject,message,form_path,overall_rating)
+#                         VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)''',(order_id,fullName,email,phone,category,subject,message,form_path,overall_rating))
+#             mysql.connection.commit()
+#             flash('Message sent successfully','success')
+#             return redirect(url_for('support'))     
+#         return render_template('support.htm')
+#     finally:
+#         cursor.close()
 
 
 @app.errorhandler(404)
