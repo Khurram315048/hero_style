@@ -2,8 +2,13 @@ from flask import render_template,session,request,redirect,url_for
 from orders import order_bp
 from datetime import datetime
 import json,uuid
-from orders.order_models import (CartModel,ProductStockModel,UserModel,
-    OrderPlacementModel,WishlistModel)
+from orders.order_models import(
+    CartModel,ProductStockModel,UserModel,
+    OrderPlacementModel,WishlistModel
+)
+from pydantic import ValidationError
+from orders.order_validators import CheckoutValidator
+from utils.validators import extract_errors
 
 
 def get_or_create_cart_id():
@@ -129,23 +134,106 @@ def checkout():
                            flask_cart_json=flask_cart_json)
 
 
+
+# @order_bp.route('/place_order',methods=['POST'])
+# def place_order():
+#     cart_items,grand_total=get_cart_items()
+#     if not cart_items:
+#         return redirect(url_for('orders.view_cart'))
+
+#     first_name=request.form.get('first_name','').strip()
+#     last_name=request.form.get('last_name','').strip()
+#     city=request.form.get('city','').strip()
+#     postal_code=request.form.get('postal_code','').strip()
+#     shipping_address=request.form.get('shipping_address','').strip()
+#     payment_method=request.form.get('payment_method','COD')
+#     promo_code=request.form.get('promo_code','').strip() or None
+#     email=request.form.get('email','').strip() or None
+
+#     full_address=f"{shipping_address},{city} {postal_code}".strip(', ')
+
+#     subtotal=float(request.form.get('subtotal',grand_total))
+#     shipping_charges=float(request.form.get('shipping_charges',0))
+#     discount_amount=float(request.form.get('discount_amount',0))
+#     total_amount=float(request.form.get('total_amount',grand_total))
+
+#     if subtotal==0:
+#         subtotal=grand_total
+#         shipping_charges=0 if subtotal >= 10000 else 250
+#         total_amount=subtotal + shipping_charges - discount_amount
+
+#     for item in cart_items:
+#         stock_row=ProductStockModel.check_stock(item['product_id'])
+
+#         if not stock_row:
+#             session['toast']=f"'{item['title']}' is no longer available."
+#             return redirect(url_for('orders.view_cart'))
+
+#         if stock_row['stock_quantity'] < item['quantity']:
+#             session['toast']=f"Only {stock_row['stock_quantity']} unit(s) of '{stock_row['title']}' left in stock."
+#             return redirect(url_for('orders.view_cart'))
+
+#     order_number='HW-'+uuid.uuid4().hex[:8].upper()
+#     user_id=None
+
+#     if session.get('user_id'):
+#         user_id=session['user_id']
+
+#     if not user_id and email:
+#         existing=UserModel.get_by_email(email)
+#         if existing:
+#             user_id=existing['user_id']
+
+#     if not user_id:
+#         user_id=UserModel.create_guest(first_name,last_name,email)
+
+#     order_id=OrderPlacementModel.create_order(user_id,order_number,subtotal,discount_amount,
+#         promo_code,shipping_charges,total_amount,full_address)
+
+#     for item in cart_items:
+#         item_subtotal=round(item['price'] * item['quantity'],2)
+#         OrderPlacementModel.create_order_detail(order_id,item['product_id'],item['price'],item['quantity'],item_subtotal)
+#         ProductStockModel.deduct_stock(item['product_id'],item['quantity'])
+
+#     OrderPlacementModel.create_payment(order_id,payment_method,total_amount)
+
+#     cart_id=session.pop('cart_id',None)
+#     if cart_id:
+#         CartModel.delete_cart(cart_id)
+#     else:
+#         session['toast']='Error deleting the cart! Try Again Please.'
+
+#     session.modified=True
+#     return render_template('order_confirmed.htm',order_id=order_id,order_number=order_number,
+#                            total_amount=total_amount,payment_method=payment_method,
+#                            customer_name=f"{first_name} {last_name}")
+
+
+
+
 @order_bp.route('/place_order',methods=['POST'])
 def place_order():
-    cart_items,grand_total=get_cart_items()
+    cart_items, grand_total=get_cart_items()
     if not cart_items:
         return redirect(url_for('orders.view_cart'))
 
-    first_name=request.form.get('first_name','').strip()
-    last_name=request.form.get('last_name','').strip()
-    city=request.form.get('city','').strip()
-    postal_code=request.form.get('postal_code','').strip()
-    shipping_address=request.form.get('shipping_address','').strip()
-    payment_method=request.form.get('payment_method','COD')
-    promo_code=request.form.get('promo_code','').strip() or None
-    email=request.form.get('email','').strip() or None
+    try:
+        data=CheckoutValidator(
+            first_name=request.form.get('first_name',''),
+            last_name=request.form.get('last_name',''),
+            city=request.form.get('city',''),
+            postal_code=request.form.get('postal_code',''),
+            shipping_address=request.form.get('shipping_address',''),
+            payment_method=request.form.get('payment_method','COD'),
+            promo_code=request.form.get('promo_code',''),
+            email=request.form.get('email','')
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(url_for('orders.checkout'))
 
-    full_address=f"{shipping_address},{city} {postal_code}".strip(', ')
 
+    full_address=f"{data.shipping_address},{data.city} {data.postal_code}".strip(', ')
     subtotal=float(request.form.get('subtotal',grand_total))
     shipping_charges=float(request.form.get('shipping_charges',0))
     discount_amount=float(request.form.get('discount_amount',0))
@@ -158,49 +246,48 @@ def place_order():
 
     for item in cart_items:
         stock_row=ProductStockModel.check_stock(item['product_id'])
-
         if not stock_row:
             session['toast']=f"'{item['title']}' is no longer available."
             return redirect(url_for('orders.view_cart'))
-
+        
         if stock_row['stock_quantity'] < item['quantity']:
-            session['toast']=f"Only {stock_row['stock_quantity']} unit(s) of '{stock_row['title']}' left in stock."
+            session['toast']=f"Only {stock_row['stock_quantity']} unit(s) of '{stock_row['title']}' left."
             return redirect(url_for('orders.view_cart'))
 
-    order_number='HW-'+uuid.uuid4().hex[:8].upper()
-    user_id=None
+    order_number='HW-' + uuid.uuid4().hex[:8].upper()
+    user_id=session.get('user_id')
 
-    if session.get('user_id'):
-        user_id=session['user_id']
-
-    if not user_id and email:
-        existing=UserModel.get_by_email(email)
-        if existing:
-            user_id=existing['user_id']
+    if not user_id and data.email:
+        existing=UserModel.get_by_email(data.email)
+        user_id=existing['user_id'] if existing else None
 
     if not user_id:
-        user_id=UserModel.create_guest(first_name,last_name,email)
+        user_id=UserModel.create_guest(data.first_name,data.last_name,data.email)
 
-    order_id=OrderPlacementModel.create_order(user_id,order_number,subtotal,discount_amount,
-        promo_code,shipping_charges,total_amount,full_address)
+    order_id=OrderPlacementModel.create_order(
+        user_id,order_number,subtotal,discount_amount,
+        data.promo_code,shipping_charges,total_amount,full_address
+    )
 
     for item in cart_items:
-        item_subtotal=round(item['price'] * item['quantity'],2)
-        OrderPlacementModel.create_order_detail(order_id,item['product_id'],item['price'],item['quantity'],item_subtotal)
+        item_subtotal=round(item['price'] * item['quantity'], 2)
+        OrderPlacementModel.create_order_detail(
+            order_id,item['product_id'], item['price'],item['quantity'],item_subtotal
+        )
         ProductStockModel.deduct_stock(item['product_id'],item['quantity'])
 
-    OrderPlacementModel.create_payment(order_id,payment_method,total_amount)
+    OrderPlacementModel.create_payment(order_id,data.payment_method,total_amount)
 
     cart_id=session.pop('cart_id',None)
     if cart_id:
         CartModel.delete_cart(cart_id)
-    else:
-        session['toast']='Error deleting the cart! Try Again Please.'
 
     session.modified=True
-    return render_template('order_confirmed.htm',order_id=order_id,order_number=order_number,
-                           total_amount=total_amount,payment_method=payment_method,
-                           customer_name=f"{first_name} {last_name}")
+    return render_template(
+        'order_confirmed.htm',order_id=order_id,order_number=order_number,
+        total_amount=total_amount,payment_method=data.payment_method,
+        customer_name=f"{data.first_name} {data.last_name}"
+    )
 
 
 @order_bp.route('/buy_now/<int:product_id>',methods=['POST'])

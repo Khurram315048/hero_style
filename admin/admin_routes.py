@@ -11,7 +11,14 @@ from admin import admin_bp
 from utils.db import mysql
 import os
 from werkzeug.utils import secure_filename
-from admin.admin_models import (AdminModel,OTPModel,ProductModel,ProductDetailsModel,
+from pydantic import ValidationError
+from admin.admin_validators import(
+    AdminSignupValidator,AdminLoginValidator,
+    ProductValidator,CategoryValidator,OrderStatusValidator
+)
+from utils.validators import extract_errors
+from admin.admin_models import (
+    AdminModel,OTPModel,ProductModel,ProductDetailsModel,
     ProductImageModel,CategoryModel,OrderModel,OrderPaymentModel,
     OrderReturnModel,CustomerModel,FormModel,ReviewModel,SalesModel,DashboardModel)
 
@@ -25,20 +32,52 @@ def inject_admin():
     return dict(admin=admin)
 
 
+# @admin_bp.route('/admin_login',methods=['GET','POST'])
+# @limiter.limit("5 per 15 minutes")
+# def admin_login():
+#     if request.method=='POST':
+#         email=request.form.get('email')
+#         password=request.form.get('password')
+
+#         admin=AdminModel.get_by_email(email)
+
+#         if not admin:
+#             flash('Account does not exist','danger')
+#             return redirect(url_for('admin.admin_signup'))
+
+#         if not check_password_hash(admin['password_hash'],password):
+#             flash('Password does not match','danger')
+#             return redirect(url_for('admin.admin_login'))
+
+#         session['admin_id']=admin['admin_id']
+#         session['role']='admin'
+#         session.permanent=True if request.form.get('remember_me') else False
+#         session['admin_toast']='Welcome back!'
+#         return redirect(url_for('admin.admin_dashboard'))
+
+#     return render_template('admin_login.htm')
+
+
+
 @admin_bp.route('/admin_login',methods=['GET','POST'])
 @limiter.limit("5 per 15 minutes")
 def admin_login():
     if request.method=='POST':
-        email=request.form.get('email')
-        password=request.form.get('password')
+        try:
+            data=AdminLoginValidator(
+                email=request.form.get('email', ''),
+                password=request.form.get('password', '')
+            )
+        except ValidationError as e:
+            flash(extract_errors(e)[0],'danger')
+            return redirect(url_for('admin.admin_login'))
 
-        admin=AdminModel.get_by_email(email)
-
+        admin=AdminModel.get_by_email(data.email)
         if not admin:
             flash('Account does not exist','danger')
-            return redirect(url_for('admin.admin_signup'))
+            #return redirect(url_for('admin.admin_signup'))
 
-        if not check_password_hash(admin['password_hash'],password):
+        if not check_password_hash(admin['password_hash'],data.password):
             flash('Password does not match','danger')
             return redirect(url_for('admin.admin_login'))
 
@@ -51,25 +90,26 @@ def admin_login():
     return render_template('admin_login.htm')
 
 
-@admin_bp.route('/admin_signup',methods=['GET','POST'])
-def admin_signup():
-    if request.method=='POST':
-        first_name=request.form['first_name']
-        last_name=request.form['last_name']
-        username=request.form['username']
-        email=request.form['email']
-        plain_password=request.form['password']
 
-        exist=AdminModel.email_exists(email)
-        if exist:
-            session['admin_toast']='Already Registered!'
-            return redirect(url_for('admin.admin_login'))
+# @admin_bp.route('/admin_signup',methods=['GET','POST'])
+# def admin_signup():
+#     if request.method=='POST':
+#         first_name=request.form['first_name']
+#         last_name=request.form['last_name']
+#         username=request.form['username']
+#         email=request.form['email']
+#         plain_password=request.form['password']
 
-        AdminModel.create(first_name,last_name,username,email,plain_password)
-        session['admin_toast']='You have been registered successfully!'
-        return redirect(url_for('admin.admin_login'))
+#         exist=AdminModel.email_exists(email)
+#         if exist:
+#             session['admin_toast']='Already Registered!'
+#             return redirect(url_for('admin.admin_login'))
 
-    return render_template('admin_signup.htm')
+#         AdminModel.create(first_name,last_name,username,email,plain_password)
+#         session['admin_toast']='You have been registered successfully!'
+#         return redirect(url_for('admin.admin_login'))
+
+#     return render_template('admin_signup.htm')
 
 
 @admin_bp.route('/admin_reset',methods=['GET','POST'])
@@ -122,8 +162,6 @@ def verify_admin_otp():
             record=OTPModel.verify(email,otp_entered)
 
             if not record:
-                # BUG FIX: original used session['toast'] here but everywhere else uses session['admin_toast']
-                # inconsistent key meant OTP error toast never showed - fixed to admin_toast
                 session['admin_toast']='Invalid or expired OTP!'
                 return redirect(url_for('admin.verify_admin_otp'))
 
@@ -220,50 +258,113 @@ def admin_profile():
     return render_template('admin_profile.htm',admin_details=admin_details)
 
 
+# @admin_bp.route('/add_product',methods=['POST'])
+# @admin_required
+# def add_product():
+#     title=request.form.get('title')
+#     category_id=request.form.get('category')
+#     base_price=request.form.get('base_price')
+#     sale_price=request.form.get('sale_price')
+#     stock=request.form.get('stock',0)
+#     status=request.form.get('status','active')
+#     short_desc=request.form.get('short_description')
+#     long_desc=request.form.get('long_description')
+#     display_type=request.form.get('display_type')
+#     brightness_nits=request.form.get('brightness_nits') or None
+#     battery_life=request.form.get('battery_life')
+#     connectivity=request.form.get('connectivity')
+#     strap_material=request.form.get('strap_material')
+#     case_material=request.form.get('case_material')
+#     water_resistance=request.form.get('water_resistance')
+#     weight=request.form.get('weight')
+#     warranty_month=request.form.get('warranty_month',12)
+#     always_display=request.form.get('always_display',0)
+#     product_no=request.form.get('product_no')
+#     image=request.files.get('image')
+#     width=12
+#     height=12
+
+#     product_id=ProductModel.create(product_no,category_id,title,base_price,sale_price,stock,status)
+#     ProductDetailsModel.create(product_id,short_desc,long_desc,display_type,brightness_nits,
+#         battery_life,connectivity,strap_material,case_material,water_resistance,
+#         weight,warranty_month,always_display)
+
+#     if image and image.filename != '':
+#         cat=ProductImageModel.get_category_name(category_id)
+#         cat_name=cat['name'].lower().replace(' ','_')
+#         filename=secure_filename(image.filename)
+#         upload_folder=os.path.join('static','uploads',cat_name)
+#         os.makedirs(upload_folder,exist_ok=True)
+#         image_path=os.path.join(upload_folder,filename)
+#         image.save(image_path)
+#         image_url='/'+image_path.replace('\\','/')
+#         ProductImageModel.create(product_id,image_url,title,width,height)
+
+#     session['admin_toast']='Product Added Successfully!'
+#     return redirect(url_for('admin.main_products'))
+
+
 @admin_bp.route('/add_product',methods=['POST'])
 @admin_required
 def add_product():
-    title=request.form.get('title')
-    category_id=request.form.get('category')
-    base_price=request.form.get('base_price')
-    sale_price=request.form.get('sale_price')
-    stock=request.form.get('stock',0)
-    status=request.form.get('status','active')
-    short_desc=request.form.get('short_description')
-    long_desc=request.form.get('long_description')
-    display_type=request.form.get('display_type')
-    brightness_nits=request.form.get('brightness_nits') or None
-    battery_life=request.form.get('battery_life')
-    connectivity=request.form.get('connectivity')
-    strap_material=request.form.get('strap_material')
-    case_material=request.form.get('case_material')
-    water_resistance=request.form.get('water_resistance')
-    weight=request.form.get('weight')
-    warranty_month=request.form.get('warranty_month',12)
-    always_display=request.form.get('always_display',0)
-    product_no=request.form.get('product_no')
+    try:
+        data=ProductValidator(
+            title=request.form.get('title',''),
+            product_no=request.form.get('product_no',''),
+            category_id=request.form.get('category',0),
+            base_price=request.form.get('base_price',0),
+            sale_price=request.form.get('sale_price') or None,
+            stock=request.form.get('stock',0),
+            status=request.form.get('status', 'active'),
+            short_description=request.form.get('short_description'),
+            long_description=request.form.get('long_description'),
+            display_type=request.form.get('display_type'),
+            battery_life=request.form.get('battery_life'),
+            connectivity=request.form.get('connectivity'),
+            strap_material=request.form.get('strap_material'),
+            case_material=request.form.get('case_material'),
+            water_resistance=request.form.get('water_resistance'),
+            weight=request.form.get('weight'),
+            warranty_month=request.form.get('warranty_month',12),
+            always_display=request.form.get('always_display',0),
+            brightness_nits=request.form.get('brightness_nits') or None,
+        )
+    except ValidationError as e:
+        session['admin_toast']=extract_errors(e)[0]
+        return redirect(url_for('admin.main_products'))
+
     image=request.files.get('image')
     width=12
     height=12
 
-    product_id=ProductModel.create(product_no,category_id,title,base_price,sale_price,stock,status)
-    ProductDetailsModel.create(product_id,short_desc,long_desc,display_type,brightness_nits,
-        battery_life,connectivity,strap_material,case_material,water_resistance,
-        weight,warranty_month,always_display)
+    product_id=ProductModel.create(
+        data.product_no,data.category_id,data.title,
+        data.base_price,data.sale_price,data.stock,data.status
+    )
+    ProductDetailsModel.create(
+        product_id,data.short_description,data.long_description,
+        data.display_type,data.brightness_nits,data.battery_life,
+        data.connectivity,data.strap_material,data.case_material,
+        data.water_resistance,data.weight,data.warranty_month,
+        data.always_display
+    )
 
     if image and image.filename != '':
-        cat=ProductImageModel.get_category_name(category_id)
-        cat_name=cat['name'].lower().replace(' ','_')
+        cat=ProductImageModel.get_category_name(data.category_id)
+        cat_name=cat['name'].lower().replace(' ', '_')
         filename=secure_filename(image.filename)
-        upload_folder=os.path.join('static','uploads',cat_name)
-        os.makedirs(upload_folder,exist_ok=True)
-        image_path=os.path.join(upload_folder,filename)
-        image.save(image_path)
-        image_url='/'+image_path.replace('\\','/')
-        ProductImageModel.create(product_id,image_url,title,width,height)
+        folder=os.path.join('static','uploads',cat_name)
+        os.makedirs(folder,exist_ok=True)
+        path=os.path.join(folder, filename)
+        image.save(path)
+        image_url='/' + path.replace('\\', '/')
+        ProductImageModel.create(product_id,image_url,data.title,width,height)
 
     session['admin_toast']='Product Added Successfully!'
     return redirect(url_for('admin.main_products'))
+
+
+
 
 
 @admin_bp.route('/delete_product/<int:product_id>',methods=['GET','POST'])
@@ -319,8 +420,6 @@ def edit_product(product_id):
         image_path=os.path.join(upload_folder,filename)
         image.save(image_path)
         image_url='/'+image_path.replace('\\','/')
-        # BUG FIX: original UPDATE had no fallback if no image row existed - silent no-op
-        # update_or_create handles both cases
         ProductImageModel.update_or_create(product_id,image_url,title,width,height)
 
     session['admin_toast']='Product Updated Successfully!'
@@ -356,50 +455,86 @@ def all_orders():
     return render_template('all_orders.htm',orders=orders,page=page,total_pages=total_pages)
 
 
+# @admin_bp.route('/update_order_status/<int:order_id>',methods=['POST'])
+# @admin_required
+# def update_order_status(order_id):
+#     from main import mail,app
+#     from flask_mail import Message
+
+#     status=request.form.get('status')
+#     valid=['pending','confirmed','shipped','delivered']
+
+#     if status in valid:
+#         order_data=OrderModel.get_order_user_for_email(order_id)
+#         OrderModel.update_status(order_id,status)
+
+#         if order_data:
+#             user_email=order_data['email']
+#             order_number=order_data['order_number']
+#             first_name=order_data['first_name']
+#             order_link=f"{request.host_url}user_orders"
+
+#             msg=Message(
+#                 subject=f'Order {order_number} has been {status.capitalize()} - Hero Style',
+#                 recipients=[user_email],
+#                 html=f"""
+#                     <html>
+#                         <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+#                             <h2>Order Update</h2>
+#                             <p>Hi {first_name},</p>
+#                             <p>Your order <strong>{order_number}</strong> from Hero Style has been <strong>{status.upper()}</strong>.</p>
+#                             <p>Click the button below to view your order status:</p>
+#                             <p>
+#                                 <a href="{order_link}"
+#                                    style="background-color: #c9a84c; color: #0d1b2a; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+#                                     View Order Status
+#                                 </a>
+#                             </p>
+#                             <p>If you have any questions, please contact our support team.</p>
+#                             <p>Best regards,<br>Hero Style Team</p>
+#                         </body>
+#                     </html>""")
+#             mail.send(msg)
+
+#         session['admin_toast']='Status updated successfully & Email sent!'
+
+#     return redirect(url_for('admin.all_orders'))
+
+
 @admin_bp.route('/update_order_status/<int:order_id>',methods=['POST'])
 @admin_required
 def update_order_status(order_id):
-    from main import mail,app
-    from flask_mail import Message
+    from main import mail
+    try:
+        data=OrderStatusValidator(status=request.form.get('status', ''))
+    except ValidationError as e:
+        session['admin_toast']=extract_errors(e)[0]
+        return redirect(url_for('admin.all_orders'))
 
-    status=request.form.get('status')
-    valid=['pending','confirmed','shipped','delivered']
+    order_data=OrderModel.get_order_user_for_email(order_id)
+    OrderModel.update_status(order_id,data.status)
 
-    if status in valid:
-        order_data=OrderModel.get_order_user_for_email(order_id)
-        OrderModel.update_status(order_id,status)
+    if order_data:
+        user_email=order_data['email']
+        order_number=order_data['order_number']
+        first_name=order_data['first_name']
+        order_link=f"{request.host_url}user_orders"
 
-        if order_data:
-            user_email=order_data['email']
-            order_number=order_data['order_number']
-            first_name=order_data['first_name']
-            order_link=f"{request.host_url}user_orders"
+        msg=Message(
+            subject=f'Order {order_number} has been {data.status.capitalize()} - Hero Style',
+            recipients=[user_email],
+            html=f"""<html><body>
+                <p>Hi {first_name}, your order <strong>{order_number}</strong>
+                has been <strong>{data.status.upper()}</strong>.</p>
+                <a href="{order_link}">View Order Status</a>
+            </body></html>"""
+        )
+        mail.send(msg)
 
-            msg=Message(
-                subject=f'Order {order_number} has been {status.capitalize()} - Hero Style',
-                recipients=[user_email],
-                html=f"""
-                    <html>
-                        <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-                            <h2>Order Update</h2>
-                            <p>Hi {first_name},</p>
-                            <p>Your order <strong>{order_number}</strong> from Hero Style has been <strong>{status.upper()}</strong>.</p>
-                            <p>Click the button below to view your order status:</p>
-                            <p>
-                                <a href="{order_link}"
-                                   style="background-color: #c9a84c; color: #0d1b2a; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                                    View Order Status
-                                </a>
-                            </p>
-                            <p>If you have any questions, please contact our support team.</p>
-                            <p>Best regards,<br>Hero Style Team</p>
-                        </body>
-                    </html>""")
-            mail.send(msg)
-
-        session['admin_toast']='Status updated successfully & Email sent!'
-
+    session['admin_toast']='Status updated successfully & Email sent!'
     return redirect(url_for('admin.all_orders'))
+
+
 
 
 @admin_bp.route('/cancel_order_status/<int:order_id>',methods=['POST'])

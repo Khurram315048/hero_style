@@ -12,3 +12,5 @@ MarkupSafe==3.0.2
 mysqlclient==2.2.7
 WTForms==3.2.2
 bcrypt==4.3.0
+pydantic==2.7.1
+email-validator==2.1.1
