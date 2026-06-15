@@ -35,18 +35,37 @@ class CartModel:
         finally:
             cursor.close()
 
+    # @staticmethod
+    # def get_items(cart_id):
+    #     cursor=mysql.connection.cursor(DictCursor)
+    #     try:
+    #         cursor.execute("""SELECT ci.product_id,ci.quantity,ci.price_at_add AS price,
+    #             p.title,pi.image_url,pd.short_description
+    #         FROM cart_items ci
+    #         JOIN products p ON p.product_id=ci.product_id
+    #         JOIN product_images pi ON pi.product_id=ci.product_id AND pi.is_active=1
+    #         JOIN product_details pd ON pd.product_id=ci.product_id
+    #         WHERE ci.cart_id=%s""",(cart_id,))
+    #         return cursor.fetchall()
+    #     finally:
+    #         cursor.close()
+
     @staticmethod
-    # BUG FIX: added AND pi.is_active=1 - multiple images caused duplicate cart rows
     def get_items(cart_id):
-        cursor=mysql.connection.cursor(DictCursor)
+        cursor = mysql.connection.cursor(DictCursor)
         try:
-            cursor.execute("""SELECT ci.product_id,ci.quantity,ci.price_at_add AS price,
-                p.title,pi.image_url,pd.short_description
-            FROM cart_items ci
-            JOIN products p ON p.product_id=ci.product_id
-            JOIN product_images pi ON pi.product_id=ci.product_id AND pi.is_active=1
-            JOIN product_details pd ON pd.product_id=ci.product_id
-            WHERE ci.cart_id=%s""",(cart_id,))
+            cursor.execute("""
+                SELECT ci.product_id, ci.quantity, ci.price_at_add AS price,
+                    p.title,
+                    pd.short_description,
+                    (SELECT image_url FROM product_images
+                        WHERE product_id = ci.product_id AND is_active = 1
+                        ORDER BY image_id ASC LIMIT 1) AS image_url
+                FROM cart_items ci
+                JOIN products p ON p.product_id = ci.product_id
+                JOIN product_details pd ON pd.product_id = ci.product_id
+                WHERE ci.cart_id = %s
+            """, (cart_id,))
             return cursor.fetchall()
         finally:
             cursor.close()
@@ -129,7 +148,7 @@ class ProductStockModel:
     def deduct_stock(product_id,quantity):
         cursor=mysql.connection.cursor(DictCursor)
         try:
-            # BUG FIX: combined stock deduct + draft status into single query - removes race condition window
+            
             cursor.execute("""UPDATE products
                 SET stock_quantity=GREATEST(stock_quantity - %s,0),
                 status=CASE WHEN GREATEST(stock_quantity - %s,0)=0 THEN 'draft' ELSE status END
