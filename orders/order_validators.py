@@ -62,3 +62,34 @@ class CheckoutValidator(BaseValidator):
             return None
         
         return v.upper().strip()
+
+
+
+class CartItemValidator(BaseValidator):
+
+    product_id:int
+    quantity:int
+
+    @field_validator("product_id",mode="before")
+    @classmethod
+    def valid_product_id(cls, v):
+        try:
+            v=int(v)
+        except (ValueError,TypeError):
+            raise ValueError("Invalid product ID.")
+        if v <= 0:
+            raise ValueError("Invalid product ID.")
+        return v
+
+    @field_validator("quantity",mode="before")
+    @classmethod
+    def valid_quantity(cls, v):
+        try:
+            v=int(v)
+        except (ValueError,TypeError):
+            raise ValueError("Invalid quantity.")
+        if v < 1:
+            raise ValueError("Quantity must be at least 1.")
+        if v > 100:
+            raise ValueError("Quantity cannot exceed 100.")
+        return v

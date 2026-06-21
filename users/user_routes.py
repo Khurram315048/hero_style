@@ -17,7 +17,8 @@ from users.user_models import (
 from users.user_validators import (
     UserSignupValidator,UserLoginValidator,
     UserProfileValidator,OTPEmailValidator,
-    OTPVerifyValidator,NewPasswordValidator
+    OTPVerifyValidator,NewPasswordValidator,
+    ReviewValidator,ReturnReasonValidator
 )
 
 
@@ -414,15 +415,21 @@ def cancel_order(order_id):
 @user_bp.route('/submit_review/<int:product_id>',methods=['GET','POST'])
 @login_required
 def submit_review(product_id):
+    try:
+        data=ReviewValidator(
+            rating=request.form.get('rating',''),
+            comment=request.form.get('comment','')
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(request.referrer)
+
     result=submit_product_review(
         session.get('user_id'), product_id,
-        request.form.get('rating'),
-        request.form.get('comment')
+        data.rating,
+        data.comment
     )
-    if result=='missing_fields':
-        session['toast'] = 'Please provide both a rating and a comment.'
-
-    elif result=='already_exists':
+    if result=='already_exists':
         session['toast']='Review Already Exist!'
     else:
         session['toast']='Thank You! your review has been posted'
@@ -442,10 +449,19 @@ def my_reviews():
 @user_bp.route('/update_review/<int:review_id>',methods=['GET','POST'])
 @login_required
 def update_review(review_id):
+    try:
+        data=ReviewValidator(
+            rating=request.form.get('rating',''),
+            comment=request.form.get('comment','')
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(url_for('users.my_reviews'))
+
     update_product_review(
         session.get('user_id'),review_id,
-        request.form.get('rating'),
-        request.form.get('comment')
+        data.rating,
+        data.comment
     )
 
     session['toast']='Thank You! For updating the product review'
@@ -465,7 +481,15 @@ def delete_review(review_id):
 @user_bp.route('/return_order/<int:order_id>',methods=['GET','POST'])
 @login_required
 def return_order(order_id):
-    submit_order_return(order_id,request.form.get('reason'))
+    try:
+        data=ReturnReasonValidator(
+            reason=request.form.get('reason','')
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(url_for('users.user_orders'))
+
+    submit_order_return(order_id,data.reason)
     session['toast']='Return request submitted successfully!'
     return redirect(url_for('users.user_orders'))
 
@@ -474,8 +498,15 @@ def return_order(order_id):
 @user_bp.route('/return_items/<int:order_detail_id>',methods=['GET','POST'])
 @login_required
 def return_items(order_detail_id):
- 
-    success=submit_item_return(order_detail_id,request.form.get('reason'))
+    try:
+        data=ReturnReasonValidator(
+            reason=request.form.get('reason','')
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(url_for('users.user_orders'))
+
+    success=submit_item_return(order_detail_id,data.reason)
     if not success:
         session['toast']='Order item not found!'
     else:

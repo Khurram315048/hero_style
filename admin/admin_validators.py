@@ -1,4 +1,4 @@
-from pydantic import BaseModel,field_validator,EmailStr
+from pydantic import BaseModel,field_validator,EmailStr,model_validator
 from typing import Optional
 from decimal import Decimal
 from utils.validators import BaseValidator,PasswordValidator
@@ -169,4 +169,94 @@ class OrderStatusValidator(BaseValidator):
         if v not in allowed:
             raise ValueError(f"Invalid order status: {v}")
         
+        return v
+
+
+
+class AdminProfileValidator(BaseValidator):
+
+    first_name:str
+    last_name:str
+    username:str
+    email:EmailStr
+
+    @field_validator("first_name","last_name")
+    @classmethod
+    def names_alpha(cls, v: str) -> str:
+        if not v.replace(" ","").isalpha():
+            raise ValueError("Must contain letters only.")
+        return v.title()
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str) -> str:
+        if len(v) < 3:
+            raise ValueError("Username must be at least 3 characters.")
+        if not v.replace("_","").replace("-","").isalnum():
+            raise ValueError("Username can only contain letters, numbers, _ and -")
+        return v.lower()
+
+
+
+class AdminResetEmailValidator(BaseValidator):
+
+    email:EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def email_lower(cls, v: str) -> str:
+        return v.lower()
+
+
+
+class AdminOTPVerifyValidator(BaseValidator):
+
+    otp:str
+
+    @field_validator("otp")
+    @classmethod
+    def validate_otp(cls, v: str) -> str:
+        v=v.strip()
+        if not v.isdigit():
+            raise ValueError("OTP must contain digits only.")
+        if len(v) != 6:
+            raise ValueError("OTP must be exactly 6 digits.")
+        return v
+
+
+
+class AdminNewPasswordValidator(BaseValidator):
+
+    new_password:str
+    confirm_password:str
+
+    @field_validator("new_password")
+    @classmethod
+    def strong_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters.")
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain an uppercase letter.")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain a number.")
+        return v
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        if self.new_password != self.confirm_password:
+            raise ValueError("Passwords do not match.")
+        return self
+
+
+
+class ReviewStatusValidator(BaseValidator):
+
+    status:str
+
+    @field_validator("status")
+    @classmethod
+    def valid_status(cls, v: str) -> str:
+        allowed={"approved","hidden","pending"}
+        if v not in allowed:
+            raise ValueError(f"Invalid review status. Must be one of: {', '.join(allowed)}")
         return v

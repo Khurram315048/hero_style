@@ -112,3 +112,45 @@ class NewPasswordValidator(BaseValidator):
         if self.new_password != self.confirm_password:
             raise ValueError("Passwords do not match.")
         return self
+
+
+
+class ReviewValidator(BaseValidator):
+
+    rating:int
+    comment:str
+
+    @field_validator("rating",mode="before")
+    @classmethod
+    def validate_rating(cls, v):
+        try:
+            v=int(v)
+        except (ValueError,TypeError):
+            raise ValueError("Rating must be a number.")
+        if v < 1 or v > 5:
+            raise ValueError("Rating must be between 1 and 5.")
+        return v
+
+    @field_validator("comment")
+    @classmethod
+    def validate_comment(cls, v: str) -> str:
+        if len(v) < 3:
+            raise ValueError("Comment must be at least 3 characters.")
+        if len(v) > 1000:
+            raise ValueError("Comment cannot exceed 1000 characters.")
+        return v.strip()
+
+
+
+class ReturnReasonValidator(BaseValidator):
+
+    reason:str
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, v: str) -> str:
+        if len(v) < 5:
+            raise ValueError("Please provide a more detailed reason (min 5 characters).")
+        if len(v) > 500:
+            raise ValueError("Reason cannot exceed 500 characters.")
+        return v.strip()

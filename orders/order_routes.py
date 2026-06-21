@@ -7,7 +7,7 @@ from orders.order_models import(
     OrderPlacementModel,WishlistModel
 )
 from pydantic import ValidationError
-from orders.order_validators import CheckoutValidator
+from orders.order_validators import CheckoutValidator,CartItemValidator
 from utils.validators import extract_errors
 
 
@@ -58,17 +58,20 @@ def get_cart_count():
 
 @order_bp.route('/cart/add',methods=['POST'])
 def add_to_cart():
-    product_id=request.form.get('product_id','')
-    quantity=int(request.form.get('quantity',1))
     redirect_to=request.form.get('redirect_to','/')
 
-    if not product_id:
+    try:
+        data=CartItemValidator(
+            product_id=request.form.get('product_id',''),
+            quantity=request.form.get('quantity',1)
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
         return redirect(redirect_to)
 
-    product_id=int(product_id)
     cart_id=get_or_create_cart_id()
 
-    product=ProductStockModel.get_by_id(product_id)
+    product=ProductStockModel.get_by_id(data.product_id)
     if not product:
         return redirect(redirect_to)
 
@@ -77,7 +80,7 @@ def add_to_cart():
         return redirect(redirect_to)
 
     price=float(product['sale_price'] or product['base_price'])
-    CartModel.add_item(cart_id,product_id,quantity,price)
+    CartModel.add_item(cart_id,data.product_id,data.quantity,price)
     session['toast']=f"Added to cart: {product['title']}"
     session.modified=True
     return redirect(redirect_to)
@@ -85,12 +88,18 @@ def add_to_cart():
 
 @order_bp.route('/cart/update',methods=['POST'])
 def update_cart():
-    product_id=int(request.form.get('product_id',0))
-    quantity=int(request.form.get('quantity',1))
-    cart_id=session.get('cart_id')
+    try:
+        data=CartItemValidator(
+            product_id=request.form.get('product_id',0),
+            quantity=request.form.get('quantity',1)
+        )
+    except ValidationError as e:
+        session['toast']=extract_errors(e)[0]
+        return redirect(url_for('orders.view_cart'))
 
-    if cart_id and product_id:
-        CartModel.update_item(cart_id,product_id,quantity)
+    cart_id=session.get('cart_id')
+    if cart_id:
+        CartModel.update_item(cart_id,data.product_id,data.quantity)
 
     return redirect(url_for('orders.view_cart'))
 

@@ -14,7 +14,9 @@ from werkzeug.utils import secure_filename
 from pydantic import ValidationError
 from admin.admin_validators import(
     AdminSignupValidator,AdminLoginValidator,
-    ProductValidator,CategoryValidator,OrderStatusValidator
+    ProductValidator,CategoryValidator,OrderStatusValidator,
+    AdminProfileValidator,AdminResetEmailValidator,
+    AdminOTPVerifyValidator,AdminNewPasswordValidator,ReviewStatusValidator
 )
 from utils.validators import extract_errors
 from admin.admin_models import (
@@ -119,8 +121,15 @@ def admin_reset():
         step=request.form.get('step')
 
         if step=='send_otp':
-            email=request.form.get('email','').strip()
-            admin=AdminModel.get_by_email(email)
+            try:
+                data=AdminResetEmailValidator(
+                    email=request.form.get('email','')
+                )
+            except ValidationError as e:
+                session['admin_toast']=extract_errors(e)[0]
+                return redirect(url_for('admin.admin_reset'))
+
+            admin=AdminModel.get_by_email(data.email)
 
             if not admin:
                 session['admin_toast']='Email not found!'
@@ -129,18 +138,18 @@ def admin_reset():
             otp=''.join(random.choices(string.digits,k=6))
             expires=datetime.now() + timedelta(minutes=10)
 
-            OTPModel.delete_by_email(email)
-            OTPModel.create(email,otp,expires)
+            OTPModel.delete_by_email(data.email)
+            OTPModel.create(data.email,otp,expires)
 
             msg=Message(
                 subject='Hero Style — Password Reset OTP',
-                recipients=[email],
+                recipients=[data.email],
                 body=f"""Your OTP for password reset is: {otp}
                             This code expires in 10 minutes.
                             If you did not request this, ignore this email.
                             — Hero Style Team Developed By Muhammad Khurram""",)
             mail.send(msg)
-            session['reset_email']=email
+            session['reset_email']=data.email
             session['admin_toast']='OTP sent to your email!'
             return redirect(url_for('admin.verify_admin_otp'))
 
@@ -158,8 +167,15 @@ def verify_admin_otp():
         step=request.form.get('step')
 
         if step=='verify':
-            otp_entered=request.form.get('otp','').strip()
-            record=OTPModel.verify(email,otp_entered)
+            try:
+                data=AdminOTPVerifyValidator(
+                    otp=request.form.get('otp','')
+                )
+            except ValidationError as e:
+                session['admin_toast']=extract_errors(e)[0]
+                return redirect(url_for('admin.verify_admin_otp'))
+
+            record=OTPModel.verify(email,data.otp)
 
             if not record:
                 session['admin_toast']='Invalid or expired OTP!'
@@ -181,14 +197,16 @@ def set_new_pass_admin():
         return redirect(url_for('admin.admin_reset'))
 
     if request.method=='POST':
-        new_password=request.form.get('new_password','').strip()
-        confirm=request.form.get('confirm_password','').strip()
-
-        if new_password != confirm:
-            session['admin_toast']='Passwords do not match!'
+        try:
+            data=AdminNewPasswordValidator(
+                new_password=request.form.get('new_password',''),
+                confirm_password=request.form.get('confirm_password','')
+            )
+        except ValidationError as e:
+            session['admin_toast']=extract_errors(e)[0]
             return redirect(url_for('admin.set_new_pass_admin'))
 
-        AdminModel.update_password(email,new_password)
+        AdminModel.update_password(email,data.new_password)
         session.pop('reset_email',None)
         session.pop('otp_verified',None)
         session['admin_toast']='Password updated successfully!'
@@ -245,12 +263,18 @@ def main_products():
 def admin_profile():
     admin_id=session.get('admin_id')
     if request.method=='POST':
-        first_name=request.form.get('first_name')
-        last_name=request.form.get('last_name')
-        user_name=request.form.get('user_name')
-        email=request.form.get('email')
+        try:
+            data=AdminProfileValidator(
+                first_name=request.form.get('first_name',''),
+                last_name=request.form.get('last_name',''),
+                username=request.form.get('user_name',''),
+                email=request.form.get('email','')
+            )
+        except ValidationError as e:
+            session['admin_toast']=extract_errors(e)[0]
+            return redirect(request.referrer)
 
-        AdminModel.update_profile(admin_id,first_name,last_name,user_name,email)
+        AdminModel.update_profile(admin_id,data.first_name,data.last_name,data.username,data.email)
         session['admin_toast']='Profile Updated Success!'
         return redirect(request.referrer)
 
@@ -840,13 +864,14 @@ def all_reviews():
 @admin_bp.route('/reviews/<int:review_id>/status',methods=['POST'])
 @admin_required
 def update_review_status(review_id):
-    new_status=request.form.get('status')
-    if new_status not in ('approved','hidden','pending'):
-        session['admin_toast']='Invalid status.'
+    try:
+        data=ReviewStatusValidator(status=request.form.get('status',''))
+    except ValidationError as e:
+        session['admin_toast']=extract_errors(e)[0]
         return redirect(url_for('admin.all_reviews'))
 
-    ReviewModel.update_status(review_id,new_status)
-    session['admin_toast']=f'Review marked as {new_status}.'
+    ReviewModel.update_status(review_id,data.status)
+    session['admin_toast']=f'Review marked as {data.status}.'
     return redirect(url_for('admin.all_reviews'))
 
 
