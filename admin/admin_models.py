@@ -794,7 +794,7 @@ class SalesModel:
         finally:
             cursor.close()
 
-
+ 
     @staticmethod
     def get_top_products(limit=5):
         cursor=mysql.connection.cursor()
