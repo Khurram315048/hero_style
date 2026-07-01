@@ -54,6 +54,7 @@ def admin_login():
         admin=AdminModel.get_by_email(data.email)
         if not admin:
             flash('Account does not exist','danger')
+            return redirect(url_for('admin.admin_login'))
             
 
         if not check_password_hash(admin['password_hash'],data.password):
