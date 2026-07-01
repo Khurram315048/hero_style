@@ -92,7 +92,7 @@ def admin_reset():
 
             if not admin:
                 session['admin_toast']='Email not found!'
-                
+                return redirect(url_for('admin.admin_login'))
 
             otp=''.join(random.choices(string.digits,k=6))
             expires=datetime.now() + timedelta(minutes=10)
