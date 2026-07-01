@@ -34,30 +34,7 @@ def inject_admin():
     return dict(admin=admin)
 
 
-# @admin_bp.route('/admin_login',methods=['GET','POST'])
-# @limiter.limit("5 per 15 minutes")
-# def admin_login():
-#     if request.method=='POST':
-#         email=request.form.get('email')
-#         password=request.form.get('password')
 
-#         admin=AdminModel.get_by_email(email)
-
-#         if not admin:
-#             flash('Account does not exist','danger')
-#             return redirect(url_for('admin.admin_signup'))
-
-#         if not check_password_hash(admin['password_hash'],password):
-#             flash('Password does not match','danger')
-#             return redirect(url_for('admin.admin_login'))
-
-#         session['admin_id']=admin['admin_id']
-#         session['role']='admin'
-#         session.permanent=True if request.form.get('remember_me') else False
-#         session['admin_toast']='Welcome back!'
-#         return redirect(url_for('admin.admin_dashboard'))
-
-#     return render_template('admin_login.htm')
 
 
 
@@ -77,7 +54,7 @@ def admin_login():
         admin=AdminModel.get_by_email(data.email)
         if not admin:
             flash('Account does not exist','danger')
-            #return redirect(url_for('admin.admin_signup'))
+            
 
         if not check_password_hash(admin['password_hash'],data.password):
             flash('Password does not match','danger')
@@ -93,25 +70,7 @@ def admin_login():
 
 
 
-# @admin_bp.route('/admin_signup',methods=['GET','POST'])
-# def admin_signup():
-#     if request.method=='POST':
-#         first_name=request.form['first_name']
-#         last_name=request.form['last_name']
-#         username=request.form['username']
-#         email=request.form['email']
-#         plain_password=request.form['password']
 
-#         exist=AdminModel.email_exists(email)
-#         if exist:
-#             session['admin_toast']='Already Registered!'
-#             return redirect(url_for('admin.admin_login'))
-
-#         AdminModel.create(first_name,last_name,username,email,plain_password)
-#         session['admin_toast']='You have been registered successfully!'
-#         return redirect(url_for('admin.admin_login'))
-
-#     return render_template('admin_signup.htm')
 
 
 @admin_bp.route('/admin_reset',methods=['GET','POST'])
@@ -133,7 +92,7 @@ def admin_reset():
 
             if not admin:
                 session['admin_toast']='Email not found!'
-                return redirect(url_for('admin.admin_signup'))
+                
 
             otp=''.join(random.choices(string.digits,k=6))
             expires=datetime.now() + timedelta(minutes=10)

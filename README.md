@@ -5,12 +5,12 @@ hero_watches
 ├─ admin
 │  ├─ admin_models.py
 │  ├─ admin_routes.py
+│  ├─ admin_validators.py
 │  ├─ admin_views
 │  │  ├─ admin_dashboard.htm
 │  │  ├─ admin_login.htm
 │  │  ├─ admin_profile.htm
 │  │  ├─ admin_reset.htm
-│  │  ├─ admin_signup.htm
 │  │  ├─ all_orders.htm
 │  │  ├─ all_reviews.htm
 │  │  ├─ customers.htm
@@ -38,6 +38,7 @@ hero_watches
 ├─ orders
 │  ├─ order_models.py
 │  ├─ order_routes.py
+│  ├─ order_validators.py
 │  ├─ order_views
 │  │  ├─ cart.htm
 │  │  ├─ checkout.htm
@@ -165,12 +166,16 @@ hero_watches
 │  │  └─ verify_otp.htm
 │  ├─ user_models.py
 │  ├─ user_routes.py
+│  ├─ user_validators.py
 │  └─ __init__.py
 └─ utils
    ├─ auth.py
    ├─ db.py
+   ├─ file_handler.py
    ├─ limiter.py
    ├─ path_link.py
-   └─ product_filter.py
+   ├─ product_filter.py
+   ├─ support_validator.py
+   └─ validators.py
 
 ```
